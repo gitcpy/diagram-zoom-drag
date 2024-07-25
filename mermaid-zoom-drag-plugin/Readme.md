@@ -26,4 +26,5 @@
 	After installed, When you read in obsidian, if there ia any mermaid, you just put your cursor inside it in reading mode.
 	
 	Press "Ctrl" and srolling up or down to zoom in or out.
+
 	Press left button and move your cursur to drag it.  
