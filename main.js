@@ -1,6 +1,6 @@
 const { Plugin, PluginSettingTab, Setting  } = require('obsidian');
 
-const ver = "4.0.33";
+const ver = "4.0.34";
 class MermaidZoomDragPlugin extends Plugin {
   onload() {
     console.log(`Loading MermaidZoomDragPlugin V$(ver)`);
