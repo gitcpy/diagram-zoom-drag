@@ -21,7 +21,7 @@
    
 	(to be continued...)
 	
-4. Usage
+3. Usage
 	
 	After installed, When you read in obsidian, if there ia any mermaid, you just put your cursor inside it in reading mode.
 	
