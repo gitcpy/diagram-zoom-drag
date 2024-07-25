@@ -1,7 +1,7 @@
 {
     "id": "mermaid-zoom-drag-plugin",
     "name": "Mermaid Zoom Drag Plugin",
-    "version": "4.0.33",
+    "version": "4.0.34",
     "minAppVersion": "0.9.12",
     "description": "A plugin to add zoom and drag functionality to Mermaid diagrams",
     "author": "ChenPengyuan",
