@@ -9,7 +9,7 @@
 	
 	2.1.1 Download
 	
-	Download code zip file and unzip it, or you just pull it from github. Anyway you like. Then you will get a doc named mermaid-zoom-drag-plugin.
+	Download code zip file and unzip it, or you just pull it from github. Anyway you like. Then you will get a doc named mermaid-zoom-drag-main, rename it to mermain-zoom-drag-main.
 	
 	2.1.2 Install
 	
