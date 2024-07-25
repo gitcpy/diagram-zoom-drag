@@ -1,9 +1,9 @@
 const { Plugin, PluginSettingTab, Setting  } = require('obsidian');
 
-const ver = "4.0.34";
+const ver = "4.0.35";
 class MermaidZoomDragPlugin extends Plugin {
   onload() {
-    console.log(`Loading MermaidZoomDragPlugin V$(ver)`);
+    console.log("Loading MermaidZoomDragPlugin V" + ver);
 
     // 添加对工作区事件的监听
     this.registerEvent(
@@ -159,7 +159,7 @@ class MermaidZoomDragPlugin extends Plugin {
   }
 
   onunload() {
-    console.log(`Unloading MermaidZoomDragPlugin V${ver}`);
+    console.log("Unloading MermaidZoomDragPlugin V" + ver);
   }
 }
 
