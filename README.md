@@ -18,9 +18,10 @@
 	Reload your obsidian app, and you will see the option in "community plugins" -> "installed plugins", and click the switcher.
 	
 	2.2 From Obsidian Community Plugin Browser
+   
 	(to be continued...)
 	
-3. Usage
+4. Usage
 	
 	After installed, When you read in obsidian, if there ia any mermaid, you just put your cursor inside it in reading mode.
 	
