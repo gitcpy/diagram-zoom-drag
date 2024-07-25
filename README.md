@@ -44,4 +44,4 @@
 	    C -->|不通过| G[记录拒绝理由]
 	```
 
-	4.2 Click the copy button at right top of the mermaid diagrams above to copy the code, and paste it above in your md file in obsidian, try as "3. Usage".
+	4.2 Click the copy button at right top of the mermaid diagrams above to copy the code, and paste it above in your md file in obsidian, and try as "3. Usage".
