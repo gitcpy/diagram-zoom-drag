@@ -35,6 +35,7 @@
 
 	```mermaid
 	graph TD
+ 		X[测试mermaid流程图]
 	    A[提出报废申请] --> B[审核报废申请]
 	    B --> C{是否通过}
 	    C -->|通过| D[安排报废]
@@ -42,3 +43,5 @@
 	    E --> F[记录报废]
 	    C -->|不通过| G[记录拒绝理由]
 	```
+
+	4.2 Put the code above in your md file in obsidian, try as "3. Usage".
