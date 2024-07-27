@@ -9,7 +9,11 @@
 	
 	2.1.1 Download
 	
-	Download code zip file and unzip it, or you just pull it from github. Anyway you like. Then you will get a doc named mermaid-zoom-drag-main, rename it to mermain-zoom-drag-main.
+	Download code zip file and unzip it, or you just pull it from github.
+
+   	Also you could get it by BRAT plugin from the "Community plugins" in Obsidian.
+ 
+	Anyway you like. Then you will get a doc named mermaid-zoom-drag-main, rename it to mermain-zoom-drag-main.
 	
 	2.1.2 Install
 	
@@ -21,7 +25,7 @@
    
 	(to be continued...)
 	
-3. Usage
+4. Usage
 	
 	After installed, When you read in obsidian, if there ia any mermaid, you just put your cursor inside it in reading mode.
 	
@@ -29,10 +33,9 @@
 
 	Press left button and move your cursur to drag it.
 
-4. Example
+5. Example
 
    	4.1 Mermaid code
-
 
 	```mermaid
 	flowchart LR
