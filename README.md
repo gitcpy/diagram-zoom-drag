@@ -29,11 +29,12 @@
 	
 	   	After that, click "Add plugin". A moment later, you will see the plugin in the list of installed plugins. Just enable if you in need, or disable it.
  
-	Way 3. Directly From Obsidian Community Plugin Browser
+	Way 3. 
+		Directly From Obsidian Community Plugin Browser
    
 		(to be continued...)
-	
-4. Usage
+		
+3. Usage
 	
 	After installed, When you read in obsidian, if there ia any mermaid, you just put your cursor inside it in reading mode.
 	
@@ -41,7 +42,7 @@
 
 	Press left button and move your cursur to drag it.
 
-5. Example
+4. Example
 
    	4.1 Mermaid code
 
