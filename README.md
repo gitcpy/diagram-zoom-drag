@@ -7,23 +7,31 @@
    
 	2.1 From Github
 	
-	2.1.1 Download
+	2.1.1 Download and Install
 	
-	Download code zip file and unzip it, or you just pull it from github.
+ 	Way 1.
+	
+	 	Download code zip file and unzip it, or you just pull it from github.
+	 
+		Anyway you like. Then you will get a doc named mermaid-zoom-drag-main, rename it to mermain-zoom-drag-main.
+		
+		Just put the doc in the position, if your system is windows, it will be like this "your_obsidian_vault_path/.obsidian/plugins/mermaid-zoom-drag-plug".
+		
+		Reload your obsidian app, and you will see the option in "community plugins" -> "installed plugins", and click the switcher.
 
-   	Also you could get it by BRAT plugin from the "Community plugins" in Obsidian.
+   	Way 2.
+
+	   	Also you could get it by BRAT plugin from the "Community plugins" in Obsidian.
+	   	
+	   	Install BRAT plugin from the "Community plugins".
+	   
+		Go to the option or settings of it, click "Add Beta Plugin", and then fill in the repository textbox: https://github.com/gitcpy/mermaid-zoom-drag.git.
+	
+	   	After that, click "Add plugin". A moment later, you will see the plugin in the list of installed plugins. Just enable if you in need, or disable it.
  
-	Anyway you like. Then you will get a doc named mermaid-zoom-drag-main, rename it to mermain-zoom-drag-main.
-	
-	2.1.2 Install
-	
-	Just put the doc in the position, if your system is windows, it will be like this "your_obsidian_vault_path/.obsidian/plugins/mermaid-zoom-drag-plug".
-	
-	Reload your obsidian app, and you will see the option in "community plugins" -> "installed plugins", and click the switcher.
-	
-	2.2 From Obsidian Community Plugin Browser
+	Way 3. Directly From Obsidian Community Plugin Browser
    
-	(to be continued...)
+		(to be continued...)
 	
 4. Usage
 	
