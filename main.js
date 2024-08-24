@@ -23,10 +23,6 @@ class MermaidZoomDragPlugin extends Plugin {
       this.initializeMermaidFeatures();
     });
 
-    // 监听窗口大小变化
-    window.addEventListener('resize', () => {
-      this.initializeMermaidFeatures();
-    });
   }
 
   initializeMermaidFeatures() {
