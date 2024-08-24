@@ -4,13 +4,6 @@ class MermaidZoomDragPlugin extends Plugin {
   onload() {
     console.log("Loading MermaidZoomDragPlugin " + this.manifest.version);
 
-    // 添加对工作区事件的监听
-    this.registerEvent(
-      this.app.workspace.on('layout-change', () => {
-        this.initializeMermaidFeatures();
-      })
-    );
-
     // 添加对文件打开的监听
     this.registerEvent(
       this.app.workspace.on('file-open', () => {
