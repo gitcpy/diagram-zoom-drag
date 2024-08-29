@@ -28,7 +28,7 @@ class MermaidZoomDragPlugin extends Plugin {
     if (isEditing) {
       const codeBlocks = ele.querySelectorAll('pre > code.language-mermaid');
       codeBlocks.forEach((block) => {
-        const mermaidElement = document.createElement('div');
+        const mermaidElement = ele.doc.createElement('div');
         mermaidElement.className = 'mermaid';
         mermaidElement.textContent = block.textContent;
 
@@ -55,7 +55,7 @@ class MermaidZoomDragPlugin extends Plugin {
     const mermaidElements = ele.doc ? ele.doc.querySelectorAll('.mermaid') : ele.querySelectorAll('.mermaid');
     mermaidElements.forEach((el) => {
       if (!el.parentElement.classList.contains('mermaid-container')) {
-        const container = document.createElement('div');
+        const container = el.doc.createElement('div');
         container.className = 'mermaid-container';
         container.style.position = 'relative';
         container.style.overflow = 'auto';
