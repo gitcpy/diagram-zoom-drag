@@ -1,39 +1,64 @@
-const { Plugin, PluginSettingTab, Setting  } = require('obsidian');
+const { Plugin, PluginSettingTab, Setting } = require('obsidian');
 
 class MermaidZoomDragPlugin extends Plugin {
   onload() {
     console.log("Loading MermaidZoomDragPlugin " + this.manifest.version);
 
-    // 添加对文件打开的监听
-    this.registerEvent(
-      this.app.workspace.on('file-open', () => {
-        this.initializeMermaidFeatures();
-      })
-    );
-
-    // 在初始布局准备好时调用一次
-    this.app.workspace.onLayoutReady(() => {
-      this.initializeMermaidFeatures();
+    this.registerMarkdownPostProcessor((element, context) => {
+      this.initializeMermaidFeatures(element);
     });
 
+    // 监听模式切换事件
+    this.registerEvent(this.app.workspace.on('layout-change', () => {
+      const activeLeaf = this.app.workspace.activeLeaf;
+      if (activeLeaf) {
+        const view = activeLeaf.view;
+        if (view && view.getViewType() === 'markdown') {
+          this.initializeMermaidFeatures(view.contentEl);
+        }
+      }
+    }));
   }
 
-  initializeMermaidFeatures() {
-    // 添加延时以确保所有内容都已加载完成
-    setTimeout(() => {
-      this.addMermaidContainers();
-      this.addMouseEvents();
-    }, 1000);
+  initializeMermaidFeatures(ele) {
+    // 检查是否在编辑模式下
+    const isEditing = ele.classList.contains('cm-s-obsidian');
+
+    // 如果是编辑模式，查找 Mermaid 代码块
+    if (isEditing) {
+      const codeBlocks = ele.querySelectorAll('pre > code.language-mermaid');
+      codeBlocks.forEach((block) => {
+        const mermaidElement = document.createElement('div');
+        mermaidElement.className = 'mermaid';
+        mermaidElement.textContent = block.textContent;
+
+        // 替换代码块
+        block.parentNode.replaceWith(mermaidElement);
+
+        // 渲染 Mermaid 图表
+        mermaid.init(undefined, mermaidElement);
+
+        // 处理缩放和拖拽功能
+        this.addMermaidContainers(mermaidElement);
+        this.addMouseEvents(mermaidElement);
+      });
+    } else {
+      // 阅读模式下，直接处理渲染后的元素
+      setTimeout(() => {
+        this.addMermaidContainers(ele);
+        this.addMouseEvents(ele);
+      }, 100);
+    }
   }
 
-  addMermaidContainers() {
-    const mermaidElements = document.querySelectorAll('.mermaid');
+  addMermaidContainers(ele) {
+    const mermaidElements = ele.doc ? ele.doc.querySelectorAll('.mermaid') : ele.querySelectorAll('.mermaid');
     mermaidElements.forEach((el) => {
       if (!el.parentElement.classList.contains('mermaid-container')) {
         const container = document.createElement('div');
         container.className = 'mermaid-container';
         container.style.position = 'relative';
-        container.style.overflow = 'auto'; // 修改为自动滚动
+        container.style.overflow = 'auto';
         container.style.width = '100%';
         container.style.height = '100%';
         el.parentNode.insertBefore(container, el);
@@ -47,7 +72,7 @@ class MermaidZoomDragPlugin extends Plugin {
         // 确保图表完全加载后进行缩放和适配操作
         setTimeout(() => {
           this.fitToContainer(el, container);
-        }, 500);
+        }, 100);
       }
     });
   }
@@ -71,17 +96,17 @@ class MermaidZoomDragPlugin extends Plugin {
     element.style.left = `0px`;
   }
 
-  addMouseEvents() {
+  addMouseEvents(ele) {
     let scale = 1;
     let startX, startY, initialX, initialY;
     let isDragging = false;
 
-    const mermaidContainers = document.querySelectorAll('.mermaid-container');
+    const isEditing = ele.classList.contains('cm-s-obsidian');
+    const mermaidContainers = isEditing ? ele.querySelectorAll('.mermaid') : ele.doc.querySelectorAll('.mermaid-container');
 
     mermaidContainers.forEach((container) => {
-      const mermaidElement = container.querySelector('.mermaid');
+      const mermaidElement = isEditing ? container : container.querySelector('.mermaid');
 
-      // 检查并避免重复绑定事件
       if (!container.classList.contains('events-bound')) {
         container.classList.add('events-bound');
 
@@ -96,13 +121,11 @@ class MermaidZoomDragPlugin extends Plugin {
           scale += event.deltaY * -0.001;
           scale = Math.min(Math.max(.125, scale), 4);
 
-          // 计算新的位置以保持缩放中心在鼠标位置
           const dx = offsetX * (1 - scale / prevScale);
           const dy = offsetY * (1 - scale / prevScale);
 
           mermaidElement.style.transform = `scale(${scale})`;
 
-          // 确保图表位置正确
           const currentTop = parseFloat(mermaidElement.style.top) || 0;
           const currentLeft = parseFloat(mermaidElement.style.left) || 0;
           mermaidElement.style.top = `${currentTop + dy}px`;
@@ -110,7 +133,7 @@ class MermaidZoomDragPlugin extends Plugin {
         });
 
         container.addEventListener('mousedown', (event) => {
-          if (event.button !== 0) return; // Only allow left mouse button
+          if (event.button !== 0) return;
 
           isDragging = true;
           startX = event.clientX;
