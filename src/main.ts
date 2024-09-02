@@ -72,18 +72,23 @@ export default class MermaidZoomDragPlugin extends Plugin {
       if (!el.parentElement?.classList.contains('mermaid-container')) {
         const container = document.createElement('div');
         container.className = 'mermaid-container';
-        container.style.position = 'relative';
-        container.style.overflow = 'auto';
-        container.style.width = '100%';
-        container.style.height = '100%';
+        container.setCssStyles({
+          position: 'relative',
+          overflow: 'auto',
+          width: '100%',
+          height: '100%'
+        });
+
         el.parentNode?.insertBefore(container, el);
         container.appendChild(el);
         const el_html = el as HTMLElement;   
-        el_html.style.position = 'absolute';
-        el_html.style.top = '0';
-        el_html.style.left = '0';
-        el_html.style.transformOrigin = 'top left';
-        el_html.style.cursor = 'grab';
+        el_html.setCssStyles({
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          transformOrigin: 'top left',
+          cursor: 'grab'
+        });
 
         // 确保图表完全加载后进行缩放和适配操作
         setTimeout(() => {
@@ -100,16 +105,22 @@ export default class MermaidZoomDragPlugin extends Plugin {
     const mermaidHeight = element.scrollHeight;
 
     let scale = containerWidth / mermaidWidth;
-    element.style.transform = `scale(${scale})`; // 设置默认缩放比例
+    element.setCssStyles({
+      transform: `scale(${scale})`// 设置默认缩放比例
+    });
 
     // 调整容器高度以完全显示图表
     const scaledHeight = mermaidHeight * scale;
-    container.style.height = `${scaledHeight}px`;
+    container.setCssStyles({
+      height: `${scaledHeight}px`
+    });
 
     // 确保图表居中显示
     const offsetY = (containerHeight - scaledHeight) / 2;
-    element.style.top = `${Math.max(offsetY, 0)}px`;
-    element.style.left = `0px`;
+    element.setCssStyles({
+      top: `${Math.max(offsetY, 0)}px`,
+      left: `0px`
+    });    
   }
 
   addMouseEvents(ele: HTMLElement) {
@@ -142,12 +153,13 @@ export default class MermaidZoomDragPlugin extends Plugin {
           const dx = offsetX * (1 - scale / prevScale);
           const dy = offsetY * (1 - scale / prevScale);
 
-          md_HTMLElement.style.transform = `scale(${scale})`;
+          const win_ele_style = md_HTMLElement.win.getComputedStyle(md_HTMLElement);
+          md_HTMLElement.setCssStyles({
+            transform: `scale(${scale})`,
+            top: `${(parseFloat(win_ele_style.top) || 0) + dy}px`,
+            left: `${(parseFloat(win_ele_style.left) || 0) + dx}px`
+          });
 
-          const currentTop = parseFloat(md_HTMLElement.style.top) || 0;
-          const currentLeft = parseFloat(md_HTMLElement.style.left) || 0;
-          md_HTMLElement.style.top = `${currentTop + dy}px`;
-          md_HTMLElement.style.left = `${currentLeft + dx}px`;
         });
 
         container.addEventListener('mousedown', (event) => {
@@ -155,11 +167,15 @@ export default class MermaidZoomDragPlugin extends Plugin {
           if (event_MouseEvent.button !== 0) return;
 
           isDragging = true;
+          const win_ele_style = md_HTMLElement.win.getComputedStyle(md_HTMLElement);
           startX = event_MouseEvent.clientX;
           startY = event_MouseEvent.clientY;
-          initialX = parseFloat(md_HTMLElement.style.left) || 0;
-          initialY = parseFloat(md_HTMLElement.style.top) || 0;
-          md_HTMLElement.style.cursor = 'grabbing';
+
+          initialX = parseFloat(win_ele_style.left) || 0;
+          initialY = parseFloat(win_ele_style.top) || 0;
+          md_HTMLElement.setCssStyles({
+            cursor: 'grabbing'
+          });
           event.preventDefault();
         });
 
@@ -169,21 +185,23 @@ export default class MermaidZoomDragPlugin extends Plugin {
           const event_MouseEvent = event as MouseEvent;
           const dx = event_MouseEvent.clientX - startX;
           const dy = event_MouseEvent.clientY - startY;
-          md_HTMLElement.style.left = `${initialX + dx}px`;
-          md_HTMLElement.style.top = `${initialY + dy}px`;
+          md_HTMLElement.setCssStyles({
+            left: `${initialX + dx}px`,
+            top: `${initialY + dy}px`
+          });
         });
 
         container.addEventListener('mouseup', () => {
           if (isDragging) {
             isDragging = false;
-            md_HTMLElement.style.cursor = 'grab';
+            md_HTMLElement.setCssStyles({cursor: 'grab'});
           }
         });
 
         container.addEventListener('mouseleave', () => {
           if (isDragging) {
             isDragging = false;
-            md_HTMLElement.style.cursor = 'grab';
+            md_HTMLElement.setCssStyles({cursor : 'grab'});
           }
         });
       }
