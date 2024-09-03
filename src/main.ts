@@ -10,16 +10,13 @@ export default class MermaidZoomDragPlugin extends Plugin {
 
     // 监听模式切换事件
     this.registerEvent(this.app.workspace.on('layout-change', () => {
-      const activeLeaf = this.app.workspace.activeLeaf;
-      if (activeLeaf) {
-        const view = activeLeaf.view;
-        if (view && view.getViewType() === 'markdown') {
+      const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+      if (view && view.getViewType() === 'markdown') {
+          // 类型断言为 MarkdownView，以便访问 contentEl
           const markdownView = view as MarkdownView;
-          const contentElement = markdownView.contentEl;
-          this.initializeMermaidFeatures(contentElement);
-        }
-      }
-    }));
+          this.initializeMermaidFeatures(markdownView.contentEl);                
+      }}
+    ));
   }
 
   initializeMermaidFeatures(ele: HTMLElement) {
