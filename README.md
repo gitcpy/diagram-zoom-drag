@@ -42,7 +42,20 @@
 
 	Press left button and move your cursur to drag it.
 
-4. Example
+	----20240909,  a control panel at left right corner by Ssentiago
+   
+	It provides functionality for zooming and moving the view of the diagrams.
+	
+	Movement Controls:
+	
+	Movement Buttons: up-left, up, up-right, left, right, down-left, down, down-right. Each button shifts the diagram by a set distance, allowing for precise repositioning within its container.
+
+	Zoom Controls:
+
+	Zoom Buttons: zooming in, zooming out, and resetting zoom and position to adjust the scale of the diagram relative to its container, enabling users to zoom in or out as needed.
+	Reset button restores the diagram to its original size and position.
+
+5. Example
 
    	4.1 Mermaid code
 
