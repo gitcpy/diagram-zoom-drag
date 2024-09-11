@@ -48,7 +48,7 @@
 	
 	Movement Controls:
 	
-	Movement Buttons: up-left, up, up-right, left, right, down-left, down, down-right. Each button shifts the diagram by a set distance, allowing for precise repositioning within its container.
+	Movement Buttons: up-left, up, up-right, left, right, down-left, down, down-right. Each button shifts the diagram by a set distance, allowing for precise repositioning within its container. And an eye button in the center which could hides or shows the move and zoom panels.
 
 	Zoom Controls:
 
