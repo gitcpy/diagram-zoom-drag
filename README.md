@@ -1,4 +1,5 @@
 Demo:
+
 ![](https://github.com/gitcpy/obsidian-mermaid-pop/blob/main/gifs/mermaid-zoom-drag-demo.gif)
 
 1. About
