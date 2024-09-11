@@ -33,7 +33,8 @@ export default class MermaidZoomDragPlugin extends Plugin {
         if (isEditing) {
             const codeBlocks = ele.querySelectorAll('pre > code.language-mermaid');
             codeBlocks.forEach((block) => {
-                const mermaidElement = document.createElement('div');
+                var block_HtmlElement = block as HTMLElement;
+                const mermaidElement = block_HtmlElement.doc.createElement('div');
                 mermaidElement.className = 'mermaid';
                 mermaidElement.textContent = block.textContent || '';
 
@@ -57,7 +58,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
         const mermaidElements = ele.querySelectorAll('.mermaid');
         mermaidElements.forEach((el) => {
             if (!el.parentElement?.classList.contains('mermaid-container')) {
-                const container = document.createElement('div');
+                const container = ele.doc.createElement('div');
                 container.className = 'mermaid-container';
                 container.setCssStyles({
                     position: 'relative',
@@ -113,7 +114,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
          * @return {HTMLElement} The created panel element.
          */
         const createPanel = (className: string, styles: object): HTMLElement => {
-            const panel = document.createElement('div');
+            const panel = container.doc.createElement('div');
             panel.className = className;
             panel.setCssStyles(styles);
             return panel;
@@ -130,7 +131,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
          * @return {HTMLElement} The created button element.
          */
         const createButton = (icon: string, action: () => void, title: string, active: boolean = true, id: string | undefined): HTMLElement => {
-            const button = document.createElement('button');
+            const button = container.doc.createElement('button');
             button.className = 'button';
             button.id = id || ''
             button.setCssStyles({
@@ -177,8 +178,8 @@ export default class MermaidZoomDragPlugin extends Plugin {
 
         const hideShowAction = () => {
             hiding = !hiding
-            for (const container of [movePanel, zoomPanel]) {
-                container.querySelectorAll('.button').forEach(button => {
+            for (const _container of [movePanel, zoomPanel]) {
+                _container.querySelectorAll('.button').forEach(button => {
                     const el = button as HTMLElement
                     if (el.id === 'hide-show-button-mermaid') return
                     el.setCssStyles({
@@ -187,7 +188,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
                     });
                 })
             }
-            const button = document.getElementById('hide-show-button-mermaid')
+            const button = container.doc.getElementById('hide-show-button-mermaid')
             if (!button) return
             setIcon(button, hideBtnIcon())
             button.setAttribute('aria-label', `${hiding ? 'Show' : 'Hide'} control panel`);
