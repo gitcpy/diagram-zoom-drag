@@ -94,6 +94,17 @@ export default class MermaidZoomDragPlugin extends Plugin {
      * @param {HTMLElement} container - The container element to which the control panel will be added.
      */
     addControlPanel(container: HTMLElement) {
+        const panelStyles = {
+            position: 'absolute',
+            bottom: '10px',
+            display: 'grid',
+            gap: '5px',
+            background: 'transparent',
+            padding: '5px',
+            borderRadius: '5px',
+            boxShadow: 'none'
+        };
+
         /**
          * Creates a new HTML panel element with the specified class name and styles.
          *
@@ -109,17 +120,19 @@ export default class MermaidZoomDragPlugin extends Plugin {
         };
 
         /**
-         * Creates a new HTML button element with the specified icon, action, and title.
-         * The button's styles and event listeners are also set accordingly.
+         * Creates a new HTML button element with the specified icon, action, title, and styles.
          *
-         * @param {string} icon - The icon to be displayed on the button.
-         * @param {function} action - The action to be performed when the button is clicked.
-         * @param {string} title - The title of the button.
-         * @param {boolean} active - Whether the button is active or not. Defaults to true.
+         * @param {string} icon - The icon to be displayed in the button.
+         * @param {() => void} action - The action to be performed when the button is clicked.
+         * @param {string} title - The title of the button for accessibility purposes.
+         * @param {boolean} active - Whether the button is active or not.
+         * @param {string | undefined} id - The id of the button.
          * @return {HTMLElement} The created button element.
          */
-        const createButton = (icon: string, action: () => void, title: string, active: boolean = true): HTMLElement => {
+        const createButton = (icon: string, action: () => void, title: string, active: boolean = true, id: string | undefined): HTMLElement => {
             const button = document.createElement('button');
+            button.className = 'button';
+            button.id = id || ''
             button.setCssStyles({
                 background: 'transparent',
                 border: 'none',
@@ -145,24 +158,41 @@ export default class MermaidZoomDragPlugin extends Plugin {
                     color: 'var(--text-muted)'
                 });
             });
-            button.title = title;
+            button.setAttribute('aria-label', title);
             return button;
         };
 
 
         const movePanel = createPanel('mermaid-move-panel', {
-            position: 'absolute',
-            bottom: '10px',
+            ...panelStyles,
             right: '10px',
-            display: 'grid',
             gridTemplateColumns: 'repeat(3, 1fr)',
-            gridTemplateRows: 'repeat(3, 1fr)',
-            gap: '5px',
-            background: 'transparent',
-            padding: '5px',
-            borderRadius: '5px',
-            boxShadow: 'none'
+            gridTemplateRows: 'repeat(3, 1fr)'
         });
+        let hiding = false
+
+
+        const hideBtnIcon = () => hiding ? 'eye-off' : 'eye'
+
+
+        const hideShowAction = () => {
+            hiding = !hiding
+            for (const container of [movePanel, zoomPanel]) {
+                container.querySelectorAll('.button').forEach(button => {
+                    const el = button as HTMLElement
+                    if (el.id === 'hide-show-button-mermaid') return
+                    el.setCssStyles({
+                        visibility: hiding ? 'hidden' : 'visible',
+                        pointerEvents: hiding ? 'none' : 'auto'
+                    });
+                })
+            }
+            const button = document.getElementById('hide-show-button-mermaid')
+            if (!button) return
+            setIcon(button, hideBtnIcon())
+            button.setAttribute('aria-label', `${hiding ? 'Show' : 'Hide'} control panel`);
+        }
+
 
         const moveButtons = [
             {icon: 'arrow-up-left', action: () => this.moveElement(container, 50, 50), title: 'Move up left'},
@@ -170,8 +200,8 @@ export default class MermaidZoomDragPlugin extends Plugin {
             {icon: 'arrow-up-right', action: () => this.moveElement(container, -50, 50), title: 'Move up right'},
             {icon: 'arrow-left', action: () => this.moveElement(container, 50, 0), title: 'Move left'},
             {
-                icon: '', action: () => {
-                }, title: '', active: false
+                icon: hideBtnIcon(), action: hideShowAction, title: `Hide control panel`, active: true,
+                id: 'hide-show-button-mermaid'
             },
             {icon: 'arrow-right', action: () => this.moveElement(container, -50, 0), title: 'Move right'},
             {icon: 'arrow-down-left', action: () => this.moveElement(container, 50, -50), title: 'Move down left'},
@@ -179,22 +209,14 @@ export default class MermaidZoomDragPlugin extends Plugin {
             {icon: 'arrow-down-right', action: () => this.moveElement(container, -50, -50), title: 'Move down right'}
         ];
 
-        moveButtons.forEach(btn => movePanel.appendChild(createButton(btn.icon, btn.action, btn.title, btn.active)));
-
+        moveButtons.forEach(btn => movePanel.appendChild(createButton(btn.icon, btn.action, btn.title, btn.active, btn.id)));
         container.appendChild(movePanel);
 
 
         const zoomPanel = createPanel('mermaid-zoom-panel', {
-            position: 'absolute',
-            bottom: '10px',
+            ...panelStyles,
             right: 'calc(10px + 110px)',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '5px',
-            background: 'transparent',
-            padding: '5px',
-            borderRadius: '5px',
-            boxShadow: 'none'
+            gridTemplateColumns: 'repeat(3, 1fr)'
         });
 
         const zoomButtons = [
@@ -203,8 +225,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
             {icon: 'zoom-in', action: () => this.zoomElement(container, 1.1), title: 'Zoom In'}
         ];
 
-        zoomButtons.forEach(btn => zoomPanel.appendChild(createButton(btn.icon, btn.action, btn.title)));
-
+        zoomButtons.forEach(btn => zoomPanel.appendChild(createButton(btn.icon, btn.action, btn.title, true, undefined)));
         container.appendChild(zoomPanel);
     }
 
