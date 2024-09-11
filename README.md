@@ -1,3 +1,6 @@
+Demo:
+![](https://github.com/gitcpy/obsidian-mermaid-pop/blob/main/gifs/mermaid-zoom-drag-demo.gif)
+
 1. About
    
 	In obsidian, when you have a md file which contains large charts or diagrams, maybe something else of mermaid, you will see those things are too large to show completely in mermaid window. 
