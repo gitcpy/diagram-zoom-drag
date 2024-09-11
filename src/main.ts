@@ -56,7 +56,12 @@ export default class MermaidZoomDragPlugin extends Plugin {
 
     addMermaidContainers(ele: HTMLElement) {
         const mermaidElements = ele.querySelectorAll('.mermaid');
+
         mermaidElements.forEach((el) => {
+            if(!el.classList.contains('centered'))
+            {
+                el.classList.add('centered');
+            }
             if (!el.parentElement?.classList.contains('mermaid-container')) {
                 const container = ele.doc.createElement('div');
                 container.className = 'mermaid-container';
@@ -162,7 +167,6 @@ export default class MermaidZoomDragPlugin extends Plugin {
             button.setAttribute('aria-label', title);
             return button;
         };
-
 
         const movePanel = createPanel('mermaid-move-panel', {
             ...panelStyles,
@@ -385,6 +389,4 @@ export default class MermaidZoomDragPlugin extends Plugin {
             }
         });
     }
-
-
 }
