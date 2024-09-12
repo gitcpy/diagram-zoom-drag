@@ -1,9 +1,11 @@
-import {MarkdownView, Plugin, setIcon} from 'obsidian';
+import { MarkdownView, Notice, Platform, Plugin, setIcon } from 'obsidian';
 
 export default class MermaidZoomDragPlugin extends Plugin {
     private dx = 0;
-    private dy = 0
+    private dy = 0;
     private scale = 1;
+    private nativeTouchEventsEnabled = true;
+    private view!: MarkdownView;
 
     async onload() {
         this.registerMarkdownPostProcessor((element, context) => {
@@ -14,6 +16,8 @@ export default class MermaidZoomDragPlugin extends Plugin {
             const view = this.app.workspace.getActiveViewOfType(MarkdownView);
             if (view && view.getViewType() === 'markdown') {
                 const markdownView = view as MarkdownView;
+                // we need a link to current view to work with it
+                this.view = markdownView;
                 this.initializeMermaidFeatures(markdownView.contentEl);
             }
         }));
@@ -24,7 +28,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
             this.initializeMermaidElements(ele);
         });
 
-        observer.observe(ele, {childList: true, subtree: true});
+        observer.observe(ele, { childList: true, subtree: true });
         this.initializeMermaidElements(ele);
     }
 
@@ -33,7 +37,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
         if (isEditing) {
             const codeBlocks = ele.querySelectorAll('pre > code.language-mermaid');
             codeBlocks.forEach((block) => {
-                var block_HtmlElement = block as HTMLElement;
+                const block_HtmlElement = block as HTMLElement;
                 const mermaidElement = block_HtmlElement.doc.createElement('div');
                 mermaidElement.className = 'mermaid';
                 mermaidElement.textContent = block.textContent || '';
@@ -58,8 +62,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
         const mermaidElements = ele.querySelectorAll('.mermaid');
 
         mermaidElements.forEach((el) => {
-            if(!el.classList.contains('centered'))
-            {
+            if (!el.classList.contains('centered')) {
                 el.classList.add('centered');
             }
             if (!el.parentElement?.classList.contains('mermaid-container')) {
@@ -69,7 +72,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
                     position: 'relative',
                     overflow: 'hidden',
                     width: '100%',
-                    height: '70vh'
+                    height: '70vh',
                 });
 
                 el.parentNode?.insertBefore(container, el);
@@ -82,7 +85,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
                     transformOrigin: 'top left',
                     cursor: 'grab',
                     width: '100%',
-                    height: '100%'
+                    height: '100%',
                 });
 
                 this.addControlPanel(container);
@@ -108,7 +111,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
             background: 'transparent',
             padding: '5px',
             borderRadius: '5px',
-            boxShadow: 'none'
+            boxShadow: 'none',
         };
 
         /**
@@ -138,7 +141,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
         const createButton = (icon: string, action: () => void, title: string, active: boolean = true, id: string | undefined): HTMLElement => {
             const button = container.doc.createElement('button');
             button.className = 'button';
-            button.id = id || ''
+            button.id = id || '';
             button.setCssStyles({
                 background: 'transparent',
                 border: 'none',
@@ -150,18 +153,18 @@ export default class MermaidZoomDragPlugin extends Plugin {
                 justifyContent: 'center',
                 alignItems: 'center',
                 transition: 'background-color 0.2s ease',
-                pointerEvents: active ? 'auto' : 'none'
+                pointerEvents: active ? 'auto' : 'none',
             });
             setIcon(button, icon);
             button.addEventListener('click', action);
             button.addEventListener('mouseenter', () => {
                 button.setCssStyles({
-                    color: 'var(--interactive-accent)'
+                    color: 'var(--interactive-accent)',
                 });
             });
             button.addEventListener('mouseleave', () => {
                 button.setCssStyles({
-                    color: 'var(--text-muted)'
+                    color: 'var(--text-muted)',
                 });
             });
             button.setAttribute('aria-label', title);
@@ -172,46 +175,22 @@ export default class MermaidZoomDragPlugin extends Plugin {
             ...panelStyles,
             right: '10px',
             gridTemplateColumns: 'repeat(3, 1fr)',
-            gridTemplateRows: 'repeat(3, 1fr)'
+            gridTemplateRows: 'repeat(3, 1fr)',
         });
-        let hiding = false
-
-
-        const hideBtnIcon = () => hiding ? 'eye-off' : 'eye'
-
-
-        const hideShowAction = () => {
-            hiding = !hiding
-            for (const _container of [movePanel, zoomPanel]) {
-                _container.querySelectorAll('.button').forEach(button => {
-                    const el = button as HTMLElement
-                    if (el.id === 'hide-show-button-mermaid') return
-                    el.setCssStyles({
-                        visibility: hiding ? 'hidden' : 'visible',
-                        pointerEvents: hiding ? 'none' : 'auto'
-                    });
-                })
-            }
-            const button = container.doc.getElementById('hide-show-button-mermaid')
-            if (!button) return
-            setIcon(button, hideBtnIcon())
-            button.setAttribute('aria-label', `${hiding ? 'Show' : 'Hide'} control panel`);
-        }
-
 
         const moveButtons = [
-            {icon: 'arrow-up-left', action: () => this.moveElement(container, 50, 50), title: 'Move up left'},
-            {icon: 'arrow-up', action: () => this.moveElement(container, 0, 50), title: 'Move up'},
-            {icon: 'arrow-up-right', action: () => this.moveElement(container, -50, 50), title: 'Move up right'},
-            {icon: 'arrow-left', action: () => this.moveElement(container, 50, 0), title: 'Move left'},
+            { icon: 'arrow-up-left', action: () => this.moveElement(container, 50, 50), title: 'Move up left' },
+            { icon: 'arrow-up', action: () => this.moveElement(container, 0, 50), title: 'Move up' },
+            { icon: 'arrow-up-right', action: () => this.moveElement(container, -50, 50), title: 'Move up right' },
+            { icon: 'arrow-left', action: () => this.moveElement(container, 50, 0), title: 'Move left' },
             {
-                icon: hideBtnIcon(), action: hideShowAction, title: `Hide control panel`, active: true,
-                id: 'hide-show-button-mermaid'
+                icon: '', action: () => {}, title: ``, active: false,
+                id: '',
             },
-            {icon: 'arrow-right', action: () => this.moveElement(container, -50, 0), title: 'Move right'},
-            {icon: 'arrow-down-left', action: () => this.moveElement(container, 50, -50), title: 'Move down left'},
-            {icon: 'arrow-down', action: () => this.moveElement(container, 0, -50), title: 'Move down'},
-            {icon: 'arrow-down-right', action: () => this.moveElement(container, -50, -50), title: 'Move down right'}
+            { icon: 'arrow-right', action: () => this.moveElement(container, -50, 0), title: 'Move right' },
+            { icon: 'arrow-down-left', action: () => this.moveElement(container, 50, -50), title: 'Move down left' },
+            { icon: 'arrow-down', action: () => this.moveElement(container, 0, -50), title: 'Move down' },
+            { icon: 'arrow-down-right', action: () => this.moveElement(container, -50, -50), title: 'Move down right' },
         ];
 
         moveButtons.forEach(btn => movePanel.appendChild(createButton(btn.icon, btn.action, btn.title, btn.active, btn.id)));
@@ -221,17 +200,88 @@ export default class MermaidZoomDragPlugin extends Plugin {
         const zoomPanel = createPanel('mermaid-zoom-panel', {
             ...panelStyles,
             right: 'calc(10px + 110px)',
-            gridTemplateColumns: 'repeat(3, 1fr)'
+            gridTemplateColumns: 'repeat(3, 1fr)',
         });
 
         const zoomButtons = [
-            {icon: 'zoom-out', action: () => this.zoomElement(container, 0.9), title: 'Zoom Out'},
-            {icon: 'refresh-cw', action: () => this.resetZoomAndMove(container), title: 'Reset Zoom and Position'},
-            {icon: 'zoom-in', action: () => this.zoomElement(container, 1.1), title: 'Zoom In'}
+            { icon: 'zoom-out', action: () => this.zoomElement(container, 0.9), title: 'Zoom Out', id: '' },
+            { icon: 'refresh-cw', action: () => this.resetZoomAndMove(container), title: 'Reset Zoom and Position', id: '' },
+            { icon: 'zoom-in', action: () => this.zoomElement(container, 1.1), title: 'Zoom In', id: '' },
         ];
 
-        zoomButtons.forEach(btn => zoomPanel.appendChild(createButton(btn.icon, btn.action, btn.title, true, undefined)));
+
+        zoomButtons.forEach(btn => zoomPanel.appendChild(createButton(btn.icon, btn.action, btn.title, true, btn.id)));
         container.appendChild(zoomPanel);
+
+        const servicePanel = createPanel('mermaid-service-panel', {
+            ...panelStyles,
+            right: 'calc(10px + 220px)',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+        });
+
+
+        let hiding = false;
+        const isMobile = Platform.isMobile;
+
+        const getNativeBtnIcon = () => this.nativeTouchEventsEnabled ? 'circle-slash-2' : 'hand'
+        const hideBtnIcon = () => hiding ? 'eye-off' : 'eye';
+        const hideShowAction = () => {
+            hiding = !hiding;
+            for (const _container of [movePanel, zoomPanel]) {
+                _container.querySelectorAll('.button').forEach(button => {
+                    const el = button as HTMLElement;
+                    if (el.id === 'hide-show-button-mermaid') return;
+                    el.setCssStyles({
+                        visibility: hiding ? 'hidden' : 'visible',
+                        pointerEvents: hiding ? 'none' : 'auto',
+                    });
+                });
+            }
+            const button = container.doc.getElementById('hide-show-button-mermaid');
+            if (!button) return;
+            setIcon(button, hideBtnIcon());
+            button.setAttribute('aria-label', `${hiding ? 'Show' : 'Hide'} control panel`);
+        };
+        const toggleNativeEventsAction = () => {
+            this.nativeTouchEventsEnabled = !this.nativeTouchEventsEnabled;
+            const btn = document.getElementById('native-touch-events');
+            if (!btn) {
+                return;
+            }
+            setIcon(btn, getNativeBtnIcon());
+            const fl = this.nativeTouchEventsEnabled;
+            btn.ariaLabel = `${fl ? 'Enable' : 'Disable'} move and pinch zoom`;
+            new Notice(`Native touches are ${fl ? 'enabled' : 'disabled'} now. You ${fl ? 'cannot' : 'can'} move and pinch zoom mermaid diagram.`);
+        };
+
+        const serviceButtons = [
+            {
+                icon: hideBtnIcon(),
+                action: hideShowAction,
+                title: `Hide/Show control panel`,
+                id: 'hide-show-button-mermaid',
+            },
+        ];
+
+        // we add button for native events switch - only if this is mobile device. This is not necessary on other devices
+        if (isMobile) {
+            serviceButtons.push(
+                {
+                    icon: getNativeBtnIcon(),
+                    action: toggleNativeEventsAction,
+                    title: `${this.nativeTouchEventsEnabled ? 'Enable' : 'Disable'} move and pinch zoom`,
+                    id: 'native-touch-events',
+                },
+            );
+            this.manageTouchEvents(container);
+        }
+
+
+        serviceButtons.forEach(btn => servicePanel.appendChild(createButton(btn.icon, btn.action, btn.title, true, btn.id)));
+
+        container.appendChild(movePanel);
+        container.appendChild(zoomPanel);
+        container.appendChild(servicePanel);
     }
 
     /**
@@ -246,7 +296,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
             this.dx += dx;
             this.dy += dy;
             element.setCssStyles({
-                transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`
+                transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`,
             });
         }
     }
@@ -274,7 +324,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
             this.dy = centerY - offsetY * this.scale;
 
             element.setCssStyles({
-                transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`
+                transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`,
             });
         }
     }
@@ -287,7 +337,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
     resetZoomAndMove(container: HTMLElement) {
         const element = container.querySelector('.mermaid') as HTMLElement;
         if (element) {
-            this.fitToContainer(element, container)
+            this.fitToContainer(element, container);
         }
     }
 
@@ -303,7 +353,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
 
         element.setCssStyles({
             transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`,
-            transformOrigin: 'top left'
+            transformOrigin: 'top left',
         });
     }
 
@@ -339,13 +389,15 @@ export default class MermaidZoomDragPlugin extends Plugin {
                     this.dy += dy;
 
                     md_HTMLElement.setCssStyles({
-                        transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`
+                        transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`,
                     });
                 });
 
                 container.addEventListener('mousedown', (event) => {
                     const event_MouseEvent = event as MouseEvent;
-                    if (event_MouseEvent.button !== 0) return;
+                    if (event_MouseEvent.button !== 0) {
+                        return;
+                    }
 
                     isDragging = true;
                     const win_ele_style = md_HTMLElement.win.getComputedStyle(md_HTMLElement);
@@ -355,13 +407,15 @@ export default class MermaidZoomDragPlugin extends Plugin {
                     initialX = this.dx;
                     initialY = this.dy;
                     md_HTMLElement.setCssStyles({
-                        cursor: 'grabbing'
+                        cursor: 'grabbing',
                     });
                     event.preventDefault();
                 });
 
                 container.addEventListener('mousemove', (event) => {
-                    if (!isDragging) return;
+                    if (!isDragging) {
+                        return;
+                    }
 
                     const event_MouseEvent = event as MouseEvent;
                     const dx = event_MouseEvent.clientX - startX;
@@ -369,24 +423,197 @@ export default class MermaidZoomDragPlugin extends Plugin {
                     this.dx = initialX + dx;
                     this.dy = initialY + dy;
                     md_HTMLElement.setCssStyles({
-                        transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`
+                        transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`,
                     });
                 });
 
                 container.addEventListener('mouseup', () => {
                     if (isDragging) {
                         isDragging = false;
-                        md_HTMLElement.setCssStyles({cursor: 'grab'});
+                        md_HTMLElement.setCssStyles({ cursor: 'grab' });
                     }
                 });
 
                 container.addEventListener('mouseleave', () => {
                     if (isDragging) {
                         isDragging = false;
-                        md_HTMLElement.setCssStyles({cursor: 'grab'});
+                        md_HTMLElement.setCssStyles({ cursor: 'grab' });
                     }
-                })
+                });
             }
         });
+    }
+
+    /**
+     * Manages touch events for the mermaid element in the container.
+     * If `nativeTouchEventsEnabled` is true, native touch events are enabled - plugin do not handle them.
+     * If `nativeTouchEventsEnabled` is false, native touch events are disabled and touch events are handled by the plugin.
+     * @param container - The container element that contains the mermaid element.
+     */
+    manageTouchEvents(container: HTMLElement): void {
+        let startX: number;
+        let startY: number;
+        let initialDistance: number;
+        let isDragging: boolean = false;
+        let isPinching: boolean = false;
+        const BUTTON_SELECTOR = '.mermaid-zoom-panel button, .mermaid-move-panel button, .mermaid-service-panel button';
+
+
+        /**
+         * Calculates the distance between two touch points.
+         * @param touches - The two touch points.
+         * @returns The distance between the two touch points.
+         */
+        const calculateDistance = (touches: TouchList) => {
+            const [touch1, touch2] = [touches[0], touches[1]];
+            const dx = touch2.clientX - touch1.clientX;
+            const dy = touch2.clientY - touch1.clientY;
+            return Math.sqrt(dx * dx + dy * dy);
+        };
+
+        /**
+         * Handles the start of a touch event for the mermaid element.
+         * @param plugin - The plugin instance.
+         * @returns A function that handles the touchstart event.
+         */
+        function touchStart(plugin: MermaidZoomDragPlugin) {
+            return function innerTS(e: TouchEvent) {
+                if (plugin.nativeTouchEventsEnabled) {
+                    return;
+                }
+
+                const target = e.target as HTMLElement;
+                // we got touch to a button panel - returning
+                if (target.closest(BUTTON_SELECTOR)) {
+                    return;
+                }
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (e.touches.length === 1) {
+                    isDragging = true;
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                } else if (e.touches.length === 2) {
+                    isPinching = true;
+                    initialDistance = calculateDistance(e.touches);
+                }
+            };
+        };
+
+
+        /**
+         * Handles the move event for the mermaid element. If the element is being pinched, zoom the element. If the element is being dragged, move it.
+         * @param plugin - The plugin instance.
+         * @returns A function that handles the touchmove event.
+         */
+        function touchMove(plugin: MermaidZoomDragPlugin) {
+            return function innerTM(e: TouchEvent) {
+                if (plugin.nativeTouchEventsEnabled) {
+                    return;
+                }
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                const element = container.querySelector('.mermaid') as HTMLElement;
+                if (!element) {
+                    return;
+                }
+
+                if (isDragging && e.touches.length === 1) {
+                    const dx = e.touches[0].clientX - startX;
+                    const dy = e.touches[0].clientY - startY;
+
+                    plugin.moveElement(container, dx, dy);
+
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                } else if (isPinching && e.touches.length === 2) {
+                    const currentDistance = calculateDistance(e.touches);
+                    const factor = currentDistance / initialDistance;
+
+                    plugin.zoomElement(container, factor);
+
+                    initialDistance = currentDistance;
+                }
+
+            };
+        };
+
+
+        /**
+         * Handles the end of a touch event for the mermaid element.
+         * @param plugin - The plugin instance.
+         * @returns A function that handles the touchend event.
+         */
+        function touchEnd(plugin: MermaidZoomDragPlugin) {
+            return function innerTE(e: TouchEvent) {
+                if (plugin.nativeTouchEventsEnabled) {
+                    return;
+                }
+
+                const target = e.target as HTMLElement;
+                // we got touch to a button panel - returning
+                if (target.closest(BUTTON_SELECTOR)) {
+                    return;
+                }
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                isDragging = false;
+                isPinching = false;
+            };
+        };
+
+
+        /**
+         * Handles the scroll event for the mermaid element.
+         * @param plugin - The plugin instance.
+         * @returns A function that handles the scroll event.
+         */
+        function scroll(plugin: MermaidZoomDragPlugin) {
+            return function innerScroll(e: Event) {
+                if (plugin.nativeTouchEventsEnabled) {
+                    return;
+                }
+
+                e.preventDefault();
+                e.stopPropagation();
+            };
+        };
+
+
+        const touchStartHandler = touchStart(this);
+        const touchMoveHandler = touchMove(this);
+        const touchEndHandler = touchEnd(this);
+        const scrollHandler = scroll(this);
+
+        // we register the events as a view.registerDomEvent - so plugin can off them on unloading view
+        this.view.registerDomEvent(
+            container,
+            'touchstart',
+            touchStartHandler,
+            { passive: false },
+        );
+        this.view.registerDomEvent(
+            container,
+            'touchmove',
+            touchMoveHandler,
+            { passive: false },
+        );
+        this.view.registerDomEvent(
+            container,
+            'touchend',
+            touchEndHandler,
+            { passive: false },
+        );
+        this.view.registerDomEvent(
+            container,
+            'scroll',
+            scrollHandler,
+            { passive: false },
+        );
     }
 }
