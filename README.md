@@ -1,6 +1,10 @@
 Demo:
 
+For PC:
 ![](https://github.com/gitcpy/mermaid-zoom-drag/blob/main/gifs/mermaid-zoom-drag-demo.gif)
+
+For Mobile:
+![](https://github.com/gitcpy/mermaid-zoom-drag/blob/main/gifs/mermaid-zoom-drag-demo-for-mobile.gif)
 
 1. About
    
