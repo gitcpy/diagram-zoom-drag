@@ -110,22 +110,14 @@ export default class MermaidZoomDragPlugin extends Plugin {
     addControlPanel(container: HTMLElement) {
         const panelStyles = {
             position: 'absolute',
-            bottom: '10px',
             display: 'grid',
             gap: '5px',
-            background: 'transparent',
+            background: 'rgba(var(--background-primary-rgb), 0.7)',
             padding: '5px',
             borderRadius: '5px',
-            boxShadow: 'none',
+            boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
         };
 
-        /**
-         * Creates a new HTML panel element with the specified class name and styles.
-         *
-         * @param {string} className - The class name to be assigned to the panel element.
-         * @param {object} styles - An object containing the styles to be applied to the panel element.
-         * @return {HTMLElement} The created panel element.
-         */
         const createPanel = (className: string, styles: object): HTMLElement => {
             const panel = container.doc.createElement('div');
             panel.className = className;
@@ -133,45 +125,46 @@ export default class MermaidZoomDragPlugin extends Plugin {
             return panel;
         };
 
-        /**
-         * Creates a new HTML button element with the specified icon, action, title, and styles.
-         *
-         * @param {string} icon - The icon to be displayed in the button.
-         * @param {() => void} action - The action to be performed when the button is clicked.
-         * @param {string} title - The title of the button for accessibility purposes.
-         * @param {boolean} active - Whether the button is active or not.
-         * @param {string | undefined} id - The id of the button.
-         * @return {HTMLElement} The created button element.
-         */
-        const createButton = (icon: string, action: () => void, title: string, active: boolean = true, id: string | undefined): HTMLElement => {
+        const createButton = (icon: string, action: () => void, title: string, active = true, id: string | undefined = undefined): HTMLElement => {
             const button = container.doc.createElement('button');
             button.className = 'button';
             button.id = id || '';
-            button.setCssStyles({
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--text-muted)',
-                cursor: 'pointer',
-                padding: '4px',
-                borderRadius: '3px',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                transition: 'background-color 0.2s ease',
-                pointerEvents: active ? 'auto' : 'none',
-            });
-            setIcon(button, icon);
-            button.addEventListener('click', action);
-            button.addEventListener('mouseenter', () => {
+
+            if (active) {
                 button.setCssStyles({
-                    color: 'var(--interactive-accent)',
-                });
-            });
-            button.addEventListener('mouseleave', () => {
-                button.setCssStyles({
+                    background: 'transparent',
+                    border: 'none',
                     color: 'var(--text-muted)',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    borderRadius: '3px',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    transition: 'background-color 0.2s ease',
+                    pointerEvents: 'auto',
                 });
-            });
+                setIcon(button, icon);
+
+                button.addEventListener('click', action);
+                button.addEventListener('mouseenter', () => {
+                    button.setCssStyles({
+                        color: 'var(--interactive-accent)',
+                    });
+                });
+                button.addEventListener('mouseleave', () => {
+                    button.setCssStyles({
+                        color: 'var(--text-muted)',
+                    });
+                });
+            } else {
+                button.setCssStyles(
+                    {
+                        visibility: 'hidden',
+                    },
+                );
+            }
+
             button.setAttribute('aria-label', title);
             return button;
         };
@@ -179,6 +172,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
         const movePanel = createPanel('mermaid-move-panel', {
             ...panelStyles,
             right: '10px',
+            bottom: '10px',
             gridTemplateColumns: 'repeat(3, 1fr)',
             gridTemplateRows: 'repeat(3, 1fr)',
         });
@@ -189,8 +183,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
             { icon: 'arrow-up-right', action: () => this.moveElement(container, -50, 50), title: 'Move up right' },
             { icon: 'arrow-left', action: () => this.moveElement(container, 50, 0), title: 'Move left' },
             {
-                icon: '', action: () => {}, title: ``, active: false,
-                id: '',
+                icon: '', action: () => {}, title: '', active: false, id: '',
             },
             { icon: 'arrow-right', action: () => this.moveElement(container, -50, 0), title: 'Move right' },
             { icon: 'arrow-down-left', action: () => this.moveElement(container, 50, -50), title: 'Move down left' },
@@ -199,53 +192,51 @@ export default class MermaidZoomDragPlugin extends Plugin {
         ];
 
         moveButtons.forEach(btn => movePanel.appendChild(createButton(btn.icon, btn.action, btn.title, btn.active, btn.id)));
-        container.appendChild(movePanel);
-
 
         const zoomPanel = createPanel('mermaid-zoom-panel', {
             ...panelStyles,
-            right: 'calc(10px + 110px)',
-            gridTemplateColumns: 'repeat(3, 1fr)',
+            right: '10px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            gridTemplateColumns: '1fr',
         });
 
         const zoomButtons = [
-            { icon: 'zoom-out', action: () => this.zoomElement(container, 0.9), title: 'Zoom Out', id: '' },
-            { icon: 'refresh-cw', action: () => this.resetZoomAndMove(container), title: 'Reset Zoom and Position', id: '' },
-            { icon: 'zoom-in', action: () => this.zoomElement(container, 1.1), title: 'Zoom In', id: '' },
+            { icon: 'zoom-in', action: () => this.zoomElement(container, 1.1), title: 'Zoom In' },
+            { icon: 'refresh-cw', action: () => this.resetZoomAndMove(container), title: 'Reset Zoom and Position' },
+            { icon: 'zoom-out', action: () => this.zoomElement(container, 0.9), title: 'Zoom Out' },
         ];
 
-
-        zoomButtons.forEach(btn => zoomPanel.appendChild(createButton(btn.icon, btn.action, btn.title, true, btn.id)));
-        container.appendChild(zoomPanel);
+        zoomButtons.forEach(btn => zoomPanel.appendChild(createButton(btn.icon, btn.action, btn.title, true)));
 
         const servicePanel = createPanel('mermaid-service-panel', {
             ...panelStyles,
-            right: 'calc(10px + 220px)',
+            right: '10px',
+            top: '10px',
             gridTemplateColumns: 'repeat(2, 1fr)',
         });
-
 
         let hiding = false;
         const isMobile = Platform.isMobile;
 
-        const getNativeBtnIcon = () => this.nativeTouchEventsEnabled ? 'circle-slash-2' : 'hand'
+        const getNativeBtnIcon = () => this.nativeTouchEventsEnabled ? 'circle-slash-2' : 'hand';
         const hideBtnIcon = () => hiding ? 'eye-off' : 'eye';
         const hideShowAction = () => {
             hiding = !hiding;
-            for (const _container of [movePanel, zoomPanel]) {
-                _container.querySelectorAll('.button').forEach(button => {
-                    const el = button as HTMLElement;
-                    if (el.id === 'hide-show-button-mermaid') return;
-                    el.setCssStyles({
-                        visibility: hiding ? 'hidden' : 'visible',
-                        pointerEvents: hiding ? 'none' : 'auto',
-                    });
-                });
-            }
+            [movePanel, zoomPanel].forEach(panel => {
+                    panel.setCssStyles({
+                            visibility: hiding ? 'hidden' : 'visible',
+                            pointerEvents: hiding ? 'none' : 'auto',
+                        },
+                    );
+                },
+            );
             const button = container.doc.getElementById('hide-show-button-mermaid');
-            if (!button) return;
+            if (!button) {
+                return;
+            }
             setIcon(button, hideBtnIcon());
-            button.setAttribute('aria-label', `${hiding ? 'Show' : 'Hide'} control panel`);
+            button.setAttribute('aria-label', `${hiding ? 'Show' : 'Hide'} move and zoom panels`);
         };
         const toggleNativeEventsAction = () => {
             this.nativeTouchEventsEnabled = !this.nativeTouchEventsEnabled;
@@ -259,38 +250,33 @@ export default class MermaidZoomDragPlugin extends Plugin {
             new Notice(`Native touches are ${fl ? 'enabled' : 'disabled'} now. You ${fl ? 'cannot' : 'can'} move and pinch zoom mermaid diagram.`);
         };
 
-        const button_id_open_fullscreen_mode = "open-fullscreen-button";
-
         const serviceButtons = [
             {
                 icon: hideBtnIcon(),
                 action: hideShowAction,
-                title: `Hide/Show control panel`,
+                title: `Hide move and zoom panels`,
                 id: 'hide-show-button-mermaid',
             },
             {
                 icon: 'maximize',
                 action: async () => {
-                    const button =container.querySelector("#" + button_id_open_fullscreen_mode);
+                    const button = container.querySelector('#open-fullscreen-button');
                     const btn_HTMLElement = button as HTMLElement;
-                    if (!container.doc.fullscreenElement)
-                    {
+                    if (!container.doc.fullscreenElement) {
                         await container.requestFullscreen({
                             navigationUI: 'auto',
                         });
-                        setIcon(btn_HTMLElement, "minimize");
-                    }
-                    else{
+                        setIcon(btn_HTMLElement, 'minimize');
+                    } else {
                         await container.doc.exitFullscreen();
-                        setIcon(btn_HTMLElement, "maximize");
+                        setIcon(btn_HTMLElement, 'maximize');
                     }
                 },
                 title: 'Open in fullscreen mode',
-                id: button_id_open_fullscreen_mode,
-            }
+                id: 'open-fullscreen-button',
+            },
         ];
 
-        // we add button for native events switch - only if this is mobile device. This is not necessary on other devices
         if (isMobile) {
             serviceButtons.push(
                 {
@@ -300,12 +286,11 @@ export default class MermaidZoomDragPlugin extends Plugin {
                     id: 'native-touch-events',
                 },
             );
-            this.manageTouchEvents(container)
+            this.manageTouchEvents(container);
         }
 
-
         serviceButtons.forEach(btn => servicePanel.appendChild(createButton(btn.icon, btn.action, btn.title, true, btn.id)));
-      
+
         container.appendChild(movePanel);
         container.appendChild(zoomPanel);
         container.appendChild(servicePanel);
@@ -399,7 +384,9 @@ export default class MermaidZoomDragPlugin extends Plugin {
 
                 container.addEventListener('wheel', (event) => {
                     const event_WheelEvent = event as WheelEvent;
-                    if (!event_WheelEvent.ctrlKey) return;
+                    if (!event_WheelEvent.ctrlKey) {
+                        return;
+                    }
                     event_WheelEvent.preventDefault();
                     const rect = mermaidElement.getBoundingClientRect();
                     const offsetX = event_WheelEvent.clientX - rect.left;
