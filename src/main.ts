@@ -261,6 +261,16 @@ export default class MermaidZoomDragPlugin extends Plugin {
                 title: `Hide/Show control panel`,
                 id: 'hide-show-button-mermaid',
             },
+            {
+                icon: 'maximize',
+                action: async () => {
+                   await container.requestFullscreen({
+                        navigationUI: 'auto',
+                    })
+                },
+                title: 'Open in fullscreen mode',
+                id: '',
+            }
         ];
 
         // we add button for native events switch - only if this is mobile device. This is not necessary on other devices
@@ -273,7 +283,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
                     id: 'native-touch-events',
                 },
             );
-            this.manageTouchEvents(container);
+            this.manageTouchEvents(container)
         }
 
 
