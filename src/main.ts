@@ -1,4 +1,5 @@
 import { MarkdownView, Notice, Platform, Plugin, setIcon } from 'obsidian';
+import { MermaidSelectors } from './constants';
 
 export default class MermaidZoomDragPlugin extends Plugin {
     private dx = 0;
@@ -21,6 +22,10 @@ export default class MermaidZoomDragPlugin extends Plugin {
                 this.initializeMermaidFeatures(markdownView.contentEl);
             }
         }));
+    }
+
+    getCompoundSelector(){
+        return Object.values(MermaidSelectors).join(', ')
     }
 
     initializeMermaidFeatures(ele: HTMLElement) {
@@ -59,7 +64,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
     }
 
     addMermaidContainers(ele: HTMLElement) {
-        const mermaidElements = ele.querySelectorAll('.mermaid, .block-language-mehrmaid');
+        const mermaidElements = ele.querySelectorAll(this.getCompoundSelector());
 
         mermaidElements.forEach((el) => {
             if (!el.classList.contains('centered')) {
@@ -313,7 +318,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
      * @param dy - The number of pixels to move the element vertically.
      */
     moveElement(container: HTMLElement, dx: number, dy: number) {
-        const element = container.querySelector('.mermaid, .block-language-mehrmaid') as HTMLElement;
+        const element = container.querySelector(this.getCompoundSelector()) as HTMLElement;
         if (element) {
             this.dx += dx;
             this.dy += dy;
@@ -330,7 +335,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
      * @param factor - The factor by which to zoom the element.
      */
     zoomElement(container: HTMLElement, factor: number) {
-        const element = container.querySelector('.mermaid, .block-language-mehrmaid') as HTMLElement;
+        const element = container.querySelector(this.getCompoundSelector()) as HTMLElement;
         if (element) {
             const containerRect = container.getBoundingClientRect();
 
@@ -357,7 +362,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
      * @param container - The container element that contains the mermaid element.
      */
     resetZoomAndMove(container: HTMLElement) {
-        const element = container.querySelector('.mermaid, .block-language-mehrmaid') as HTMLElement;
+        const element = container.querySelector(this.getCompoundSelector()) as HTMLElement;
         if (element) {
             this.fitToContainer(element, container);
         }
@@ -386,7 +391,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
         const isEditing = ele.classList.contains('cm-s-obsidian');
         const mermaidContainers = isEditing ? ele.querySelectorAll('.mermaid') : ele.querySelectorAll('.mermaid-container');
         mermaidContainers.forEach((container) => {
-            const mermaidElement = isEditing ? container : container.querySelector('.mermaid, .block-language-mehrmaid') as HTMLElement;
+            const mermaidElement = isEditing ? container : container.querySelector(this.getCompoundSelector()) as HTMLElement;
             const md_HTMLElement = mermaidElement as HTMLElement;
 
             if (!container.classList.contains('events-bound')) {
@@ -538,7 +543,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
                 e.preventDefault();
                 e.stopPropagation();
 
-                const element = container.querySelector('.mermaid, .block-language-mehrmaid') as HTMLElement;
+                const element = container.querySelector(plugin.getCompoundSelector()) as HTMLElement;
                 if (!element) {
                     return;
                 }
