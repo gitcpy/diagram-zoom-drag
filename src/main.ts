@@ -244,7 +244,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
         };
         const toggleNativeEventsAction = () => {
             this.nativeTouchEventsEnabled = !this.nativeTouchEventsEnabled;
-            const btn = document.getElementById('native-touch-events');
+            const btn = container.doc.getElementById('native-touch-events');
             if (!btn) {
                 return;
             }
@@ -253,6 +253,8 @@ export default class MermaidZoomDragPlugin extends Plugin {
             btn.ariaLabel = `${fl ? 'Enable' : 'Disable'} move and pinch zoom`;
             new Notice(`Native touches are ${fl ? 'enabled' : 'disabled'} now. You ${fl ? 'cannot' : 'can'} move and pinch zoom mermaid diagram.`);
         };
+
+        const button_id_open_fullscreen_mode = "open-fullscreen-button";
 
         const serviceButtons = [
             {
@@ -264,7 +266,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
             {
                 icon: 'maximize',
                 action: async () => {
-                    const button =container.querySelector("#open-fullscreen-button");
+                    const button =container.querySelector("#" + button_id_open_fullscreen_mode);
                     const btn_HTMLElement = button as HTMLElement;
                     if (!container.doc.fullscreenElement)
                     {
@@ -279,7 +281,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
                     }
                 },
                 title: 'Open in fullscreen mode',
-                id: 'open-fullscreen-button',
+                id: button_id_open_fullscreen_mode,
             }
         ];
 
