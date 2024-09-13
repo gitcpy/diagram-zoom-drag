@@ -264,12 +264,22 @@ export default class MermaidZoomDragPlugin extends Plugin {
             {
                 icon: 'maximize',
                 action: async () => {
-                   await container.requestFullscreen({
-                        navigationUI: 'auto',
-                    })
+                    const button =container.querySelector("#open-fullscreen-button");
+                    const btn_HTMLElement = button as HTMLElement;
+                    if (!container.doc.fullscreenElement)
+                    {
+                        await container.requestFullscreen({
+                            navigationUI: 'auto',
+                        });
+                        setIcon(btn_HTMLElement, "minimize");
+                    }
+                    else{
+                        await container.doc.exitFullscreen();
+                        setIcon(btn_HTMLElement, "maximize");
+                    }
                 },
                 title: 'Open in fullscreen mode',
-                id: '',
+                id: 'open-fullscreen-button',
             }
         ];
 
@@ -288,7 +298,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
 
 
         serviceButtons.forEach(btn => servicePanel.appendChild(createButton(btn.icon, btn.action, btn.title, true, btn.id)));
-
+      
         container.appendChild(movePanel);
         container.appendChild(zoomPanel);
         container.appendChild(servicePanel);
