@@ -94,6 +94,8 @@ export default class MermaidZoomDragPlugin extends Plugin {
                 });
 
                 this.addControlPanel(container);
+                this.setupKeyboardListeners(container)
+
                 setTimeout(() => {
                     this.fitToContainer(el as HTMLElement, container);
                 }, 100);
@@ -178,17 +180,17 @@ export default class MermaidZoomDragPlugin extends Plugin {
         });
 
         const moveButtons = [
-            { icon: 'arrow-up-left', action: () => this.moveElement(container, 50, 50), title: 'Move up left' },
-            { icon: 'arrow-up', action: () => this.moveElement(container, 0, 50), title: 'Move up' },
-            { icon: 'arrow-up-right', action: () => this.moveElement(container, -50, 50), title: 'Move up right' },
-            { icon: 'arrow-left', action: () => this.moveElement(container, 50, 0), title: 'Move left' },
+            { icon: 'arrow-up-left', action: () => this.moveElement(container, 50, 50, true), title: 'Move up left' },
+            { icon: 'arrow-up', action: () => this.moveElement(container, 0, 50, true), title: 'Move up' },
+            { icon: 'arrow-up-right', action: () => this.moveElement(container, -50, 50, true), title: 'Move up right' },
+            { icon: 'arrow-left', action: () => this.moveElement(container, 50, 0, true), title: 'Move left' },
             {
                 icon: '', action: () => {}, title: '', active: false, id: '',
             },
-            { icon: 'arrow-right', action: () => this.moveElement(container, -50, 0), title: 'Move right' },
-            { icon: 'arrow-down-left', action: () => this.moveElement(container, 50, -50), title: 'Move down left' },
-            { icon: 'arrow-down', action: () => this.moveElement(container, 0, -50), title: 'Move down' },
-            { icon: 'arrow-down-right', action: () => this.moveElement(container, -50, -50), title: 'Move down right' },
+            { icon: 'arrow-right', action: () => this.moveElement(container, -50, 0, true), title: 'Move right' },
+            { icon: 'arrow-down-left', action: () => this.moveElement(container, 50, -50, true), title: 'Move down left' },
+            { icon: 'arrow-down', action: () => this.moveElement(container, 0, -50, true), title: 'Move down' },
+            { icon: 'arrow-down-right', action: () => this.moveElement(container, -50, -50, true), title: 'Move down right' },
         ];
 
         moveButtons.forEach(btn => movePanel.appendChild(createButton(btn.icon, btn.action, btn.title, btn.active, btn.id)));
@@ -202,9 +204,9 @@ export default class MermaidZoomDragPlugin extends Plugin {
         });
 
         const zoomButtons = [
-            { icon: 'zoom-in', action: () => this.zoomElement(container, 1.1), title: 'Zoom In' },
-            { icon: 'refresh-cw', action: () => this.resetZoomAndMove(container), title: 'Reset Zoom and Position' },
-            { icon: 'zoom-out', action: () => this.zoomElement(container, 0.9), title: 'Zoom Out' },
+            { icon: 'zoom-in', action: () => this.zoomElement(container, 1.1, true), title: 'Zoom In' },
+            { icon: 'refresh-cw', action: () => this.resetZoomAndMove(container, true), title: 'Reset Zoom and Position' },
+            { icon: 'zoom-out', action: () => this.zoomElement(container, 0.9, true), title: 'Zoom Out' },
         ];
 
         zoomButtons.forEach(btn => zoomPanel.appendChild(createButton(btn.icon, btn.action, btn.title, true)));
@@ -296,30 +298,28 @@ export default class MermaidZoomDragPlugin extends Plugin {
         container.appendChild(servicePanel);
     }
 
-    /**
-     * Move the mermaid element in the container by the specified amount.
-     * @param container - The container element that contains the mermaid element.
-     * @param dx - The number of pixels to move the element horizontally.
-     * @param dy - The number of pixels to move the element vertically.
-     */
-    moveElement(container: HTMLElement, dx: number, dy: number) {
+
+    moveElement(container: HTMLElement, dx: number, dy: number, setAnimation?: boolean) {
         const element = container.querySelector(this.getCompoundSelector()) as HTMLElement;
         if (element) {
             this.dx += dx;
             this.dy += dy;
             element.setCssStyles({
+                transition: setAnimation ? 'transform 0.3s ease-out' : 'none',
                 transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`,
             });
+            if (setAnimation) {
+                element.addEventListener('transitionend', () => {
+                    element.setCssStyles({
+                        transition: 'none',
+                    });
+                }, {once: true})
+            }
         }
     }
 
-    /**
-     * Zoom the mermaid element in the container by the specified factor.
-     * The element is zoomed relative to the center of the container.
-     * @param container - The container element that contains the mermaid element.
-     * @param factor - The factor by which to zoom the element.
-     */
-    zoomElement(container: HTMLElement, factor: number) {
+
+    zoomElement(container: HTMLElement, factor: number, setAnimation?: boolean) {
         const element = container.querySelector(this.getCompoundSelector()) as HTMLElement;
         if (element) {
             const containerRect = container.getBoundingClientRect();
@@ -336,24 +336,28 @@ export default class MermaidZoomDragPlugin extends Plugin {
             this.dy = centerY - offsetY * this.scale;
 
             element.setCssStyles({
+                transition: setAnimation ? 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)' : 'none',
                 transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`,
             });
+            if (setAnimation) {
+                element.addEventListener('transitionend', () => {
+                    element.setCssStyles({
+                        transition: 'none',
+                    });
+                }, {once: true})
+            }
         }
     }
 
-    /**
-     * Resets the zoom and move state of the mermaid element to its original
-     * size and position.
-     * @param container - The container element that contains the mermaid element.
-     */
-    resetZoomAndMove(container: HTMLElement) {
+
+    resetZoomAndMove(container: HTMLElement, setAnimation?: boolean) {
         const element = container.querySelector(this.getCompoundSelector()) as HTMLElement;
         if (element) {
-            this.fitToContainer(element, container);
+            this.fitToContainer(element, container, setAnimation);
         }
     }
 
-    fitToContainer(element: HTMLElement, container: HTMLElement) {
+    fitToContainer(element: HTMLElement, container: HTMLElement, setAnimation?: boolean) {
         const containerWidth = container.clientWidth;
         const containerHeight = container.clientHeight;
         const mermaidWidth = element.scrollWidth;
@@ -364,9 +368,17 @@ export default class MermaidZoomDragPlugin extends Plugin {
         this.dy = (containerHeight - mermaidHeight * this.scale) / 2;
 
         element.setCssStyles({
+            transition: setAnimation ? 'transform 0.3s cubic-bezier(0.42, 0, 0.58, 1)' : 'none',
             transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`,
             transformOrigin: 'top left',
         });
+        if (setAnimation) {
+            element.addEventListener('transitionend', () => {
+                element.setCssStyles({
+                    transition: 'none',
+                });
+            }, {once: true})
+        }
     }
 
     addMouseEvents(ele: HTMLElement) {
@@ -394,7 +406,6 @@ export default class MermaidZoomDragPlugin extends Plugin {
 
                     const prevScale = this.scale;
                     this.scale += event_WheelEvent.deltaY * -0.001;
-                    this.scale = Math.min(Math.max(.125, this.scale), 4);
 
                     const dx = offsetX * (1 - this.scale / prevScale);
                     const dy = offsetY * (1 - this.scale / prevScale);
@@ -629,5 +640,48 @@ export default class MermaidZoomDragPlugin extends Plugin {
             scrollHandler,
             { passive: false },
         );
+    }
+
+    setupKeyboardListeners(container: HTMLElement): void {
+        this.view.registerDomEvent(this.view.contentEl, 'keydown', (e: KeyboardEvent) => {
+            const key = e.key
+            const KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', '=', '+', '-', '0']
+            if (!KEYS.includes(key)){
+                return
+            } else {
+                e.preventDefault()
+                e.stopPropagation()
+            }
+
+            switch (key) {
+                case 'ArrowUp':
+                    this.moveElement(container, 0, 50, true)
+                    break
+                case 'ArrowDown':
+                    this.moveElement(container, 0, -50, true)
+                    break
+                case 'ArrowLeft':
+                    this.moveElement(container, 50, 0, true)
+                    break
+                case 'ArrowRight':
+                    this.moveElement(container, -50, 0, true)
+                    break
+            }
+
+            if (e.ctrlKey){
+                switch (key) {
+                    case '=':
+                    case '+':
+                        this.zoomElement(container, 1.1, true)
+                        break
+                    case '-':
+                        this.zoomElement(container, 0.9, true)
+                        break
+                    case '0':
+                        this.resetZoomAndMove(container, true)
+                        break
+                }
+            }
+        })
     }
 }
