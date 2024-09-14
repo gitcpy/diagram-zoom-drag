@@ -149,13 +149,15 @@ export default class MermaidZoomDragPlugin extends Plugin {
                 });
                 setIcon(button, icon);
 
-                button.addEventListener('click', action);
-                button.addEventListener('mouseenter', () => {
+                this.view.registerDomEvent(button, 'click', action);
+
+                this.view.registerDomEvent(button, 'mouseenter', () => {
                     button.setCssStyles({
                         color: 'var(--interactive-accent)',
                     });
                 });
-                button.addEventListener('mouseleave', () => {
+
+                this.view.registerDomEvent(button, 'mouseleave', () => {
                     button.setCssStyles({
                         color: 'var(--text-muted)',
                     });
@@ -257,9 +259,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
         const onFullScreenChange = (e: Event) => {
             const fullscreenEl = document.querySelector('.obsidian-app') as HTMLElement; // in fullscreen mode fullscreen element is .obisidian-app el
             if (container === document.fullscreenElement){
-                fullscreenEl.addEventListener(
-                    'keydown',
-                    fullScreenKeyboardHandler)
+                this.view.registerDomEvent(fullscreenEl, 'keydown', fullScreenKeyboardHandler);
             } else {
                 fullscreenEl.removeEventListener(
                     'keydown',
@@ -329,11 +329,16 @@ export default class MermaidZoomDragPlugin extends Plugin {
                 transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`,
             });
             if (setAnimation) {
-                element.addEventListener('transitionend', () => {
-                    element.setCssStyles({
-                        transition: 'none',
-                    });
-                }, {once: true})
+                this.view.registerDomEvent(
+                    element,
+                    'transitionend',
+                    () => {
+                        element.setCssStyles({
+                            transition: 'none',
+                        });
+                    },
+                    { once: true }
+                );
             }
         }
     }
@@ -351,6 +356,8 @@ export default class MermaidZoomDragPlugin extends Plugin {
             const offsetY = (centerY - this.dy) / this.scale;
 
             this.scale *= factor;
+            this.scale = Math.min(Math.max(.125, this.scale), 4);
+
 
             this.dx = centerX - offsetX * this.scale;
             this.dy = centerY - offsetY * this.scale;
@@ -360,11 +367,16 @@ export default class MermaidZoomDragPlugin extends Plugin {
                 transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`,
             });
             if (setAnimation) {
-                element.addEventListener('transitionend', () => {
-                    element.setCssStyles({
-                        transition: 'none',
-                    });
-                }, {once: true});
+                this.view.registerDomEvent(
+                    element,
+                    'transitionend',
+                    () => {
+                        element.setCssStyles({
+                            transition: 'none',
+                        });
+                    },
+                    { once: true }
+                );;
             }
         }
     }
@@ -392,11 +404,16 @@ export default class MermaidZoomDragPlugin extends Plugin {
             transformOrigin: 'top left',
         });
         if (setAnimation) {
-            element.addEventListener('transitionend', () => {
-                element.setCssStyles({
-                    transition: 'none',
-                });
-            }, { once: true });
+            this.view.registerDomEvent(
+                element,
+                'transitionend',
+                () => {
+                    element.setCssStyles({
+                        transition: 'none',
+                    });
+                },
+                { once: true }
+            );
         }
     }
 
@@ -413,76 +430,98 @@ export default class MermaidZoomDragPlugin extends Plugin {
             if (!container.classList.contains('events-bound')) {
                 container.classList.add('events-bound');
 
-                container.addEventListener('wheel', (event) => {
-                    const event_WheelEvent = event as WheelEvent;
-                    if (!event_WheelEvent.ctrlKey) {
-                        return;
+                this.view.registerDomEvent(
+                    container as HTMLElement,
+                    'wheel',
+                    (event) => {
+                        const event_WheelEvent = event as WheelEvent;
+                        if (!event_WheelEvent.ctrlKey) {
+                            return;
+                        }
+                        event_WheelEvent.preventDefault();
+                        const rect = mermaidElement.getBoundingClientRect();
+                        const offsetX = event_WheelEvent.clientX - rect.left;
+                        const offsetY = event_WheelEvent.clientY - rect.top;
+
+                        const prevScale = this.scale;
+                        this.scale += event_WheelEvent.deltaY * -0.001;
+                        this.scale = Math.min(Math.max(.125, this.scale), 4);
+
+                        const dx = offsetX * (1 - this.scale / prevScale);
+                        const dy = offsetY * (1 - this.scale / prevScale);
+
+                        this.dx += dx;
+                        this.dy += dy;
+
+                        md_HTMLElement.setCssStyles({
+                            transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`,
+                        });
                     }
-                    event_WheelEvent.preventDefault();
-                    const rect = mermaidElement.getBoundingClientRect();
-                    const offsetX = event_WheelEvent.clientX - rect.left;
-                    const offsetY = event_WheelEvent.clientY - rect.top;
+                );
 
-                    const prevScale = this.scale;
-                    this.scale += event_WheelEvent.deltaY * -0.001;
+                this.view.registerDomEvent(
+                    container as HTMLElement,
+                    'mousedown',
+                    (event) => {
+                        const event_MouseEvent = event as MouseEvent;
+                        if (event_MouseEvent.button !== 0) {
+                            return;
+                        }
+                        this.view.contentEl.focus();
+                        isDragging = true;
+                        startX = event_MouseEvent.clientX;
+                        startY = event_MouseEvent.clientY;
 
-                    const dx = offsetX * (1 - this.scale / prevScale);
-                    const dy = offsetY * (1 - this.scale / prevScale);
-
-                    this.dx += dx;
-                    this.dy += dy;
-
-                    md_HTMLElement.setCssStyles({
-                        transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`,
-                    });
-                });
-
-                container.addEventListener('mousedown', (event) => {
-                    const event_MouseEvent = event as MouseEvent;
-                    if (event_MouseEvent.button !== 0) {
-                        return;
+                        initialX = this.dx;
+                        initialY = this.dy;
+                        md_HTMLElement.setCssStyles({
+                            cursor: 'grabbing',
+                        });
+                        event.preventDefault();
                     }
-                    this.view.contentEl.focus()
-                    isDragging = true;
-                    startX = event_MouseEvent.clientX;
-                    startY = event_MouseEvent.clientY;
+                );
 
-                    initialX = this.dx;
-                    initialY = this.dy;
-                    md_HTMLElement.setCssStyles({
-                        cursor: 'grabbing',
-                    });
-                    event.preventDefault();
-                });
+                this.view.registerDomEvent(
+                    container as HTMLElement,
+                    'mousemove',
+                    (event) => {
+                        if (!isDragging) {
+                            return;
+                        }
 
-                container.addEventListener('mousemove', (event) => {
-                    if (!isDragging) {
-                        return;
+                        const event_MouseEvent = event as MouseEvent;
+                        const dx = event_MouseEvent.clientX - startX;
+                        const dy = event_MouseEvent.clientY - startY;
+                        this.dx = initialX + dx;
+                        this.dy = initialY + dy;
+                        md_HTMLElement.setCssStyles({
+                            transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`,
+                        });
                     }
+                );
 
-                    const event_MouseEvent = event as MouseEvent;
-                    const dx = event_MouseEvent.clientX - startX;
-                    const dy = event_MouseEvent.clientY - startY;
-                    this.dx = initialX + dx;
-                    this.dy = initialY + dy;
-                    md_HTMLElement.setCssStyles({
-                        transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`,
-                    });
-                });
 
-                container.addEventListener('mouseup', () => {
-                    if (isDragging) {
-                        isDragging = false;
-                        md_HTMLElement.setCssStyles({ cursor: 'grab' });
+                this.view.registerDomEvent(
+                    container as HTMLElement,
+                    'mouseup',
+                    () => {
+                        if (isDragging) {
+                            isDragging = false;
+                            md_HTMLElement.setCssStyles({ cursor: 'grab' });
+                        }
                     }
-                });
+                );
 
-                container.addEventListener('mouseleave', () => {
-                    if (isDragging) {
-                        isDragging = false;
-                        md_HTMLElement.setCssStyles({ cursor: 'grab' });
+                this.view.registerDomEvent(
+                    container as HTMLElement,
+                    'mouseleave',
+                    () => {
+                        if (isDragging) {
+                            isDragging = false;
+                            md_HTMLElement.setCssStyles({ cursor: 'grab' });
+                        }
                     }
-                });
+                );
             }
         });
     }
