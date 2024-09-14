@@ -50,7 +50,7 @@ Demo for Mobile:
 
 	Press left button and move your cursur to drag it.
 
-	----20240909,  a control panel at left right corner by Ssentiago
+	----20240909,  a control panel at left right corner by Sentiago
    
 	It provides functionality for zooming and moving the view of the diagrams.
 	
