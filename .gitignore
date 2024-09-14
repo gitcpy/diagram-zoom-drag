@@ -1,2 +1,3 @@
 # 忽略main.js
 # main.js
+node_modules/
