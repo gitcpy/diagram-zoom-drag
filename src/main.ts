@@ -254,6 +254,21 @@ export default class MermaidZoomDragPlugin extends Plugin {
         };
 
         const fullScreenKeyboardHandler = this.keyboardHandler(container)
+        const onFullScreenChange = (e: Event) => {
+            const fullscreenEl = document.querySelector('.obsidian-app') as HTMLElement; // in fullscreen mode fullscreen element is .obisidian-app el
+            if (container === document.fullscreenElement){
+                fullscreenEl.addEventListener(
+                    'keydown',
+                    fullScreenKeyboardHandler)
+            } else {
+                fullscreenEl.removeEventListener(
+                    'keydown',
+                    fullScreenKeyboardHandler
+                )
+                this.view.contentEl.focus()
+            }
+        }
+        container.onfullscreenchange = onFullScreenChange
 
         const serviceButtons = [
             {
@@ -269,22 +284,13 @@ export default class MermaidZoomDragPlugin extends Plugin {
                     if (!button) {
                         return;
                     }
-                    const fullscreenEl = document.querySelector('.obsidian-app') as HTMLElement; // in fullscreen mode fullscreen element is .obisidian-app el
                     if (!container.doc.fullscreenElement) {
                         await container.requestFullscreen({
                             navigationUI: 'auto',
                         });
-                        fullscreenEl.addEventListener(
-                                'keydown',
-                                fullScreenKeyboardHandler)
                         setIcon(button, 'minimize');
                     } else {
                         await container.doc.exitFullscreen();
-                        fullscreenEl.removeEventListener(
-                                'keydown',
-                                fullScreenKeyboardHandler
-                            )
-                        this.view.contentEl.focus()
                         setIcon(button, 'maximize');
                     }
                 },
