@@ -25,7 +25,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
     }
 
     getCompoundSelector(){
-        return Object.values(MermaidSelectors).join(', ')
+        return Object.values(MermaidSelectors).join(', ');
     }
 
     initializeMermaidFeatures(ele: HTMLElement) {
@@ -51,14 +51,15 @@ export default class MermaidZoomDragPlugin extends Plugin {
                     const block_parentNode_Element = block.parentNode as Element;
                     block_parentNode_Element.replaceWith(mermaidElement);
                 }
-
                 this.addMermaidContainers(mermaidElement);
                 this.addMouseEvents(mermaidElement);
+                this.initializeViewTabIndex()
             });
         } else {
             setTimeout(() => {
                 this.addMermaidContainers(ele);
                 this.addMouseEvents(ele);
+                this.initializeViewTabIndex()
             }, 100);
         }
     }
@@ -94,7 +95,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
                 });
 
                 this.addControlPanel(container);
-                this.setupKeyboardListeners(container)
+                this.view.registerDomEvent(this.view.contentEl, 'keydown', this.keyboardHandler(container), { passive: false });
 
                 setTimeout(() => {
                     this.fitToContainer(el as HTMLElement, container);
@@ -252,6 +253,8 @@ export default class MermaidZoomDragPlugin extends Plugin {
             new Notice(`Native touches are ${fl ? 'enabled' : 'disabled'} now. You ${fl ? 'cannot' : 'can'} move and pinch zoom mermaid diagram.`);
         };
 
+        const fullScreenKeyboardHandler = this.keyboardHandler(container)
+
         const serviceButtons = [
             {
                 icon: hideBtnIcon(),
@@ -262,16 +265,27 @@ export default class MermaidZoomDragPlugin extends Plugin {
             {
                 icon: 'maximize',
                 action: async () => {
-                    const button = container.querySelector('#open-fullscreen-button');
-                    const btn_HTMLElement = button as HTMLElement;
+                    const button = container.querySelector('#open-fullscreen-button') as HTMLElement;
+                    if (!button) {
+                        return;
+                    }
+                    const fullscreenEl = document.querySelector('.obsidian-app') as HTMLElement; // in fullscreen mode fullscreen element is .obisidian-app el
                     if (!container.doc.fullscreenElement) {
                         await container.requestFullscreen({
                             navigationUI: 'auto',
                         });
-                        setIcon(btn_HTMLElement, 'minimize');
+                        fullscreenEl.addEventListener(
+                                'keydown',
+                                fullScreenKeyboardHandler)
+                        setIcon(button, 'minimize');
                     } else {
                         await container.doc.exitFullscreen();
-                        setIcon(btn_HTMLElement, 'maximize');
+                        fullscreenEl.removeEventListener(
+                                'keydown',
+                                fullScreenKeyboardHandler
+                            )
+                        this.view.contentEl.focus()
+                        setIcon(button, 'maximize');
                     }
                 },
                 title: 'Open in fullscreen mode',
@@ -344,11 +358,10 @@ export default class MermaidZoomDragPlugin extends Plugin {
                     element.setCssStyles({
                         transition: 'none',
                     });
-                }, {once: true})
+                }, {once: true});
             }
         }
     }
-
 
     resetZoomAndMove(container: HTMLElement, setAnimation?: boolean) {
         const element = container.querySelector(this.getCompoundSelector()) as HTMLElement;
@@ -377,7 +390,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
                 element.setCssStyles({
                     transition: 'none',
                 });
-            }, {once: true})
+            }, { once: true });
         }
     }
 
@@ -423,9 +436,8 @@ export default class MermaidZoomDragPlugin extends Plugin {
                     if (event_MouseEvent.button !== 0) {
                         return;
                     }
-
+                    this.view.contentEl.focus()
                     isDragging = true;
-                    const win_ele_style = md_HTMLElement.win.getComputedStyle(md_HTMLElement);
                     startX = event_MouseEvent.clientX;
                     startY = event_MouseEvent.clientY;
 
@@ -642,46 +654,52 @@ export default class MermaidZoomDragPlugin extends Plugin {
         );
     }
 
-    setupKeyboardListeners(container: HTMLElement): void {
-        this.view.registerDomEvent(this.view.contentEl, 'keydown', (e: KeyboardEvent) => {
-            const key = e.key
-            const KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', '=', '+', '-', '0']
-            if (!KEYS.includes(key)){
-                return
+    keyboardHandler(container: HTMLElement) {
+        return (e: KeyboardEvent) => {
+            const key = e.key;
+            const KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', '=', '+', '-', '0'];
+            if (!KEYS.includes(key)) {
+                return;
             } else {
-                e.preventDefault()
-                e.stopPropagation()
+                e.preventDefault();
+                e.stopPropagation();
             }
 
             switch (key) {
                 case 'ArrowUp':
-                    this.moveElement(container, 0, 50, true)
-                    break
+                    this.moveElement(container, 0, 50, true);
+                    break;
                 case 'ArrowDown':
-                    this.moveElement(container, 0, -50, true)
-                    break
+                    this.moveElement(container, 0, -50, true);
+                    break;
                 case 'ArrowLeft':
-                    this.moveElement(container, 50, 0, true)
-                    break
+                    this.moveElement(container, 50, 0, true);
+                    break;
                 case 'ArrowRight':
-                    this.moveElement(container, -50, 0, true)
-                    break
+                    this.moveElement(container, -50, 0, true);
+                    break;
             }
 
-            if (e.ctrlKey){
+            if (e.ctrlKey) {
                 switch (key) {
                     case '=':
                     case '+':
-                        this.zoomElement(container, 1.1, true)
-                        break
+                        this.zoomElement(container, 1.1, true);
+                        break;
                     case '-':
-                        this.zoomElement(container, 0.9, true)
-                        break
+                        this.zoomElement(container, 0.9, true);
+                        break;
                     case '0':
-                        this.resetZoomAndMove(container, true)
-                        break
+                        this.resetZoomAndMove(container, true);
+                        break;
                 }
             }
-        })
+        }
+    }
+    initializeViewTabIndex() {
+        this.view.contentEl.setAttribute('tabindex', '0');
+        this.view.contentEl.querySelectorAll('*').forEach(child => {
+            child.setAttribute('tabindex', '0');
+        });
     }
 }
