@@ -1,14 +1,20 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "commonjs",
-    "lib": ["ES2020", "DOM"],
-    "declaration": true,
-    "outDir": "dist",
-    "rootDir": "src",
+    "baseUrl": "./src",
+    "module": "ESNext",
+    "target": "ESNext",
+    "allowJs": false,
     "strict": true,
-    "esModuleInterop": true
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "typeRoots": ["node_modules/@types"],
+    "importHelpers": true,
+    "isolatedModules": true,
+    "allowSyntheticDefaultImports": true,
+    "strictNullChecks": true,
+    "lib": ["DOM", "ES5", "ES6", "ES7"]
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["dist"]
+  "include": [
+    "src/**/*.ts",
+  ]
 }

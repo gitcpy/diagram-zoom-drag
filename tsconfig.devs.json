@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "test-vault/.obsidian/plugins/Mermaid Zoom Drag/",
+    "esModuleInterop": true,
+    "removeComments": false
+  },
+  "exclude": ["**/*.js"],
+  "watchOptions": {
+    "watchDirectory": "usefsevents"
+  },
+  "buildOptions": {
+    "incremental": true
+  }
+}
