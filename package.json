@@ -2,7 +2,7 @@
     "name": "Mermaid Zoom Drag",
     "author": "ChenPengyuan",
     "license": "MIT",
-    "version": "4.1.49",
+    "version": "4.1.50",
     "type": "module",
     "description": "Add zoom and drag functionality to Mermaid diagrams",
     "main": "src/main.ts",
