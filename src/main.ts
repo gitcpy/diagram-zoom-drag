@@ -1,4 +1,11 @@
-import { MarkdownView, Notice, Platform, Plugin, setIcon } from 'obsidian';
+import {
+    MarkdownPostProcessorContext,
+    MarkdownView,
+    Notice,
+    Platform,
+    Plugin,
+    setIcon,
+} from 'obsidian';
 import { MermaidSelectors } from './constants';
 
 export default class MermaidZoomDragPlugin extends Plugin {
@@ -8,27 +15,33 @@ export default class MermaidZoomDragPlugin extends Plugin {
     private nativeTouchEventsEnabled = true;
     private view!: MarkdownView;
 
-    async onload() {
-        this.registerMarkdownPostProcessor((element, context) => {
-            this.initializeMermaidFeatures(element);
-        });
-
-        this.registerEvent(this.app.workspace.on('layout-change', () => {
-            const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-            if (view && view.getViewType() === 'markdown') {
-                const markdownView = view as MarkdownView;
-                // we need a link to current view to work with it
-                this.view = markdownView;
-                this.initializeMermaidFeatures(markdownView.contentEl);
+    async onload(): Promise<void> {
+        this.registerMarkdownPostProcessor(
+            (element: HTMLElement, context: MarkdownPostProcessorContext) => {
+                this.initializeMermaidFeatures(element);
             }
-        }));
+        );
+
+        this.registerEvent(
+            this.app.workspace.on('layout-change', () => {
+                const view =
+                    this.app.workspace.getActiveViewOfType(MarkdownView);
+                if (
+                    view &&
+                    view.getViewType() === 'markdown' &&
+                    view.getMode() === 'preview'
+                ) {
+                    this.view = view as MarkdownView;
+                }
+            })
+        );
     }
 
-    getCompoundSelector(){
+    getCompoundSelector(): string {
         return Object.values(MermaidSelectors).join(', ');
     }
 
-    initializeMermaidFeatures(ele: HTMLElement) {
+    initializeMermaidFeatures(ele: HTMLElement): void {
         const observer = new MutationObserver(() => {
             this.initializeMermaidElements(ele);
         });
@@ -37,35 +50,14 @@ export default class MermaidZoomDragPlugin extends Plugin {
         this.initializeMermaidElements(ele);
     }
 
-    initializeMermaidElements(ele: HTMLElement) {
-        const isEditing = ele.classList.contains('cm-s-obsidian');
-        if (isEditing) {
-            const codeBlocks = ele.querySelectorAll('pre > code.language-mermaid');
-            codeBlocks.forEach((block) => {
-                const block_HtmlElement = block as HTMLElement;
-                const mermaidElement = block_HtmlElement.doc.createElement('div');
-                mermaidElement.className = 'mermaid';
-                mermaidElement.textContent = block.textContent || '';
-
-                if (block.parentNode) {
-                    const block_parentNode_Element = block.parentNode as Element;
-                    block_parentNode_Element.replaceWith(mermaidElement);
-                }
-                this.addMermaidContainers(mermaidElement);
-                this.addMouseEvents(mermaidElement);
-                this.initializeViewTabIndex()
-            });
-        } else {
-            setTimeout(() => {
-                this.addMermaidContainers(ele);
-                this.addMouseEvents(ele);
-                this.initializeViewTabIndex()
-            }, 100);
-        }
+    initializeMermaidElements(ele: HTMLElement): void {
+        this.addMermaidContainers(ele);
     }
 
-    addMermaidContainers(ele: HTMLElement) {
-        const mermaidElements = ele.querySelectorAll(this.getCompoundSelector());
+    addMermaidContainers(ele: HTMLElement): void {
+        const mermaidElements = ele.querySelectorAll(
+            this.getCompoundSelector()
+        );
 
         mermaidElements.forEach((el) => {
             if (!el.classList.contains('centered')) {
@@ -95,11 +87,17 @@ export default class MermaidZoomDragPlugin extends Plugin {
                 });
 
                 this.addControlPanel(container);
-                this.view.registerDomEvent(this.view.contentEl, 'keydown', this.keyboardHandler(container), { passive: false });
-
+                this.addMouseEvents(ele);
+                container.setAttribute('tabindex', '0');
+                this.view.registerDomEvent(
+                    container,
+                    'keydown',
+                    this.keyboardHandler(container),
+                    { passive: false }
+                );
                 setTimeout(() => {
-                    this.fitToContainer(el as HTMLElement, container);
-                }, 100);
+                    this.fitToContainer(el_html, container);
+                }, 0);
             }
         });
     }
@@ -110,7 +108,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
      *
      * @param {HTMLElement} container - The container element to which the control panel will be added.
      */
-    addControlPanel(container: HTMLElement) {
+    addControlPanel(container: HTMLElement): void {
         const panelStyles = {
             position: 'absolute',
             display: 'grid',
@@ -121,17 +119,26 @@ export default class MermaidZoomDragPlugin extends Plugin {
             boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
         };
 
-        const createPanel = (className: string, styles: object): HTMLElement => {
+        const createPanel = (
+            className: string,
+            styles: object
+        ): HTMLElement => {
             const panel = container.doc.createElement('div');
             panel.className = className;
             panel.setCssStyles(styles);
             return panel;
         };
 
-        const createButton = (icon: string, action: () => void, title: string, active = true, id: string | undefined = undefined): HTMLElement => {
+        const createButton = (
+            icon: string,
+            action: () => void,
+            title: string,
+            active = true,
+            id: string | undefined = undefined
+        ): HTMLElement => {
             const button = container.doc.createElement('button');
             button.className = 'button';
-            button.id = id || '';
+            button.id = id ?? '';
 
             if (active) {
                 button.setCssStyles({
@@ -163,11 +170,9 @@ export default class MermaidZoomDragPlugin extends Plugin {
                     });
                 });
             } else {
-                button.setCssStyles(
-                    {
-                        visibility: 'hidden',
-                    },
-                );
+                button.setCssStyles({
+                    visibility: 'hidden',
+                });
             }
 
             button.setAttribute('aria-label', title);
@@ -183,20 +188,66 @@ export default class MermaidZoomDragPlugin extends Plugin {
         });
 
         const moveButtons = [
-            { icon: 'arrow-up-left', action: () => this.moveElement(container, 50, 50, true), title: 'Move up left' },
-            { icon: 'arrow-up', action: () => this.moveElement(container, 0, 50, true), title: 'Move up' },
-            { icon: 'arrow-up-right', action: () => this.moveElement(container, -50, 50, true), title: 'Move up right' },
-            { icon: 'arrow-left', action: () => this.moveElement(container, 50, 0, true), title: 'Move left' },
             {
-                icon: '', action: () => {}, title: '', active: false, id: '',
+                icon: 'arrow-up-left',
+                action: (): void => this.moveElement(container, 50, 50, true),
+                title: 'Move up left',
             },
-            { icon: 'arrow-right', action: () => this.moveElement(container, -50, 0, true), title: 'Move right' },
-            { icon: 'arrow-down-left', action: () => this.moveElement(container, 50, -50, true), title: 'Move down left' },
-            { icon: 'arrow-down', action: () => this.moveElement(container, 0, -50, true), title: 'Move down' },
-            { icon: 'arrow-down-right', action: () => this.moveElement(container, -50, -50, true), title: 'Move down right' },
+            {
+                icon: 'arrow-up',
+                action: (): void => this.moveElement(container, 0, 50, true),
+                title: 'Move up',
+            },
+            {
+                icon: 'arrow-up-right',
+                action: (): void => this.moveElement(container, -50, 50, true),
+                title: 'Move up right',
+            },
+            {
+                icon: 'arrow-left',
+                action: (): void => this.moveElement(container, 50, 0, true),
+                title: 'Move left',
+            },
+            {
+                icon: '',
+                action: (): void => {},
+                title: '',
+                active: false,
+                id: '',
+            },
+            {
+                icon: 'arrow-right',
+                action: (): void => this.moveElement(container, -50, 0, true),
+                title: 'Move right',
+            },
+            {
+                icon: 'arrow-down-left',
+                action: (): void => this.moveElement(container, 50, -50, true),
+                title: 'Move down left',
+            },
+            {
+                icon: 'arrow-down',
+                action: (): void => this.moveElement(container, 0, -50, true),
+                title: 'Move down',
+            },
+            {
+                icon: 'arrow-down-right',
+                action: (): void => this.moveElement(container, -50, -50, true),
+                title: 'Move down right',
+            },
         ];
 
-        moveButtons.forEach(btn => movePanel.appendChild(createButton(btn.icon, btn.action, btn.title, btn.active, btn.id)));
+        moveButtons.forEach((btn) =>
+            movePanel.appendChild(
+                createButton(
+                    btn.icon,
+                    btn.action,
+                    btn.title,
+                    btn.active,
+                    btn.id
+                )
+            )
+        );
 
         const zoomPanel = createPanel('mermaid-zoom-panel', {
             ...panelStyles,
@@ -207,12 +258,28 @@ export default class MermaidZoomDragPlugin extends Plugin {
         });
 
         const zoomButtons = [
-            { icon: 'zoom-in', action: () => this.zoomElement(container, 1.1, true), title: 'Zoom In' },
-            { icon: 'refresh-cw', action: () => this.resetZoomAndMove(container, true), title: 'Reset Zoom and Position' },
-            { icon: 'zoom-out', action: () => this.zoomElement(container, 0.9, true), title: 'Zoom Out' },
+            {
+                icon: 'zoom-in',
+                action: (): void => this.zoomElement(container, 1.1, true),
+                title: 'Zoom In',
+            },
+            {
+                icon: 'refresh-cw',
+                action: (): void => this.resetZoomAndMove(container, true),
+                title: 'Reset Zoom and Position',
+            },
+            {
+                icon: 'zoom-out',
+                action: (): void => this.zoomElement(container, 0.9, true),
+                title: 'Zoom Out',
+            },
         ];
 
-        zoomButtons.forEach(btn => zoomPanel.appendChild(createButton(btn.icon, btn.action, btn.title, true)));
+        zoomButtons.forEach((btn) =>
+            zoomPanel.appendChild(
+                createButton(btn.icon, btn.action, btn.title, true)
+            )
+        );
 
         const servicePanel = createPanel('mermaid-service-panel', {
             ...panelStyles,
@@ -224,26 +291,30 @@ export default class MermaidZoomDragPlugin extends Plugin {
         let hiding = false;
         const isMobile = Platform.isMobile;
 
-        const getNativeBtnIcon = () => this.nativeTouchEventsEnabled ? 'circle-slash-2' : 'hand';
-        const hideBtnIcon = () => hiding ? 'eye-off' : 'eye';
-        const hideShowAction = () => {
+        const getNativeBtnIcon = (): string =>
+            this.nativeTouchEventsEnabled ? 'circle-slash-2' : 'hand';
+        const hideBtnIcon = (): string => (hiding ? 'eye-off' : 'eye');
+        const hideShowAction = (): void => {
             hiding = !hiding;
-            [movePanel, zoomPanel].forEach(panel => {
-                    panel.setCssStyles({
-                            visibility: hiding ? 'hidden' : 'visible',
-                            pointerEvents: hiding ? 'none' : 'auto',
-                        },
-                    );
-                },
+            [movePanel, zoomPanel].forEach((panel) => {
+                panel.setCssStyles({
+                    visibility: hiding ? 'hidden' : 'visible',
+                    pointerEvents: hiding ? 'none' : 'auto',
+                });
+            });
+            const button = container.doc.getElementById(
+                'hide-show-button-mermaid'
             );
-            const button = container.doc.getElementById('hide-show-button-mermaid');
             if (!button) {
                 return;
             }
             setIcon(button, hideBtnIcon());
-            button.setAttribute('aria-label', `${hiding ? 'Show' : 'Hide'} move and zoom panels`);
+            button.setAttribute(
+                'aria-label',
+                `${hiding ? 'Show' : 'Hide'} move and zoom panels`
+            );
         };
-        const toggleNativeEventsAction = () => {
+        const toggleNativeEventsAction = (): void => {
             this.nativeTouchEventsEnabled = !this.nativeTouchEventsEnabled;
             const btn = container.doc.getElementById('native-touch-events');
             if (!btn) {
@@ -252,23 +323,30 @@ export default class MermaidZoomDragPlugin extends Plugin {
             setIcon(btn, getNativeBtnIcon());
             const fl = this.nativeTouchEventsEnabled;
             btn.ariaLabel = `${fl ? 'Enable' : 'Disable'} move and pinch zoom`;
-            new Notice(`Native touches are ${fl ? 'enabled' : 'disabled'} now. You ${fl ? 'cannot' : 'can'} move and pinch zoom mermaid diagram.`);
+            new Notice(
+                `Native touches are ${fl ? 'enabled' : 'disabled'} now. You ${fl ? 'cannot' : 'can'} move and pinch zoom mermaid diagram.`
+            );
         };
 
-        const fullScreenKeyboardHandler = this.keyboardHandler(container)
-        const onFullScreenChange = (e: Event) => {
-            const fullscreenEl = document.querySelector('.obsidian-app') as HTMLElement; // in fullscreen mode fullscreen element is .obisidian-app el
-            if (container === document.fullscreenElement){
-                this.view.registerDomEvent(fullscreenEl, 'keydown', fullScreenKeyboardHandler);
+        const fullScreenKeyboardHandler = this.keyboardHandler(container);
+        container.onfullscreenchange = (): void => {
+            const fullscreenEl = document.querySelector(
+                '.obsidian-app'
+            ) as HTMLElement; // in fullscreen mode fullscreen element is .obisidian-app el
+            if (container === document.fullscreenElement) {
+                this.view.registerDomEvent(
+                    fullscreenEl,
+                    'keydown',
+                    fullScreenKeyboardHandler
+                );
             } else {
                 fullscreenEl.removeEventListener(
                     'keydown',
                     fullScreenKeyboardHandler
-                )
-                this.view.contentEl.focus()
+                );
+                this.view.contentEl.focus();
             }
-        }
-        container.onfullscreenchange = onFullScreenChange
+        };
 
         const serviceButtons = [
             {
@@ -279,8 +357,10 @@ export default class MermaidZoomDragPlugin extends Plugin {
             },
             {
                 icon: 'maximize',
-                action: async () => {
-                    const button = container.querySelector('#open-fullscreen-button') as HTMLElement;
+                action: async (): Promise<void> => {
+                    const button = container.querySelector(
+                        '#open-fullscreen-button'
+                    ) as HTMLElement | null;
                     if (!button) {
                         return;
                     }
@@ -300,27 +380,35 @@ export default class MermaidZoomDragPlugin extends Plugin {
         ];
 
         if (isMobile) {
-            serviceButtons.push(
-                {
-                    icon: getNativeBtnIcon(),
-                    action: toggleNativeEventsAction,
-                    title: `${this.nativeTouchEventsEnabled ? 'Enable' : 'Disable'} move and pinch zoom`,
-                    id: 'native-touch-events',
-                },
-            );
+            serviceButtons.push({
+                icon: getNativeBtnIcon(),
+                action: toggleNativeEventsAction,
+                title: `${this.nativeTouchEventsEnabled ? 'Enable' : 'Disable'} move and pinch zoom`,
+                id: 'native-touch-events',
+            });
             this.manageTouchEvents(container);
         }
 
-        serviceButtons.forEach(btn => servicePanel.appendChild(createButton(btn.icon, btn.action, btn.title, true, btn.id)));
+        serviceButtons.forEach((btn) =>
+            servicePanel.appendChild(
+                createButton(btn.icon, btn.action, btn.title, true, btn.id)
+            )
+        );
 
         container.appendChild(movePanel);
         container.appendChild(zoomPanel);
         container.appendChild(servicePanel);
     }
 
-
-    moveElement(container: HTMLElement, dx: number, dy: number, setAnimation?: boolean) {
-        const element = container.querySelector(this.getCompoundSelector()) as HTMLElement;
+    moveElement(
+        container: HTMLElement,
+        dx: number,
+        dy: number,
+        setAnimation?: boolean
+    ): void {
+        const element = container.querySelector(
+            this.getCompoundSelector()
+        ) as HTMLElement | null;
         if (element) {
             this.dx += dx;
             this.dy += dy;
@@ -343,9 +431,14 @@ export default class MermaidZoomDragPlugin extends Plugin {
         }
     }
 
-
-    zoomElement(container: HTMLElement, factor: number, setAnimation?: boolean) {
-        const element = container.querySelector(this.getCompoundSelector()) as HTMLElement;
+    zoomElement(
+        container: HTMLElement,
+        factor: number,
+        setAnimation?: boolean
+    ): void {
+        const element = container.querySelector(
+            this.getCompoundSelector()
+        ) as HTMLElement | null;
         if (element) {
             const containerRect = container.getBoundingClientRect();
 
@@ -356,14 +449,15 @@ export default class MermaidZoomDragPlugin extends Plugin {
             const offsetY = (centerY - this.dy) / this.scale;
 
             this.scale *= factor;
-            this.scale = Math.min(Math.max(.125, this.scale), 4);
-
+            this.scale = Math.max(0.125, this.scale);
 
             this.dx = centerX - offsetX * this.scale;
             this.dy = centerY - offsetY * this.scale;
 
             element.setCssStyles({
-                transition: setAnimation ? 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)' : 'none',
+                transition: setAnimation
+                    ? 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)'
+                    : 'none',
                 transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`,
             });
             if (setAnimation) {
@@ -376,30 +470,42 @@ export default class MermaidZoomDragPlugin extends Plugin {
                         });
                     },
                     { once: true }
-                );;
+                );
             }
         }
     }
 
-    resetZoomAndMove(container: HTMLElement, setAnimation?: boolean) {
-        const element = container.querySelector(this.getCompoundSelector()) as HTMLElement;
+    resetZoomAndMove(container: HTMLElement, setAnimation?: boolean): void {
+        const element = container.querySelector(
+            this.getCompoundSelector()
+        ) as HTMLElement | null;
         if (element) {
             this.fitToContainer(element, container, setAnimation);
         }
     }
 
-    fitToContainer(element: HTMLElement, container: HTMLElement, setAnimation?: boolean) {
+    fitToContainer(
+        element: HTMLElement,
+        container: HTMLElement,
+        setAnimation?: boolean
+    ): void {
         const containerWidth = container.clientWidth;
         const containerHeight = container.clientHeight;
-        const mermaidWidth = element.scrollWidth;
-        const mermaidHeight = element.scrollHeight;
+        const mermaidWidth = element.clientWidth;
+        const mermaidHeight = element.clientHeight;
 
-        this.scale = Math.min(containerWidth / mermaidWidth, containerHeight / mermaidHeight, 1);
+        this.scale = Math.min(
+            containerWidth / mermaidWidth,
+            containerHeight / mermaidHeight,
+            1
+        );
         this.dx = (containerWidth - mermaidWidth * this.scale) / 2;
         this.dy = (containerHeight - mermaidHeight * this.scale) / 2;
 
         element.setCssStyles({
-            transition: setAnimation ? 'transform 0.3s cubic-bezier(0.42, 0, 0.58, 1)' : 'none',
+            transition: setAnimation
+                ? 'transform 0.3s cubic-bezier(0.42, 0, 0.58, 1)'
+                : 'none',
             transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`,
             transformOrigin: 'top left',
         });
@@ -417,112 +523,107 @@ export default class MermaidZoomDragPlugin extends Plugin {
         }
     }
 
-    addMouseEvents(ele: HTMLElement) {
+    addMouseEvents(ele: HTMLElement): void {
         let startX: number, startY: number, initialX: number, initialY: number;
         let isDragging = false;
 
-        const isEditing = ele.classList.contains('cm-s-obsidian');
-        const mermaidContainers = isEditing ? ele.querySelectorAll('.mermaid') : ele.querySelectorAll('.mermaid-container');
+        const mermaidContainers = ele.querySelectorAll('.mermaid-container');
         mermaidContainers.forEach((container) => {
-            const mermaidElement = isEditing ? container : container.querySelector(this.getCompoundSelector()) as HTMLElement;
-            const md_HTMLElement = mermaidElement as HTMLElement;
+            const mermaidElement = container.querySelector(
+                this.getCompoundSelector()
+            ) as HTMLElement;
 
-            if (!container.classList.contains('events-bound')) {
-                container.classList.add('events-bound');
-
-                this.view.registerDomEvent(
-                    container as HTMLElement,
-                    'wheel',
-                    (event) => {
-                        const event_WheelEvent = event as WheelEvent;
-                        if (!event_WheelEvent.ctrlKey) {
-                            return;
-                        }
-                        event_WheelEvent.preventDefault();
-                        const rect = mermaidElement.getBoundingClientRect();
-                        const offsetX = event_WheelEvent.clientX - rect.left;
-                        const offsetY = event_WheelEvent.clientY - rect.top;
-
-                        const prevScale = this.scale;
-                        this.scale += event_WheelEvent.deltaY * -0.001;
-                        this.scale = Math.min(Math.max(.125, this.scale), 4);
-
-                        const dx = offsetX * (1 - this.scale / prevScale);
-                        const dy = offsetY * (1 - this.scale / prevScale);
-
-                        this.dx += dx;
-                        this.dy += dy;
-
-                        md_HTMLElement.setCssStyles({
-                            transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`,
-                        });
-                    }
-                );
-
-                this.view.registerDomEvent(
-                    container as HTMLElement,
-                    'mousedown',
-                    (event) => {
-                        const event_MouseEvent = event as MouseEvent;
-                        if (event_MouseEvent.button !== 0) {
-                            return;
-                        }
-                        this.view.contentEl.focus();
-                        isDragging = true;
-                        startX = event_MouseEvent.clientX;
-                        startY = event_MouseEvent.clientY;
-
-                        initialX = this.dx;
-                        initialY = this.dy;
-                        md_HTMLElement.setCssStyles({
-                            cursor: 'grabbing',
-                        });
-                        event.preventDefault();
-                    }
-                );
-
-                this.view.registerDomEvent(
-                    container as HTMLElement,
-                    'mousemove',
-                    (event) => {
-                        if (!isDragging) {
-                            return;
-                        }
-
-                        const event_MouseEvent = event as MouseEvent;
-                        const dx = event_MouseEvent.clientX - startX;
-                        const dy = event_MouseEvent.clientY - startY;
-                        this.dx = initialX + dx;
-                        this.dy = initialY + dy;
-                        md_HTMLElement.setCssStyles({
-                            transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`,
-                        });
-                    }
-                );
-
-
-                this.view.registerDomEvent(
-                    container as HTMLElement,
-                    'mouseup',
-                    () => {
-                        if (isDragging) {
-                            isDragging = false;
-                            md_HTMLElement.setCssStyles({ cursor: 'grab' });
-                        }
-                    }
-                );
-
-                this.view.registerDomEvent(
-                    container as HTMLElement,
-                    'mouseleave',
-                    () => {
-                        if (isDragging) {
-                            isDragging = false;
-                            md_HTMLElement.setCssStyles({ cursor: 'grab' });
-                        }
-                    }
-                );
+            if (container.classList.contains('events-bound')) {
+                return;
             }
+
+            container.classList.add('events-bound');
+
+            this.view.registerDomEvent(
+                container as HTMLElement,
+                'wheel',
+                (event: WheelEvent) => {
+                    if (!event.ctrlKey) {
+                        return;
+                    }
+                    event.preventDefault();
+                    const rect = mermaidElement.getBoundingClientRect();
+                    const offsetX = event.clientX - rect.left;
+                    const offsetY = event.clientY - rect.top;
+
+                    const prevScale = this.scale;
+                    this.scale += event.deltaY * -0.001;
+                    this.scale = Math.max(0.125, this.scale);
+
+                    const dx = offsetX * (1 - this.scale / prevScale);
+                    const dy = offsetY * (1 - this.scale / prevScale);
+
+                    this.dx += dx;
+                    this.dy += dy;
+
+                    mermaidElement.setCssStyles({
+                        transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`,
+                    });
+                }
+            );
+            this.view.registerDomEvent(
+                container as HTMLElement,
+                'mousedown',
+                (event: MouseEvent) => {
+                    if (event.button !== 0) {
+                        return;
+                    }
+                    const c_html = container as HTMLElement;
+                    c_html.focus({ preventScroll: true });
+                    isDragging = true;
+                    startX = event.clientX;
+                    startY = event.clientY;
+
+                    initialX = this.dx;
+                    initialY = this.dy;
+                    mermaidElement.setCssStyles({
+                        cursor: 'grabbing',
+                    });
+                    event.preventDefault();
+                }
+            );
+            this.view.registerDomEvent(
+                container as HTMLElement,
+                'mousemove',
+                (event: MouseEvent) => {
+                    if (!isDragging) {
+                        return;
+                    }
+
+                    const dx = event.clientX - startX;
+                    const dy = event.clientY - startY;
+                    this.dx = initialX + dx;
+                    this.dy = initialY + dy;
+                    mermaidElement.setCssStyles({
+                        transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`,
+                    });
+                }
+            );
+            this.view.registerDomEvent(
+                container as HTMLElement,
+                'mouseup',
+                () => {
+                    if (isDragging) {
+                        isDragging = false;
+                        mermaidElement.setCssStyles({ cursor: 'grab' });
+                    }
+                }
+            );
+            this.view.registerDomEvent(
+                container as HTMLElement,
+                'mouseleave',
+                () => {
+                    if (isDragging) {
+                        isDragging = false;
+                        mermaidElement.setCssStyles({ cursor: 'grab' });
+                    }
+                }
+            );
         });
     }
 
@@ -538,15 +639,15 @@ export default class MermaidZoomDragPlugin extends Plugin {
         let initialDistance: number;
         let isDragging: boolean = false;
         let isPinching: boolean = false;
-        const BUTTON_SELECTOR = '.mermaid-zoom-panel button, .mermaid-move-panel button, .mermaid-service-panel button';
-
+        const BUTTON_SELECTOR =
+            '.mermaid-zoom-panel button, .mermaid-move-panel button, .mermaid-service-panel button';
 
         /**
          * Calculates the distance between two touch points.
          * @param touches - The two touch points.
          * @returns The distance between the two touch points.
          */
-        const calculateDistance = (touches: TouchList) => {
+        const calculateDistance = (touches: TouchList): number => {
             const [touch1, touch2] = [touches[0], touches[1]];
             const dx = touch2.clientX - touch1.clientX;
             const dy = touch2.clientY - touch1.clientY;
@@ -581,8 +682,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
                     initialDistance = calculateDistance(e.touches);
                 }
             };
-        };
-
+        }
 
         /**
          * Handles the move event for the mermaid element. If the element is being pinched, zoom the element. If the element is being dragged, move it.
@@ -598,7 +698,9 @@ export default class MermaidZoomDragPlugin extends Plugin {
                 e.preventDefault();
                 e.stopPropagation();
 
-                const element = container.querySelector(plugin.getCompoundSelector()) as HTMLElement;
+                const element = container.querySelector(
+                    plugin.getCompoundSelector()
+                ) as HTMLElement | null;
                 if (!element) {
                     return;
                 }
@@ -619,10 +721,8 @@ export default class MermaidZoomDragPlugin extends Plugin {
 
                     initialDistance = currentDistance;
                 }
-
             };
-        };
-
+        }
 
         /**
          * Handles the end of a touch event for the mermaid element.
@@ -647,8 +747,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
                 isDragging = false;
                 isPinching = false;
             };
-        };
-
+        }
 
         /**
          * Handles the scroll event for the mermaid element.
@@ -664,8 +763,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
                 e.preventDefault();
                 e.stopPropagation();
             };
-        };
-
+        }
 
         const touchStartHandler = touchStart(this);
         const touchMoveHandler = touchMove(this);
@@ -673,42 +771,38 @@ export default class MermaidZoomDragPlugin extends Plugin {
         const scrollHandler = scroll(this);
 
         // we register the events as a view.registerDomEvent - so plugin can off them on unloading view
-        this.view.registerDomEvent(
-            container,
-            'touchstart',
-            touchStartHandler,
-            { passive: false },
-        );
-        this.view.registerDomEvent(
-            container,
-            'touchmove',
-            touchMoveHandler,
-            { passive: false },
-        );
-        this.view.registerDomEvent(
-            container,
-            'touchend',
-            touchEndHandler,
-            { passive: false },
-        );
-        this.view.registerDomEvent(
-            container,
-            'scroll',
-            scrollHandler,
-            { passive: false },
-        );
+        this.view.registerDomEvent(container, 'touchstart', touchStartHandler, {
+            passive: false,
+        });
+        this.view.registerDomEvent(container, 'touchmove', touchMoveHandler, {
+            passive: false,
+        });
+        this.view.registerDomEvent(container, 'touchend', touchEndHandler, {
+            passive: false,
+        });
+        this.view.registerDomEvent(container, 'scroll', scrollHandler, {
+            passive: false,
+        });
     }
 
     keyboardHandler(container: HTMLElement) {
-        return (e: KeyboardEvent) => {
+        return (e: KeyboardEvent): void => {
             const key = e.key;
-            const KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', '=', '+', '-', '0'];
+            const KEYS = [
+                'ArrowUp',
+                'ArrowDown',
+                'ArrowLeft',
+                'ArrowRight',
+                '=',
+                '+',
+                '-',
+                '0',
+            ];
             if (!KEYS.includes(key)) {
                 return;
-            } else {
-                e.preventDefault();
-                e.stopPropagation();
             }
+            e.preventDefault();
+            e.stopPropagation();
 
             switch (key) {
                 case 'ArrowUp':
@@ -739,12 +833,6 @@ export default class MermaidZoomDragPlugin extends Plugin {
                         break;
                 }
             }
-        }
-    }
-    initializeViewTabIndex() {
-        this.view.contentEl.setAttribute('tabindex', '0');
-        this.view.contentEl.querySelectorAll('*').forEach(child => {
-            child.setAttribute('tabindex', '0');
-        });
+        };
     }
 }
