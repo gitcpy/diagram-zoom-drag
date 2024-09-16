@@ -7,32 +7,41 @@ import {
     setIcon,
 } from 'obsidian';
 import { MermaidSelectors } from './constants';
+import { ContainerID, LeafID } from './typing';
+import { ViewData } from './view-data';
+import { v4 as uuidv4 } from 'uuid';
 
 export default class MermaidZoomDragPlugin extends Plugin {
-    private dx = 0;
-    private dy = 0;
-    private scale = 1;
-    private nativeTouchEventsEnabled = true;
+    dx!: number;
+    dy!: number;
+    scale!: number;
+    nativeTouchEventsEnabled!: boolean;
     private view!: MarkdownView;
+    leafID!: LeafID | undefined;
+    private viewData!: ViewData;
+    activeContainer!: HTMLElement;
 
     async onload(): Promise<void> {
+        this.viewData = new ViewData(this);
+
         this.registerMarkdownPostProcessor(
             (element: HTMLElement, context: MarkdownPostProcessorContext) => {
-                this.initializeMermaidFeatures(element);
+                this.cleanupView();
+                this.initializeView();
             }
         );
 
         this.registerEvent(
             this.app.workspace.on('layout-change', () => {
-                const view =
-                    this.app.workspace.getActiveViewOfType(MarkdownView);
-                if (
-                    view &&
-                    view.getViewType() === 'markdown' &&
-                    view.getMode() === 'preview'
-                ) {
-                    this.view = view as MarkdownView;
-                }
+                this.cleanupView();
+                this.initializeView();
+            })
+        );
+
+        this.registerEvent(
+            this.app.workspace.on('active-leaf-change', () => {
+                this.cleanupView();
+                this.initializeView();
             })
         );
     }
@@ -63,6 +72,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
             if (!el.classList.contains('centered')) {
                 el.classList.add('centered');
             }
+
             if (!el.parentElement?.classList.contains('mermaid-container')) {
                 const container = ele.doc.createElement('div');
                 container.className = 'mermaid-container';
@@ -75,6 +85,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
 
                 el.parentNode?.insertBefore(container, el);
                 container.appendChild(el);
+                container.id = uuidv4();
                 const el_html = el as HTMLElement;
                 el_html.setCssStyles({
                     position: 'absolute',
@@ -86,8 +97,9 @@ export default class MermaidZoomDragPlugin extends Plugin {
                     height: '100%',
                 });
 
+                this.initializeViewData(container.id);
                 this.addControlPanel(container);
-                this.addMouseEvents(ele);
+                this.addMouseEvents(container);
                 container.setAttribute('tabindex', '0');
                 this.view.registerDomEvent(
                     container,
@@ -109,6 +121,8 @@ export default class MermaidZoomDragPlugin extends Plugin {
      * @param {HTMLElement} container - The container element to which the control panel will be added.
      */
     addControlPanel(container: HTMLElement): void {
+        this.activeContainer = container;
+
         const panelStyles = {
             position: 'absolute',
             display: 'grid',
@@ -406,6 +420,8 @@ export default class MermaidZoomDragPlugin extends Plugin {
         dy: number,
         setAnimation?: boolean
     ): void {
+        this.activeContainer = container;
+
         const element = container.querySelector(
             this.getCompoundSelector()
         ) as HTMLElement | null;
@@ -436,6 +452,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
         factor: number,
         setAnimation?: boolean
     ): void {
+        this.activeContainer = container;
         const element = container.querySelector(
             this.getCompoundSelector()
         ) as HTMLElement | null;
@@ -489,6 +506,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
         container: HTMLElement,
         setAnimation?: boolean
     ): void {
+        this.activeContainer = container;
         const containerWidth = container.clientWidth;
         const containerHeight = container.clientHeight;
         const mermaidWidth = element.clientWidth;
@@ -523,108 +541,106 @@ export default class MermaidZoomDragPlugin extends Plugin {
         }
     }
 
-    addMouseEvents(ele: HTMLElement): void {
+    addMouseEvents(container: HTMLElement): void {
         let startX: number, startY: number, initialX: number, initialY: number;
         let isDragging = false;
 
-        const mermaidContainers = ele.querySelectorAll('.mermaid-container');
-        mermaidContainers.forEach((container) => {
-            const mermaidElement = container.querySelector(
-                this.getCompoundSelector()
-            ) as HTMLElement;
+        const mermaidElement = container.querySelector(
+            this.getCompoundSelector()
+        ) as HTMLElement;
 
-            if (container.classList.contains('events-bound')) {
-                return;
+        if (mermaidElement.classList.contains('events-bound')) {
+            return;
+        }
+
+        mermaidElement.classList.add('events-bound');
+
+        this.view.registerDomEvent(
+            container as HTMLElement,
+            'wheel',
+            (event: WheelEvent) => {
+                if (!event.ctrlKey) {
+                    return;
+                }
+                this.activeContainer = container;
+                event.preventDefault();
+                const rect = mermaidElement.getBoundingClientRect();
+                const offsetX = event.clientX - rect.left;
+                const offsetY = event.clientY - rect.top;
+
+                const prevScale = this.scale;
+                this.scale += event.deltaY * -0.001;
+                this.scale = Math.max(0.125, this.scale);
+
+                const dx = offsetX * (1 - this.scale / prevScale);
+                const dy = offsetY * (1 - this.scale / prevScale);
+
+                this.dx += dx;
+                this.dy += dy;
+
+                mermaidElement.setCssStyles({
+                    transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`,
+                });
             }
-
-            container.classList.add('events-bound');
-
-            this.view.registerDomEvent(
-                container as HTMLElement,
-                'wheel',
-                (event: WheelEvent) => {
-                    if (!event.ctrlKey) {
-                        return;
-                    }
-                    event.preventDefault();
-                    const rect = mermaidElement.getBoundingClientRect();
-                    const offsetX = event.clientX - rect.left;
-                    const offsetY = event.clientY - rect.top;
-
-                    const prevScale = this.scale;
-                    this.scale += event.deltaY * -0.001;
-                    this.scale = Math.max(0.125, this.scale);
-
-                    const dx = offsetX * (1 - this.scale / prevScale);
-                    const dy = offsetY * (1 - this.scale / prevScale);
-
-                    this.dx += dx;
-                    this.dy += dy;
-
-                    mermaidElement.setCssStyles({
-                        transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`,
-                    });
+        );
+        this.view.registerDomEvent(
+            container as HTMLElement,
+            'mousedown',
+            (event: MouseEvent) => {
+                if (event.button !== 0) {
+                    return;
                 }
-            );
-            this.view.registerDomEvent(
-                container as HTMLElement,
-                'mousedown',
-                (event: MouseEvent) => {
-                    if (event.button !== 0) {
-                        return;
-                    }
-                    const c_html = container as HTMLElement;
-                    c_html.focus({ preventScroll: true });
-                    isDragging = true;
-                    startX = event.clientX;
-                    startY = event.clientY;
+                this.activeContainer = container;
+                const c_html = container as HTMLElement;
+                c_html.focus({ preventScroll: true });
+                isDragging = true;
+                startX = event.clientX;
+                startY = event.clientY;
 
-                    initialX = this.dx;
-                    initialY = this.dy;
-                    mermaidElement.setCssStyles({
-                        cursor: 'grabbing',
-                    });
-                    event.preventDefault();
+                initialX = this.dx;
+                initialY = this.dy;
+                mermaidElement.setCssStyles({
+                    cursor: 'grabbing',
+                });
+                event.preventDefault();
+            }
+        );
+        this.view.registerDomEvent(
+            container as HTMLElement,
+            'mousemove',
+            (event: MouseEvent) => {
+                if (!isDragging) {
+                    return;
                 }
-            );
-            this.view.registerDomEvent(
-                container as HTMLElement,
-                'mousemove',
-                (event: MouseEvent) => {
-                    if (!isDragging) {
-                        return;
-                    }
+                this.activeContainer = container;
 
-                    const dx = event.clientX - startX;
-                    const dy = event.clientY - startY;
-                    this.dx = initialX + dx;
-                    this.dy = initialY + dy;
-                    mermaidElement.setCssStyles({
-                        transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`,
-                    });
-                }
-            );
-            this.view.registerDomEvent(
-                container as HTMLElement,
-                'mouseup',
-                () => {
-                    if (isDragging) {
-                        isDragging = false;
-                        mermaidElement.setCssStyles({ cursor: 'grab' });
-                    }
-                }
-            );
-            this.view.registerDomEvent(
-                container as HTMLElement,
-                'mouseleave',
-                () => {
-                    if (isDragging) {
-                        isDragging = false;
-                        mermaidElement.setCssStyles({ cursor: 'grab' });
-                    }
-                }
-            );
+                const dx = event.clientX - startX;
+                const dy = event.clientY - startY;
+                this.dx = initialX + dx;
+                this.dy = initialY + dy;
+                mermaidElement.setCssStyles({
+                    transform: `translate(${this.dx}px, ${this.dy}px) scale(${this.scale})`,
+                });
+            }
+        );
+        this.view.registerDomEvent(container as HTMLElement, 'mouseup', () => {
+            this.activeContainer = container;
+            if (isDragging) {
+                isDragging = false;
+                mermaidElement.setCssStyles({ cursor: 'grab' });
+            }
         });
+        this.view.registerDomEvent(
+            container as HTMLElement,
+            'mouseleave',
+            () => {
+                this.activeContainer = container;
+                if (isDragging) {
+                    isDragging = false;
+                    mermaidElement.setCssStyles({ cursor: 'grab' });
+                }
+            }
+        );
     }
 
     /**
@@ -664,6 +680,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
                 if (plugin.nativeTouchEventsEnabled) {
                     return;
                 }
+                plugin.activeContainer = container;
 
                 const target = e.target as HTMLElement;
                 // we got touch to a button panel - returning
@@ -694,6 +711,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
                 if (plugin.nativeTouchEventsEnabled) {
                     return;
                 }
+                plugin.activeContainer = container;
 
                 e.preventDefault();
                 e.stopPropagation();
@@ -734,6 +752,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
                 if (plugin.nativeTouchEventsEnabled) {
                     return;
                 }
+                plugin.activeContainer = container;
 
                 const target = e.target as HTMLElement;
                 // we got touch to a button panel - returning
@@ -759,6 +778,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
                 if (plugin.nativeTouchEventsEnabled) {
                     return;
                 }
+                plugin.activeContainer = container;
 
                 e.preventDefault();
                 e.stopPropagation();
@@ -803,6 +823,7 @@ export default class MermaidZoomDragPlugin extends Plugin {
             }
             e.preventDefault();
             e.stopPropagation();
+            this.activeContainer = container;
 
             switch (key) {
                 case 'ArrowUp':
@@ -834,5 +855,34 @@ export default class MermaidZoomDragPlugin extends Plugin {
                 }
             }
         };
+    }
+
+    initializeView(): void {
+        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        if (!view) {
+            return;
+        }
+        if (view.getMode() !== 'preview') {
+            return;
+        }
+        // @ts-ignore
+        const leafID = view.leaf.id;
+        this.leafID = leafID;
+        this.view = view;
+        this.initializeMermaidFeatures(this.view.contentEl);
+    }
+
+    cleanupView(): void {
+        if (this.leafID) {
+            const isLeaf = this.app.workspace.getLeafById(this.leafID);
+            if (isLeaf === null) {
+                this.viewData.removeData(this.leafID!);
+                this.leafID = undefined;
+            }
+        }
+    }
+
+    initializeViewData(containerID: ContainerID): void {
+        this.viewData.initializeView(this.leafID!, containerID);
     }
 }
