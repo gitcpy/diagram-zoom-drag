@@ -6,12 +6,12 @@
     "type": "module",
     "description": "Add zoom and drag functionality to Mermaid diagrams",
     "main": "src/main.ts",
-  "scripts": {
-    "dev": "npx rollup -c rollup.config.mjs -w --environment PRODUCTION:0",
-    "build": "NODE_ENV=production npx rollup -c rollup.config.mjs --environment PRODUCTION:1",
-    "lint": "npx eslint src --ext .ts",
-    "rollup": "npx rollup"
-  },
+    "scripts": {
+        "dev": "npx rollup -c rollup.config.mjs -w --environment PRODUCTION:0",
+        "build": "NODE_ENV=production npx rollup -c rollup.config.mjs --environment PRODUCTION:1",
+        "lint": "npx eslint src --ext .ts",
+        "rollup": "npx rollup"
+    },
     "keywords": [],
     "devDependencies": {
         "@rollup/plugin-alias": "^5.1.0",
@@ -21,6 +21,7 @@
         "@rollup/plugin-replace": "^5.0.7",
         "@rollup/plugin-terser": "^0.4.4",
         "@rollup/plugin-typescript": "^11.1.6",
+        "@types/uuid": "^10.0.0",
         "@typescript-eslint/eslint-plugin": "^7.16.1",
         "@typescript-eslint/parser": "^7.16.1",
         "@typescript-eslint/utils": "^7.16.1",
@@ -36,5 +37,8 @@
         "terser": "^5.31.3",
         "tslib": "^2.6.3",
         "typescript": "5.5.4"
+    },
+    "dependencies": {
+        "uuid": "^10.0.0"
     }
 }
