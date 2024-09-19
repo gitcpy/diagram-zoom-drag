@@ -862,9 +862,6 @@ export default class MermaidZoomDragPlugin extends Plugin {
         if (!view) {
             return;
         }
-        if (view.getMode() !== 'preview') {
-            return;
-        }
         // @ts-ignore
         const leafID = view.leaf.id;
         this.leafID = leafID;
