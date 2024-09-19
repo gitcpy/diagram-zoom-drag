@@ -4,3 +4,138 @@
     justify-content: center;
     align-items: center; 
 }
+
+
+
+/* General styles for the settings tab */
+.mermaid-zoom-drag-settings {
+    padding: 16px;
+}
+
+/* Section headers */
+.mermaid-zoom-drag-settings .setting-item-heading {
+    font-size: 1.4em;
+    color: var(--text-normal);
+    border-bottom: 2px solid var(--background-modifier-border);
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+}
+
+/* Individual setting items */
+.mermaid-zoom-drag-settings .setting-item {
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    background-color: var(--background-primary);
+    transition: box-shadow 0.3s ease;
+}
+
+.mermaid-zoom-drag-settings .setting-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Setting item name */
+.mermaid-zoom-drag-settings .setting-item-name {
+    font-weight: bold;
+    color: var(--text-normal);
+}
+
+/* Setting item description */
+.mermaid-zoom-drag-settings .setting-item-description {
+    color: var(--text-muted);
+    font-size: 0.9em;
+    margin-top: 4px;
+}
+
+/* Input fields */
+.mermaid-zoom-drag-settings input[type="text"],
+.mermaid-zoom-drag-settings input[type="number"] {
+    background-color: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    padding: 6px 8px;
+    width: 100%;
+}
+
+/* Dropdown */
+.mermaid-zoom-drag-settings select {
+    background-color: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    padding: 6px 8px;
+    width: 100%;
+}
+
+/* Toggle switch */
+.mermaid-zoom-drag-settings .checkbox-container {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Buttons */
+.mermaid-zoom-drag-settings button {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.mermaid-zoom-drag-settings button:hover {
+    background-color: var(--interactive-accent-hover);
+}
+
+/* Details-summary for grouped settings */
+.mermaid-zoom-drag-settings .mermaid-zoom-drag-details {
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 8px;
+    margin-top: 12px;
+    overflow: hidden;
+}
+
+.mermaid-zoom-drag-settings .mermaid-zoom-drag-summary {
+    cursor: pointer;
+    padding: 12px;
+    background-color: var(--background-secondary);
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s ease;
+}
+
+.mermaid-zoom-drag-settings .mermaid-zoom-drag-summary:hover {
+    background-color: var(--background-secondary-alt);
+}
+
+.mermaid-zoom-drag-settings .mermaid-zoom-drag-summary::before {
+    content: '▶';
+    display: inline-block;
+    margin-right: 8px;
+    transition: transform 0.3s ease;
+}
+
+.mermaid-zoom-drag-settings .mermaid-zoom-drag-details[open] .mermaid-zoom-drag-summary::before {
+    transform: rotate(90deg);
+}
+
+.mermaid-zoom-drag-settings .mermaid-zoom-drag-details .setting-item {
+    border: none;
+    border-top: 1px solid var(--background-modifier-border);
+    border-radius: 0;
+    margin: 0;
+}
+
+
+/* Info button styles */
+.mermaid-zoom-drag-settings .clickable-icon {
+    color: var(--text-muted);
+    transition: color 0.2s ease;
+}
+
+.mermaid-zoom-drag-settings .clickable-icon:hover {
+    color: var(--text-normal);
+}
+
