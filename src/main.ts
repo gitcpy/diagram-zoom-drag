@@ -6,10 +6,14 @@ import {
     Plugin,
     setIcon,
 } from 'obsidian';
-import { MermaidSelectors } from './constants';
 import { ContainerID, LeafID } from './typing';
 import { ViewData } from './view-data';
 import { v4 as uuidv4 } from 'uuid';
+import SettingsManager, {
+    DEFAULT_SETTINGS_Interface,
+} from './settings-manager';
+import { SettingsTab } from './settings-tab';
+import PluginUtils from './pluginUtils';
 
 export default class MermaidZoomDragPlugin extends Plugin {
     dx!: number;
@@ -20,9 +24,16 @@ export default class MermaidZoomDragPlugin extends Plugin {
     leafID!: LeafID | undefined;
     private viewData!: ViewData;
     activeContainer!: HTMLElement;
+    settingsManager!: SettingsManager;
+    settings!: DEFAULT_SETTINGS_Interface;
+    pluginUtils!: PluginUtils;
 
     async onload(): Promise<void> {
         this.viewData = new ViewData(this);
+        this.settingsManager = new SettingsManager(this);
+        await this.settingsManager.loadSettings();
+        this.addSettingTab(new SettingsTab(this.app, this));
+        this.pluginUtils = new PluginUtils(this);
 
         this.registerMarkdownPostProcessor(
             (element: HTMLElement, context: MarkdownPostProcessorContext) => {
@@ -47,7 +58,10 @@ export default class MermaidZoomDragPlugin extends Plugin {
     }
 
     getCompoundSelector(): string {
-        return Object.values(MermaidSelectors).join(', ');
+        const diagrams = this.settings.supported_diagrams;
+        return diagrams.reduce<string>((acc, diagram) => {
+            return acc ? `${acc}, ${diagram.selector}` : diagram.selector;
+        }, '');
     }
 
     initializeMermaidFeatures(ele: HTMLElement): void {
