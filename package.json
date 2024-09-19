@@ -8,7 +8,7 @@
     "main": "src/main.ts",
     "scripts": {
         "dev": "npx rollup -c rollup.config.mjs -w --environment PRODUCTION:0",
-        "build": "NODE_ENV=production npx rollup -c rollup.config.mjs --environment PRODUCTION:1",
+        "build": "npx rollup -c rollup.config.mjs --environment PRODUCTION:1",
         "lint": "npx eslint src --ext .ts",
         "rollup": "npx rollup"
     },
