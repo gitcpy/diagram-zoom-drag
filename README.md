@@ -1,89 +1,67 @@
 ### Demo for PC:
 
-https://github.com/user-attachments/assets/b0ad8b7a-3f84-4ab2-b5eb-9cd31243ca07
+[View demo for PC](https://github.com/user-attachments/assets/b0ad8b7a-3f84-4ab2-b5eb-9cd31243ca07)
 
 ### Demo for Mobile:
 
-https://github.com/user-attachments/assets/9cdc743f-8c26-4151-9588-17ae086692ec
+[View demo for Mobile](https://github.com/user-attachments/assets/9cdc743f-8c26-4151-9588-17ae086692ec)
 
+### About the problem
+In Obsidian, when you have a Markdown file with large charts, diagrams, or Mermaid content, these elements may be too large to display fully within the Mermaid window. This plugin is designed to address that issue by allowing you to zoom in, zoom out, and drag the diagrams for better visibility and interaction. Enjoy!
 
-1. About
+### How to get it
+There are three options to install the plugin:
 
-   In obsidian, when you have a md file which contains large charts or diagrams, maybe something else of mermaid, you will see those things are too large to show completely in mermaid window.
-   So i think it is a good way to take the obsidian plugin here. It adapts those things of mermaid, and it could easily that let you zoom in or zoom-out or drag. Enjoy it!
+1. **Manual Installation**:
+    - Visit the GitHub page of the [plugin](https://github.com/gitcpy/mermaid-zoom-drag) and go to the releases page.
+    - Download the latest release files (main.js, manifest.json, styles.css).
+    - Create a `Mermaid Zoom Drag` directory in the `./obsidian/plugins/` folder.
+    - Move the downloaded files into this directory.
+    - Enable the plugin in Obsidian by going to **Settings** -> **Community plugins**.
 
-2. Get it
+2. **Using BRAT**:
+    - If you have BRAT, copy the link of this plugin.
+    - Open BRAT settings, click on `Add Beta Plugin`, paste the link, and press `Add Plugin`.
+    - Enable the plugin in **Settings** -> **Community settings**.
 
-   2.1 From Github
+3. **From Obsidian Community Plugin Browser**:
+    - (TO BE CONTINUED ...)
 
-   2.1.1 Download and Install
+### What this plugin can do
+- The plugin recognizes all diagrams with specific class selectors and adds a control panel for each:
+    - **Service panel**: Located at the top right corner.
+        - **Hide/Show**: Toggle other subpanels.
+        - **Fullscreen mode**: Open or exit fullscreen mode.
+        - **Native touch events (Mobile)**: Enable or disable native touch events on the diagram.
+    - **Zoom panel**: Positioned at the center of the right edge.
+        - **Zoom in**: Increase the scale of the current diagram.
+        - **Reset zoom and position**: Reset the scale and position of the diagram.
+        - **Zoom out**: Decrease the scale of the current diagram.
+    - **Move panel**: Located at the bottom right.
+        - Move the diagram in the desired direction.
+- **Keyboard shortcuts**:
+    - `CTRL` + `+`/`=`: Zoom in.
+    - `CTRL` + `-`: Zoom out.
+    - `CTRL` + `0`: Reset zoom and position.
+    - Arrow keys: Move the diagram.
+- **Mouse controls**:
+    - Mouse down + drag: Move the diagram.
+    - `CTRL` + Mouse Wheel: Zoom in or out.
+- The plugin saves zoom and position settings separately for each container, ensuring that each diagram retains its settings.
+- **Diagram support**:
+    - Supports Mermaid, Mehrmaid (other Mermaid plugins with known issues), PlantUML, and Graphviz.
+    - To add support for more diagrams, go to the plugin settings tab. There, you’ll find a 
+      brief guide on adding new diagrams.  Just click the extra button next to the `Add new diagram` button for instructions.
 
-   Way 1.
-
-    	Download code zip file and unzip it, or you just pull it from github.
-    
-   	Anyway you like. Then you will get a doc named mermaid-zoom-drag-main, rename it to mermain-zoom-drag-main.
-   	
-   	Just put the doc in the position, if your system is windows, it will be like this "your_obsidian_vault_path/.obsidian/plugins/mermaid-zoom-drag-plug".
-   	
-   	Reload your obsidian app, and you will see the option in "community plugins" -> "installed plugins", and click the switcher.
-
-   	Way 2.
-
-      	Also you could get it by BRAT plugin from the "Community plugins" in Obsidian.
-      	
-      	Install BRAT plugin from the "Community plugins".
-      
-   	Go to the option or settings of it, click "Add Beta Plugin", and then fill in the repository textbox: https://github.com/gitcpy/mermaid-zoom-drag.git.
-
-      	After that, click "Add plugin". A moment later, you will see the plugin in the list of installed plugins. Just enable if you in need, or disable it.
-
-   Way 3.
-   Directly From Obsidian Community Plugin Browser
-
-   	(to be continued...)
-
-3. Usage
-
-   After installed, When you read in obsidian, if there ia any mermaid, you just put your cursor inside it in reading mode.
-
-
-   You will have the following options:
-
-    - Keyboard:
-        - `CTRL` + `+`/`=`: zoom in
-        - `CTRL` + `-`: zoom out
-        - `CTRL` + `0`: reset zoom and position
-        - ArrowUp, ArrowDown, ArrowLeft, ArrowRight: moves the diagram to the specified side
-
-    - Mouse:
-        - Mouse down + move: moves the diagram to the specified side
-        - `CTRL` + wheel: zoom in / zoom out the diagram
-
-    - Control Panels:
-        - Service panel at the top right corner:
-            - Hide / show action: hide / show other panels
-            - Open in fullscreen mode / exit fullscreen mode: enables or disables fullscreen mode 
-              for the 
-              diagram
-
-        - Zoom panel at the right edge at the center:
-            - Zoom in: zoom in the diagram
-            - Reset zoom and position: reset zoom and position of the diagram
-            - Zoom out: zoom out the diagram
-
-        - Move panel at the bottom:
-            - All actions move the diagram to the specified side
-
-5. Example
-
-   	4.1 Mermaid code
-
-   ```mermaid
-   flowchart LR
-   Test_Mermaid_Diagram
-   Start --> Stop
-   ```
-
-   4.2 Click the copy button at right top of the mermaid diagrams above to copy the code, and paste it in your md file in obsidian, and try as "3.
+### Example
+```mermaid
+graph TD
+    A[Start] --> B[Process 1]
+    B --> C{Decision}
+    C -->|Yes| D[Process 2]
+    C -->|No| E[Process 3]
+    D --> F[End]
+    E --> F
+```
+Click the copy button at the top right of the Mermaid diagrams to copy the code and paste it into your Markdown file in Obsidian to see it in action.
 
