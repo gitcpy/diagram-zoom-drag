@@ -23,13 +23,25 @@ export class SettingsTab extends PluginSettingTab {
             });
         });
 
-        const addDiagram = new Setting(containerEl)
+        const addDiagram = new Setting(containerEl);
+        const diagramR = new RegExp(/^[A-Za-z0-9]+$/);
+        const selectorR = new RegExp(/^\.[\w-]+$/);
+
+        addDiagram
             .setName('Add new diagram')
             .addText((name) => {
                 name.inputEl.id = 'diagram-name';
                 name.setPlaceholder('Example Diagram');
                 name.onChange((text) => {
                     name.setValue(text);
+                    const dTest = diagramR.test(text);
+                    !dTest
+                        ? name.inputEl.classList.add('incorrect_input')
+                        : name.inputEl.removeClass('incorrect_input');
+                    !dTest
+                        ? (name.inputEl.ariaLabel =
+                              'Incorrect input. Should be only `A-Za-z0-9`')
+                        : (name.inputEl.ariaLabel = '');
                 });
             })
             .addText((input) => {
@@ -37,6 +49,15 @@ export class SettingsTab extends PluginSettingTab {
                 input.setPlaceholder('.example-diagram');
                 input.onChange((text) => {
                     input.setValue(text);
+                    const sTest = selectorR.test(text);
+
+                    !sTest
+                        ? input.inputEl.classList.add('incorrect_input')
+                        : input.inputEl.removeClass('incorrect_input');
+                    !sTest
+                        ? (input.inputEl.ariaLabel =
+                              'Input incorrect. Should be a dot in the beginning and only `A-Za-z0-9-`')
+                        : (input.inputEl.ariaLabel = '');
                 });
             })
             .addButton((button) => {
@@ -48,20 +69,35 @@ export class SettingsTab extends PluginSettingTab {
                     const selectorInput = addDiagram.settingEl.querySelector(
                         '#diagram-selector'
                     ) as HTMLInputElement | null;
-                    if (nameInput && selectorInput) {
-                        const name = nameInput.value;
-                        const selector = selectorInput.value;
-                        this.plugin.settings.supported_diagrams.push({
-                            name: name,
-                            selector: selector,
-                        });
-                        await this.plugin.settingsManager.saveSettings();
-                        const scrollTop = containerEl.scrollTop;
-                        this.containerEl.empty();
-                        this.display();
-                        this.containerEl.scrollTop = scrollTop;
-                        new Notice('New diagram added!');
+                    if (!nameInput || !selectorInput) {
+                        return;
                     }
+
+                    const name = nameInput.value;
+                    const selector = selectorInput.value;
+                    if (!diagramR.test(name) || !selectorR.test(selector)) {
+                        new Notice('Input is not valid!');
+
+                        nameInput.classList.add('shake');
+                        selectorInput.classList.add('shake');
+
+                        setTimeout(() => {
+                            nameInput.removeClass('shake');
+                            selectorInput.removeClass('shake');
+                        }, 500);
+                        return;
+                    }
+
+                    this.plugin.settings.supported_diagrams.push({
+                        name: name,
+                        selector: selector,
+                    });
+                    await this.plugin.settingsManager.saveSettings();
+                    const scrollTop = containerEl.scrollTop;
+                    this.containerEl.empty();
+                    this.display();
+                    this.containerEl.scrollTop = scrollTop;
+                    new Notice('New diagram added!');
                 });
             })
             .addExtraButton((extra) => {
