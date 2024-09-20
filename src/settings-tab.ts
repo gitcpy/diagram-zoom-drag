@@ -35,13 +35,18 @@ export class SettingsTab extends PluginSettingTab {
                 name.onChange((text) => {
                     name.setValue(text);
                     const dTest = diagramR.test(text);
-                    !dTest
-                        ? name.inputEl.classList.add('incorrect_input')
-                        : name.inputEl.removeClass('incorrect_input');
-                    !dTest
-                        ? (name.inputEl.ariaLabel =
-                              'Incorrect input. Should be only `A-Za-z0-9`')
-                        : (name.inputEl.ariaLabel = '');
+                    if (!text) {
+                        name.inputEl.removeClass('invalid');
+                        name.inputEl.ariaLabel = '';
+                    } else {
+                        !dTest
+                            ? name.inputEl.classList.add('invalid')
+                            : name.inputEl.removeClass('invalid');
+                        !dTest
+                            ? (name.inputEl.ariaLabel =
+                                  'Incorrect input. Should be only `A-Za-z0-9`')
+                            : (name.inputEl.ariaLabel = '');
+                    }
                 });
             })
             .addText((input) => {
@@ -50,14 +55,18 @@ export class SettingsTab extends PluginSettingTab {
                 input.onChange((text) => {
                     input.setValue(text);
                     const sTest = selectorR.test(text);
-
-                    !sTest
-                        ? input.inputEl.classList.add('incorrect_input')
-                        : input.inputEl.removeClass('incorrect_input');
-                    !sTest
-                        ? (input.inputEl.ariaLabel =
-                              'Input incorrect. Should be a dot in the beginning and only `A-Za-z0-9-`')
-                        : (input.inputEl.ariaLabel = '');
+                    if (!text) {
+                        input.inputEl.removeClass('invalid');
+                        input.inputEl.ariaLabel = '';
+                    } else {
+                        !sTest
+                            ? input.inputEl.classList.add('invalid')
+                            : input.inputEl.removeClass('invalid');
+                        !sTest
+                            ? (input.inputEl.ariaLabel =
+                                  'Incorrect input. Should be only `A-Za-z0-9-`')
+                            : (input.inputEl.ariaLabel = '');
+                    }
                 });
             })
             .addButton((button) => {
@@ -78,6 +87,22 @@ export class SettingsTab extends PluginSettingTab {
                     if (!diagramR.test(name) || !selectorR.test(selector)) {
                         new Notice('Input is not valid!');
 
+                        nameInput.classList.add('shake');
+                        selectorInput.classList.add('shake');
+
+                        setTimeout(() => {
+                            nameInput.removeClass('shake');
+                            selectorInput.removeClass('shake');
+                        }, 500);
+                        return;
+                    }
+
+                    const isAlreadyExist =
+                        this.plugin.settings.supported_diagrams.find(
+                            (d) => d.name === name || d.selector === selector
+                        );
+                    if (isAlreadyExist) {
+                        new Notice('Is already exists!');
                         nameInput.classList.add('shake');
                         selectorInput.classList.add('shake');
 
