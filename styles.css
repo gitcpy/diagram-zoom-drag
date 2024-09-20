@@ -140,10 +140,9 @@
 }
 
 
-.incorrect_input {
-    color: red;
-    text-decoration: underline;
-    text-decoration-color: red;
+
+.invalid {
+    border: 2px solid red !important;
 }
 
 .shake {
