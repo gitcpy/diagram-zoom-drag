@@ -64,7 +64,7 @@ export class SettingsTab extends PluginSettingTab {
                             : input.inputEl.removeClass('invalid');
                         !sTest
                             ? (input.inputEl.ariaLabel =
-                                  'Incorrect input. Should be only `A-Za-z0-9-`')
+                                  'Input incorrect. Should be a dot in the beginning and only `A-Za-z0-9-` after it')
                             : (input.inputEl.ariaLabel = '');
                     }
                 });
