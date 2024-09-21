@@ -27,7 +27,7 @@ const baseConfig = {
 const developmentConfig = {
     ...baseConfig,
     output: {
-        dir: 'test-vault/.obsidian/plugins/Mermaid Zoom Drag',
+        dir: 'test-vault/.obsidian/plugins/Diagram Zoom Drag',
         sourcemap: false,
         format: 'cjs',
         exports: 'auto',
@@ -38,15 +38,15 @@ const developmentConfig = {
             targets: [
                 {
                     src: './styles.css',
-                    dest: 'test-vault/.obsidian/plugins/Mermaid Zoom Drag/',
+                    dest: 'test-vault/.obsidian/plugins/Diagram Zoom Drag/',
                 },
                 {
                     src: './manifest.json',
-                    dest: 'test-vault/.obsidian/plugins/Mermaid Zoom Drag/',
+                    dest: 'test-vault/.obsidian/plugins/Diagram Zoom Drag/',
                 },
                 {
                     src: './.hotreload',
-                    dest: 'test-vault/.obsidian/plugins/Mermaid Zoom Drag/',
+                    dest: 'test-vault/.obsidian/plugins/Diagram Zoom Drag/',
                 },
             ],
         }),
