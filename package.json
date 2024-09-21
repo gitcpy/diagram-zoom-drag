@@ -4,7 +4,7 @@
     "license": "MIT",
     "version": "4.2.2",
     "type": "module",
-    "description": "Add zoom and drag functionality to Mermaid diagrams",
+    "description": "Add zoom and drag functionality to diagrams from Mermaid, Plantuml, Graphviz, Gravizo and so on",
     "main": "src/main.ts",
     "scripts": {
         "dev": "npx rollup -c rollup.config.mjs -w --environment PRODUCTION:0",
