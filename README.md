@@ -68,7 +68,7 @@ Click the copy button at the top right of the Mermaid diagrams to copy the code 
 ### Thanks
 - For improving the experiance of Mermaied Diagrams in Obsidian, I set to make a plugin.
 - I made a prototype with simple control for PC mainly.
-- **Sentiago**
+- **[Sentiago](https://github.com/Ssentiago)**
     - The man who has great enthusiasm for development.
     - He added control panel for movement and zooming, touching manipulation, fullscreen mode for better experiance, as well as animation effect. The plugin is much more better.
     - Thanks for his contribution. 
