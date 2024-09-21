@@ -1,11 +1,4 @@
-import {
-    MarkdownPostProcessorContext,
-    MarkdownView,
-    Notice,
-    Platform,
-    Plugin,
-    setIcon,
-} from 'obsidian';
+import { MarkdownPostProcessorContext, MarkdownView, Plugin } from 'obsidian';
 import { ContainerID, LeafID } from '../typing/typing';
 import { ViewDataController } from '../controllers/view-data-controller';
 import { v4 as uuidv4 } from 'uuid';
