@@ -65,3 +65,10 @@ graph TD
 ```
 Click the copy button at the top right of the Mermaid diagrams to copy the code and paste it into your Markdown file in Obsidian to see it in action.
 
+### Thanks
+- For improving the experiance of Mermaied Diagrams in Obsidian, I set to make a plugin.
+- I made a prototype with simple control for PC mainly.
+- **Sentiago**
+    - The man who has great enthusiasm for development. He added control panel for movement and zooming, touching manipulation, fullscreen mode for better experiance, as well as animation effect. The plugin is much more better.
+    - Thanks for his contribution. 
+
