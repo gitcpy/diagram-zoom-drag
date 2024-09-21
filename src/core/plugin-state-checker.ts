@@ -1,14 +1,7 @@
-import path from 'path';
-import MermaidZoomDragPlugin from './main';
+import DiagramZoomDragPlugin from './diagram-zoom-drag-plugin';
 
-/**
- * Provides utility functions for managing plugin state and metadata.
- *
- * This class offers methods to determine if the plugin is opened for the first time, check for updates,
- * and retrieve metadata based on the plugin directory's creation time.
- */
-export default class PluginUtils {
-    constructor(public plugin: MermaidZoomDragPlugin) {}
+export default class PluginStateChecker {
+    constructor(public plugin: DiagramZoomDragPlugin) {}
 
     /**
      * Determines if the plugin is being opened for the first time.

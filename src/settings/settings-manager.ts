@@ -1,6 +1,7 @@
 import path from 'path';
-import MermaidZoomDragPlugin from './main';
-import { SupportedDiagrams } from './constants';
+import DiagramZoomDragPlugin from '../core/diagram-zoom-drag-plugin';
+
+import { SupportedDiagrams } from '../typing/typing';
 
 export interface DiagramData {
     name: string;
@@ -12,7 +13,7 @@ export interface DEFAULT_SETTINGS_Interface {
 }
 
 export default class SettingsManager {
-    constructor(public plugin: MermaidZoomDragPlugin) {
+    constructor(public plugin: DiagramZoomDragPlugin) {
         this.plugin = plugin;
     }
 

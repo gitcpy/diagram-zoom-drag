@@ -1,5 +1,5 @@
 import { App, Modal } from 'obsidian';
-import MermaidZoomDragPlugin from './main';
+import DiagramZoomDragPlugin from '../../core/diagram-zoom-drag-plugin';
 import path from 'path';
 import https from 'https';
 import { URL } from 'url';
@@ -7,7 +7,7 @@ import { URL } from 'url';
 export class UserGuideModal extends Modal {
     constructor(
         app: App,
-        public plugin: MermaidZoomDragPlugin
+        public plugin: DiagramZoomDragPlugin
     ) {
         super(app);
         this.titleEl.textContent = 'Guide';
@@ -105,7 +105,7 @@ export class UserGuideModal extends Modal {
         }
 
         const isFirstPluginStart =
-            await this.plugin.pluginUtils.isFirstPluginStart();
+            await this.plugin.pluginStateChecker.isFirstPluginStart();
         if (isFirstPluginStart) {
             await this.downloadVideo(videoPath);
         } else {

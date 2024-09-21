@@ -1,11 +1,11 @@
 import { App, Notice, PluginSettingTab, Setting } from 'obsidian';
-import MermaidZoomDragPlugin from './main';
-import { UserGuideModal } from './user-guide-modal';
+import DiagramZoomDragPlugin from '../core/diagram-zoom-drag-plugin';
+import { UserGuideModal } from './modals/user-guide-modal';
 
 export class SettingsTab extends PluginSettingTab {
     constructor(
         public app: App,
-        public plugin: MermaidZoomDragPlugin
+        public plugin: DiagramZoomDragPlugin
     ) {
         super(app, plugin);
     }
