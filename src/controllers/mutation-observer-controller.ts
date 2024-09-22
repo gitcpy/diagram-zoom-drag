@@ -32,9 +32,12 @@ export default class MutationObserverController {
                             '#diagram-fold-button'
                         ) as HTMLElement | null;
                         if (button) {
-                            setIcon(button, isFolded ? 'minus' : 'plus');
+                            setIcon(
+                                button,
+                                isFolded ? 'unfold-vertical' : 'fold-vertical'
+                            );
                             button.ariaLabel = isFolded
-                                ? 'Unfold diagram'
+                                ? 'Expand diagram'
                                 : 'Fold diagram';
                         }
                     }

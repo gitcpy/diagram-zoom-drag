@@ -499,7 +499,7 @@ export default class ControlPanelController {
     ): Array<{ icon: string; action: () => void; title: string; id?: string }> {
         const buttons = [
             {
-                icon: 'plus',
+                icon: 'fold-vertical',
                 action: (): void => {
                     container.classList.toggle('folded');
                 },
