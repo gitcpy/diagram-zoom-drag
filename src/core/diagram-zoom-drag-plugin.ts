@@ -10,6 +10,7 @@ import PluginStateChecker from './plugin-state-checker';
 import { DiagramController } from '../controllers/diagram-controller';
 import EventController from '../controllers/event-controller';
 import ControlPanelController from '../controllers/control-panel-controller';
+import MutationObserverController from '../controllers/mutation-observer-controller';
 
 export default class DiagramZoomDragPlugin extends Plugin {
     dx!: number;
@@ -26,6 +27,7 @@ export default class DiagramZoomDragPlugin extends Plugin {
     diagramController!: DiagramController;
     eventController!: EventController;
     controlPanelController!: ControlPanelController;
+    mutationObserverController!: MutationObserverController;
 
     /**
      * Initializes the plugin.
@@ -113,6 +115,7 @@ export default class DiagramZoomDragPlugin extends Plugin {
                 this.initializeView();
             })
         );
+        this.mutationObserverController = new MutationObserverController(this);
     }
 
     /**
@@ -205,12 +208,6 @@ export default class DiagramZoomDragPlugin extends Plugin {
             if (!el.parentElement?.classList.contains('diagram-container')) {
                 const container = ele.doc.createElement('div');
                 container.className = 'diagram-container';
-                container.setCssStyles({
-                    position: 'relative',
-                    overflow: 'hidden',
-                    width: '100%',
-                    height: '70vh',
-                });
 
                 el.parentNode?.insertBefore(container, el);
                 container.appendChild(el);
@@ -229,6 +226,12 @@ export default class DiagramZoomDragPlugin extends Plugin {
                 this.initializeViewData(container.id);
                 this.controlPanelController.addControlPanel(container);
                 this.eventController.addMouseEvents(container);
+                this.mutationObserverController.addFoldingObserver(container);
+                this.eventController.addFocusEvents(container);
+
+                if (this.settings.foldByDefault) {
+                    container.addClass('folded');
+                }
                 container.setAttribute('tabindex', '0');
                 this.view.registerDomEvent(
                     container,

@@ -156,3 +156,17 @@
     75% { transform: translateX(-5px); }
     100% { transform: translateX(0); }
 }
+
+
+.diagram-container {
+    transition: height 0.5s ease;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 70vh;
+    margin: 40px 0;
+}
+
+.diagram-container.folded {
+    height: 20vh;
+}

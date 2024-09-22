@@ -23,6 +23,34 @@ export class SettingsTab extends PluginSettingTab {
             });
         });
 
+        new Setting(containerEl).setHeading().setName('Diagram settings');
+
+        new Setting(containerEl)
+            .setName('Fold diagrams by default?')
+            .addToggle((toggle) => {
+                toggle
+                    .setValue(this.plugin.settings.foldByDefault)
+                    .onChange(async (value: boolean) => {
+                        toggle.setValue(value);
+                        this.plugin.settings.foldByDefault = value;
+                        await this.plugin.settingsManager.saveSettings();
+                    });
+            });
+
+        new Setting(containerEl)
+            .setName('Automatically fold diagrams when focus changes?')
+            .addToggle((toggle) => {
+                toggle
+                    .setValue(this.plugin.settings.automaticFolding)
+                    .onChange(async (value: boolean) => {
+                        toggle.setValue(value);
+                        this.plugin.settings.automaticFolding = value;
+                        await this.plugin.settingsManager.saveSettings();
+                    });
+            });
+
+        new Setting(containerEl).setHeading().setName('Diagram management');
+
         const addDiagram = new Setting(containerEl);
         const diagramR = new RegExp(/^[A-Za-z0-9]+$/);
         const selectorR = new RegExp(/^\.[\w-]+$/);

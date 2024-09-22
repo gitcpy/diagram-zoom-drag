@@ -407,4 +407,18 @@ export default class EventController {
             }
         };
     }
+
+    addFocusEvents(container: HTMLElement): void {
+        this.plugin.view.registerDomEvent(container, 'focusin', () => {
+            if (this.plugin.settings.automaticFolding) {
+                container.removeClass('folded');
+            }
+        });
+
+        this.plugin.view.registerDomEvent(container, 'focusout', () => {
+            if (this.plugin.settings.automaticFolding) {
+                container.addClass('folded');
+            }
+        });
+    }
 }
