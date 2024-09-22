@@ -25,10 +25,12 @@ export default class ControlPanelController {
             movePanel,
             zoomPanel
         );
+        const foldPanel = this.createFoldPanel(container);
 
         container.appendChild(movePanel);
         container.appendChild(zoomPanel);
         container.appendChild(servicePanel);
+        container.appendChild(foldPanel);
 
         this.setupFullscreenHandler(container);
     }
@@ -51,6 +53,7 @@ export default class ControlPanelController {
             gridTemplateColumns: 'repeat(3, 1fr)',
             gridTemplateRows: 'repeat(3, 1fr)',
         });
+        movePanel.addClass('hide-when-parent-folded');
 
         const moveButtons = this.getMoveButtons(container);
         moveButtons.forEach((btn) =>
@@ -86,6 +89,7 @@ export default class ControlPanelController {
             transform: 'translateY(-50%)',
             gridTemplateColumns: '1fr',
         });
+        zoomPanel.addClass('hide-when-parent-folded');
 
         const zoomButtons = this.getZoomButtons(container);
         zoomButtons.forEach((btn) =>
@@ -95,6 +99,32 @@ export default class ControlPanelController {
         );
 
         return zoomPanel;
+    }
+
+    private createFoldPanel(container: HTMLElement) {
+        const foldPanel = this.createPanel('diagram-fold-panel', {
+            ...this.panelStyles,
+            position: 'absolute',
+            left: '50%',
+            bottom: '0',
+            transform: 'translateX(-50%)',
+            gridTemplateColumns: '1fr',
+        });
+
+        const foldButtons = this.getFoldButtons(container);
+
+        foldButtons.forEach((button) => {
+            const btn = this.createButton(
+                button.icon,
+                button.action,
+                button.title,
+                true,
+                button.id
+            );
+            foldPanel.appendChild(btn);
+        });
+
+        return foldPanel;
     }
 
     /**
@@ -120,6 +150,7 @@ export default class ControlPanelController {
             top: '10px',
             gridTemplateColumns: 'repeat(2, 1fr)',
         });
+        servicePanel.addClass('hide-when-parent-folded');
 
         const serviceButtons = this.getServiceButtons(
             container,
@@ -460,6 +491,22 @@ export default class ControlPanelController {
             this.plugin.eventController.addTouchEvents(container);
         }
 
+        return buttons;
+    }
+
+    getFoldButtons(
+        container: HTMLElement
+    ): Array<{ icon: string; action: () => void; title: string; id?: string }> {
+        const buttons = [
+            {
+                icon: 'plus',
+                action: (): void => {
+                    container.classList.toggle('folded');
+                },
+                title: 'Fold diagram',
+                id: 'diagram-fold-button',
+            },
+        ];
         return buttons;
     }
 
