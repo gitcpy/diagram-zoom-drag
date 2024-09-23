@@ -1,7 +1,7 @@
 {
   "id": "diagram-zoom-drag",
   "name": "Diagram Zoom Drag",
-  "version": "4.2.2",
+  "version": "4.2.3",
   "minAppVersion": "0.9.12",
   "description": "Add zoom and drag functionality to diagrams from Mermaid, Plantuml, Graphviz, Gravizo and so on",
   "author": "ChenPengyuan",
