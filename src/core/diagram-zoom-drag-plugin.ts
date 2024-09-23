@@ -228,6 +228,7 @@ export default class DiagramZoomDragPlugin extends Plugin {
                 this.eventController.addMouseEvents(container);
                 this.mutationObserverController.addFoldingObserver(container);
                 this.eventController.addFocusEvents(container);
+                this.addMinimap(container, el_html);
 
                 if (this.settings.foldByDefault) {
                     container.addClass('folded');
@@ -299,5 +300,193 @@ export default class DiagramZoomDragPlugin extends Plugin {
      */
     initializeViewData(containerID: ContainerID): void {
         this.viewData.initializeView(this.leafID!, containerID);
+    }
+
+    addMinimap(container: HTMLElement, element: HTMLElement): void {
+        const observer = new MutationObserver(() => {
+            const contentEl = element.querySelector('svg, img');
+            if (contentEl) {
+                observer.disconnect();
+                this.createAdaptiveMinimap(container, element);
+            }
+        });
+
+        const initialContentEl = element.querySelector('svg, img');
+        if (initialContentEl) {
+            this.createAdaptiveMinimap(container, element);
+        } else {
+            observer.observe(container, { childList: true, subtree: true });
+        }
+    }
+
+    private createAdaptiveMinimap(
+        container: HTMLElement,
+        element: HTMLElement
+    ): void {
+        const contentEl = element.querySelector('svg, img') as HTMLElement;
+        if (!contentEl) {
+            return;
+        }
+
+        const contentRect = contentEl.getBoundingClientRect();
+        const aspectRatio = contentRect.width / contentRect.height;
+
+        const maxMinimapWidth = 250;
+        const maxMinimapHeight = 250;
+
+        let minimapWidth: number;
+        let minimapHeight: number;
+
+        if (aspectRatio > 1) {
+            minimapWidth = maxMinimapWidth;
+            minimapHeight = minimapWidth / aspectRatio;
+        } else {
+            minimapHeight = maxMinimapHeight;
+            minimapWidth = minimapHeight * aspectRatio;
+        }
+
+        const minimap = container.ownerDocument.createElement('div');
+        minimap.className = 'mermaid-minimap';
+        minimap.id = 'diagram-zoom-drag-minimap';
+        minimap.setCssStyles({
+            position: 'absolute',
+            left: '10px',
+            bottom: '10px',
+            width: `${minimapWidth}px`,
+            height: `${minimapHeight}px`,
+            border: '1px solid var(--background-modifier-border)',
+            overflow: 'hidden',
+            background: 'var(--background-primary)',
+            zIndex: '1000',
+            opacity: '0.7',
+            visibility: 'visible',
+        });
+
+        container.appendChild(minimap);
+
+        this.createMinimapContent(element, minimap);
+
+        const viewportIndicator = container.ownerDocument.createElement('div');
+        viewportIndicator.className = 'mermaid-minimap-viewport';
+        viewportIndicator.setCssStyles({
+            position: 'absolute',
+            border: '2px solid var(--interactive-accent)',
+            backgroundColor: 'rgba(var(--interactive-accent-rgb), 0.2)',
+            pointerEvents: 'none',
+        });
+        minimap.appendChild(viewportIndicator);
+
+        this.updateMinimapViewport(container, element, viewportIndicator);
+
+        const updateMinimapThrottled = this.throttle(() => {
+            this.updateMinimapViewport(container, element, viewportIndicator);
+        }, 100);
+
+        this.view.registerDomEvent(
+            container,
+            'mousemove',
+            updateMinimapThrottled
+        );
+        this.view.registerDomEvent(window, 'resize', updateMinimapThrottled);
+    }
+
+    // todo пропорции миникарты по отношению к диаграмме
+
+    private createMinimapContent(
+        mermaidElement: HTMLElement,
+        minimap: HTMLElement
+    ): void {
+        const el = mermaidElement.querySelector('svg, img');
+
+        if (el instanceof SVGElement) {
+            const clonedSvg = el.cloneNode(true) as SVGElement;
+            clonedSvg.setAttribute('width', '100%');
+            clonedSvg.setAttribute('height', '100%');
+            minimap.appendChild(clonedSvg);
+        } else if (el instanceof HTMLImageElement) {
+            const clonedImg = el.cloneNode(true) as HTMLImageElement;
+            clonedImg.setAttribute('width', '100%');
+            clonedImg.setAttribute('height', '100%');
+            minimap.appendChild(clonedImg);
+        } else {
+            const placeholder = minimap.ownerDocument.createElement('div');
+            placeholder.textContent = 'Minimap not available';
+            placeholder.setCssStyles({
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                width: '100%',
+                height: '100%',
+                color: 'var(--text-muted)',
+                fontSize: '12px',
+            });
+            minimap.appendChild(placeholder);
+        }
+    }
+
+    private updateMinimapViewport(
+        container: HTMLElement,
+        mermaidElement: HTMLElement,
+        viewportIndicator: HTMLElement
+    ): void {
+        const minimap = container.querySelector(
+            '.mermaid-minimap'
+        ) as HTMLElement | null;
+        if (!minimap) return;
+
+        const minimapRect = minimap.getBoundingClientRect();
+        const mermaidRect = mermaidElement.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+
+        // Вычисляем масштаб
+        const scaleX = minimapRect.width / mermaidRect.width;
+        const scaleY = minimapRect.height / mermaidRect.height;
+
+        const transform = new DOMMatrix(
+            getComputedStyle(mermaidElement).transform
+        );
+        const translateX = transform.e;
+        const translateY = transform.f;
+
+        const left = -translateX * scaleX;
+        const top = -translateY * scaleY;
+        const width = containerRect.width * scaleX;
+        const height = containerRect.height * scaleY;
+
+        // Ограничиваем значения, чтобы вьюпорт не выходил за пределы миникарты
+        const clampedLeft = Math.max(
+            0,
+            Math.min(left, minimapRect.width - width)
+        );
+        const clampedTop = Math.max(
+            0,
+            Math.min(top, minimapRect.height - height)
+        );
+
+        viewportIndicator.style.left = `${clampedLeft}px`;
+        viewportIndicator.style.top = `${clampedTop}px`;
+        viewportIndicator.style.width = `${width}px`;
+        viewportIndicator.style.height = `${height}px`;
+    }
+    private throttle(func: Function, limit: number): (...args: any[]) => void {
+        let lastFunc: ReturnType<typeof setTimeout>;
+        let lastRan: number;
+        return function (this: any, ...args: any[]): void {
+            if (!lastRan) {
+                func.apply(this, args);
+                lastRan = Date.now();
+            } else {
+                clearTimeout(lastFunc);
+                lastFunc = setTimeout(
+                    () => {
+                        if (Date.now() - lastRan >= limit) {
+                            func.apply(this, args);
+                            lastRan = Date.now();
+                        }
+                    },
+                    limit - (Date.now() - lastRan)
+                );
+            }
+        };
     }
 }
