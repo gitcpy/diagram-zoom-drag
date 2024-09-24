@@ -65,6 +65,15 @@ graph TD
 ```
 Click the copy button at the top right of the Mermaid diagrams to copy the code and paste it into your Markdown file in Obsidian to see it in action.
 
+### Notes
+
+For those developing their own plugins for various types of content (such as diagrams): If you want this plugin to automatically enhance your content, please follow these steps.
+
+1. Ensure that this plugin truly supports your content.
+2. After that, add the class `diagram-zoom-drag` to the `<div>` that contains your content.
+
+This will allow the plugin to interact correctly with your content by default.
+
 ### Thanks
 - For improving the experiance of Mermaied Diagrams in Obsidian, I set to make a plugin.
 - I made a prototype with simple control for PC mainly.
