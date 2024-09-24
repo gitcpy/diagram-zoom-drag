@@ -28,6 +28,10 @@ export default class ControlPanelController {
             foldPanel,
         ]);
 
+        [movePanel, zoomPanel, foldPanel, servicePanel].forEach((panel) => {
+            this.plugin.eventController.addPanelHoverReact(panel);
+        });
+
         container.appendChild(movePanel);
         container.appendChild(zoomPanel);
         container.appendChild(servicePanel);

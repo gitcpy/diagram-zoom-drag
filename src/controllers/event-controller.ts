@@ -422,10 +422,10 @@ export default class EventController {
         });
     }
 
-    addPanelHoverReact(container: HTMLElement): void {
+    addPanelHoverReact(panel: HTMLElement): void {
         this.plugin.view?.registerDomEvent(
-            container,
-            'mouseover',
+            panel,
+            'mouseenter',
             (e: MouseEvent) => {
                 const target = e.target as HTMLElement | null;
                 if (
@@ -441,22 +441,20 @@ export default class EventController {
         );
 
         this.plugin.view.registerDomEvent(
-            container,
-            'mouseout',
+            panel,
+            'mouseleave',
             (e: MouseEvent) => {
                 const target = e.target as HTMLElement | null;
-                const relatedTarget = e.relatedTarget as HTMLElement | null;
-                if (!target || !relatedTarget) {
+
+                if (!target) {
                     return;
                 }
 
-                const isPanel = target.matches(
+                const wasIsPanel = target.matches(
                     '.hide-when-parent-folded, .diagram-fold-panel'
                 );
-                const noParentPanel = !relatedTarget.parentElement?.matches(
-                    '.hide-when-parent-folded, .diagram-fold-panel'
-                );
-                if (isPanel && noParentPanel) {
+
+                if (wasIsPanel) {
                     target.setCssStyles({
                         opacity: (
                             this.plugin.settings.panelsOpacityOnHide * 0.1
