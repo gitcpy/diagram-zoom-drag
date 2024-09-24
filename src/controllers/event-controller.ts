@@ -421,4 +421,49 @@ export default class EventController {
             }
         });
     }
+
+    addPanelHoverReact(container: HTMLElement): void {
+        this.plugin.view?.registerDomEvent(
+            container,
+            'mouseover',
+            (e: MouseEvent) => {
+                const target = e.target as HTMLElement | null;
+                if (
+                    target?.matches(
+                        '.hide-when-parent-folded, .diagram-fold-panel'
+                    )
+                ) {
+                    target.setCssStyles({
+                        opacity: '1',
+                    });
+                }
+            }
+        );
+
+        this.plugin.view.registerDomEvent(
+            container,
+            'mouseout',
+            (e: MouseEvent) => {
+                const target = e.target as HTMLElement | null;
+                const relatedTarget = e.relatedTarget as HTMLElement | null;
+                if (!target || !relatedTarget) {
+                    return;
+                }
+
+                const isPanel = target.matches(
+                    '.hide-when-parent-folded, .diagram-fold-panel'
+                );
+                const noParentPanel = !relatedTarget.parentElement?.matches(
+                    '.hide-when-parent-folded, .diagram-fold-panel'
+                );
+                if (isPanel && noParentPanel) {
+                    target.setCssStyles({
+                        opacity: (
+                            this.plugin.settings.panelsOpacityOnHide * 0.1
+                        ).toString(),
+                    });
+                }
+            }
+        );
+    }
 }

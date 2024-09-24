@@ -170,3 +170,7 @@
 .diagram-container.folded {
     height: 20vh;
 }
+
+.hide-when-parent-folded {
+    transition: opacity 0.3s ease;
+}

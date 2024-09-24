@@ -12,6 +12,7 @@ export interface DEFAULT_SETTINGS_Interface {
     supported_diagrams: DiagramData[];
     foldByDefault: boolean;
     automaticFolding: boolean;
+    panelsOpacityOnHide: number;
 }
 
 export default class SettingsManager {
@@ -35,6 +36,7 @@ export default class SettingsManager {
             ),
             foldByDefault: false,
             automaticFolding: false,
+            panelsOpacityOnHide: 1,
         };
     }
 

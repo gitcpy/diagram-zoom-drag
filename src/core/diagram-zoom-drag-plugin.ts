@@ -228,6 +228,7 @@ export default class DiagramZoomDragPlugin extends Plugin {
                 this.eventController.addMouseEvents(container);
                 this.mutationObserverController.addFoldingObserver(container);
                 this.eventController.addFocusEvents(container);
+                this.eventController.addPanelHoverReact(container);
 
                 if (this.settings.foldByDefault) {
                     container.addClass('folded');

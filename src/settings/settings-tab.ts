@@ -49,6 +49,20 @@ export class SettingsTab extends PluginSettingTab {
                     });
             });
 
+        new Setting(containerEl)
+            .setName('Diagram opacity on hide')
+            .addSlider((slider) => {
+                slider
+                    .setValue(this.plugin.settings.panelsOpacityOnHide)
+                    .onChange(async (value) => {
+                        slider.setValue(value);
+                        this.plugin.settings.panelsOpacityOnHide = value;
+                        await this.plugin.settingsManager.saveSettings();
+                    })
+                    .setLimits(0, 10, 1)
+                    .setDynamicTooltip();
+            });
+
         new Setting(containerEl).setHeading().setName('Diagram management');
 
         const addDiagram = new Setting(containerEl);

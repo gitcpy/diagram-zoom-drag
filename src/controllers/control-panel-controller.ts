@@ -20,12 +20,13 @@ export default class ControlPanelController {
 
         const movePanel = this.createMovePanel(container);
         const zoomPanel = this.createZoomPanel(container);
-        const servicePanel = this.createServicePanel(
-            container,
-            movePanel,
-            zoomPanel
-        );
         const foldPanel = this.createFoldPanel(container);
+
+        const servicePanel = this.createServicePanel(container, [
+            movePanel,
+            zoomPanel,
+            foldPanel,
+        ]);
 
         container.appendChild(movePanel);
         container.appendChild(zoomPanel);
@@ -135,14 +136,12 @@ export default class ControlPanelController {
      * buttons are created by {@link getServiceButtons}.
      *
      * @param container - The container element to create the service panel for.
-     * @param movePanel - The move panel element used in hide / show action.
-     * @param zoomPanel - The zoom panel element used in hide / show action.
+     * @param otherPanels - the array of others panels to hiding
      * @returns The created service panel element.
      */
     private createServicePanel(
         container: HTMLElement,
-        movePanel: HTMLElement,
-        zoomPanel: HTMLElement
+        otherPanels: HTMLElement[]
     ): HTMLElement {
         const servicePanel = this.createPanel('diagram-service-panel', {
             ...this.panelStyles,
@@ -152,11 +151,7 @@ export default class ControlPanelController {
         });
         servicePanel.addClass('hide-when-parent-folded');
 
-        const serviceButtons = this.getServiceButtons(
-            container,
-            movePanel,
-            zoomPanel
-        );
+        const serviceButtons = this.getServiceButtons(container, otherPanels);
         serviceButtons.forEach((btn) =>
             servicePanel.appendChild(
                 this.createButton(btn.icon, btn.action, btn.title, true, btn.id)
@@ -181,6 +176,11 @@ export default class ControlPanelController {
         const panel = this.plugin.activeContainer.doc.createElement('div');
         panel.className = className;
         panel.setCssStyles(styles);
+        panel.setCssStyles({
+            opacity: (
+                this.plugin.settings.panelsOpacityOnHide * 0.1
+            ).toString(),
+        });
         return panel;
     }
 
@@ -454,19 +454,17 @@ export default class ControlPanelController {
      *
      * @param container - The container element for which the service buttons
      * are being created.
-     * @param movePanel - The move panel element used in hide / show action.
-     * @param zoomPanel - The zoom panel element used in hide / show action.
+     * @param otherPanels - array of other panels for hiding
      * @returns An array of objects, each of which describes a service button.
      */
     private getServiceButtons(
         container: HTMLElement,
-        movePanel: HTMLElement,
-        zoomPanel: HTMLElement
+        otherPanels: HTMLElement[]
     ): Array<{ icon: string; action: () => void; title: string; id?: string }> {
         const buttons = [
             {
                 icon: this.hiding ? 'eye-off' : 'eye',
-                action: (): void => this.hideShowAction(movePanel, zoomPanel),
+                action: (): void => this.hideShowAction(otherPanels),
                 title: `Hide move and zoom panels`,
                 id: 'hide-show-button-diagram',
             },
@@ -518,15 +516,11 @@ export default class ControlPanelController {
      * Otherwise, it sets `visibility` to `'visible'` and `pointerEvents` to `'auto'`.
      * It also updates the icon and aria-label of the button with ID `'hide-show-button-diagram'`.
      *
-     * @param movePanel - The move panel element to be toggled.
-     * @param zoomPanel - The zoom panel element to be toggled.
+     * @param panelsToHide - panels to hide
      */
-    private hideShowAction(
-        movePanel: HTMLElement,
-        zoomPanel: HTMLElement
-    ): void {
+    private hideShowAction(panelsToHide: HTMLElement[]): void {
         this.hiding = !this.hiding;
-        [movePanel, zoomPanel].forEach((panel) => {
+        panelsToHide.forEach((panel) => {
             panel.setCssStyles({
                 visibility: this.hiding ? 'hidden' : 'visible',
                 pointerEvents: this.hiding ? 'none' : 'auto',
