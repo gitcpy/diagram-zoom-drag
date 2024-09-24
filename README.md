@@ -1,4 +1,4 @@
-8### Demo for PC:
+### Demo for PC:
 
 [View demo for PC](https://github.com/user-attachments/assets/b0ad8b7a-3f84-4ab2-b5eb-9cd31243ca07)
 
