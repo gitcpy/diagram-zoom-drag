@@ -31,7 +31,6 @@ export class SettingsTab extends PluginSettingTab {
                 toggle
                     .setValue(this.plugin.settings.foldByDefault)
                     .onChange(async (value: boolean) => {
-                        toggle.setValue(value);
                         this.plugin.settings.foldByDefault = value;
                         await this.plugin.settingsManager.saveSettings();
                     });
@@ -43,7 +42,6 @@ export class SettingsTab extends PluginSettingTab {
                 toggle
                     .setValue(this.plugin.settings.automaticFolding)
                     .onChange(async (value: boolean) => {
-                        toggle.setValue(value);
                         this.plugin.settings.automaticFolding = value;
                         await this.plugin.settingsManager.saveSettings();
                     });
