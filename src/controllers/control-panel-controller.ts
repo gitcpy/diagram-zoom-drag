@@ -624,12 +624,14 @@ export default class ControlPanelController {
                 '.obsidian-app'
             ) as HTMLElement;
             if (container === document.fullscreenElement) {
+                container.addClass('is-fullscreen');
                 this.plugin.view.registerDomEvent(
                     fullscreenEl,
                     'keydown',
                     fullScreenKeyboardHandler
                 );
             } else {
+                container.removeClass('is-fullscreen');
                 fullscreenEl.removeEventListener(
                     'keydown',
                     fullScreenKeyboardHandler
