@@ -260,7 +260,7 @@ export default class DiagramZoomDragPlugin extends Plugin {
         if (!view) {
             return;
         }
-        // @ts-ignore
+
         const leafID = view.leaf.id;
         this.leafID = leafID;
         this.view = view;

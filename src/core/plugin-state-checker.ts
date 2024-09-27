@@ -51,7 +51,6 @@ export default class PluginStateChecker {
      * @throws {Error} Throws an error if the plugin directory is not found.
      */
     private async getPluginMetadata(): Promise<number> {
-        // @ts-ignore
         const { dir: pluginDir } = this.plugin.manifest;
 
         if (!pluginDir) {
