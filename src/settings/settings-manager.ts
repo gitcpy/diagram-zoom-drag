@@ -36,7 +36,7 @@ export default class SettingsManager {
             ),
             foldByDefault: false,
             automaticFolding: false,
-            panelsOpacityOnHide: 1,
+            panelsOpacityOnHide: 10,
         };
     }
 
