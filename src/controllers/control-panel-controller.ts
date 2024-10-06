@@ -39,11 +39,11 @@ export default class ControlPanelController {
         ) {
             [movePanel, zoomPanel, servicePanel].forEach((panel) => {
                 panel.addClass('hidden');
-
-                this.plugin.eventController.togglePanelVisibilityOnHover(panel);
             });
         }
+
         [movePanel, zoomPanel, servicePanel].forEach((panel) => {
+            this.plugin.eventController.togglePanelVisibilityOnHover(panel);
             this.plugin.eventController.preventClickOnHiddenPanels(panel);
         });
 
