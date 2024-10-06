@@ -28,14 +28,24 @@ export default class ControlPanelController {
             foldPanel,
         ]);
 
-        [movePanel, zoomPanel, foldPanel, servicePanel].forEach((panel) => {
-            this.plugin.eventController.addPanelHoverReact(panel);
-        });
-
         container.appendChild(movePanel);
         container.appendChild(zoomPanel);
         container.appendChild(servicePanel);
         container.appendChild(foldPanel);
+
+        if (
+            this.plugin.settings.hideOnMouseOutDiagram ||
+            this.plugin.settings.hideOnMouseOutPanels
+        ) {
+            [movePanel, zoomPanel, servicePanel].forEach((panel) => {
+                panel.addClass('hidden');
+
+                this.plugin.eventController.togglePanelVisibilityOnHover(panel);
+            });
+        }
+        [movePanel, zoomPanel, servicePanel].forEach((panel) => {
+            this.plugin.eventController.preventClickOnHiddenPanels(panel);
+        });
 
         this.setupFullscreenHandler(container);
     }
@@ -51,14 +61,16 @@ export default class ControlPanelController {
      * @returns The created move panel element.
      */
     private createMovePanel(container: HTMLElement): HTMLElement {
-        const movePanel = this.createPanel('diagram-move-panel', {
-            ...this.panelStyles,
-            right: '10px',
-            bottom: '10px',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gridTemplateRows: 'repeat(3, 1fr)',
-        });
-        movePanel.addClass('hide-when-parent-folded');
+        const movePanel = this.createPanel(
+            ['mermaid-zoom-drag-panel', 'diagram-move-panel'],
+            {
+                right: '10px',
+                bottom: '10px',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gridTemplateRows: 'repeat(3, 1fr)',
+            }
+        );
+        // movePanel.addClass('hide-when-parent-folded');
 
         const moveButtons = this.getMoveButtons(container);
         moveButtons.forEach((btn) =>
@@ -87,14 +99,15 @@ export default class ControlPanelController {
      * @returns The created zoom panel element.
      */
     private createZoomPanel(container: HTMLElement): HTMLElement {
-        const zoomPanel = this.createPanel('diagram-zoom-panel', {
-            ...this.panelStyles,
-            right: '10px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            gridTemplateColumns: '1fr',
-        });
-        zoomPanel.addClass('hide-when-parent-folded');
+        const zoomPanel = this.createPanel(
+            ['mermaid-zoom-drag-panel', 'diagram-zoom-panel'],
+            {
+                right: '10px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                gridTemplateColumns: '1fr',
+            }
+        );
 
         const zoomButtons = this.getZoomButtons(container);
         zoomButtons.forEach((btn) =>
@@ -107,14 +120,16 @@ export default class ControlPanelController {
     }
 
     private createFoldPanel(container: HTMLElement) {
-        const foldPanel = this.createPanel('diagram-fold-panel', {
-            ...this.panelStyles,
-            position: 'absolute',
-            left: '50%',
-            bottom: '0',
-            transform: 'translateX(-50%)',
-            gridTemplateColumns: '1fr',
-        });
+        const foldPanel = this.createPanel(
+            ['mermaid-zoom-drag-panel', 'diagram-fold-panel'],
+            {
+                position: 'absolute',
+                left: '50%',
+                bottom: '0',
+                transform: 'translateX(-50%)',
+                gridTemplateColumns: '1fr',
+            }
+        );
 
         const foldButtons = this.getFoldButtons(container);
 
@@ -147,13 +162,15 @@ export default class ControlPanelController {
         container: HTMLElement,
         otherPanels: HTMLElement[]
     ): HTMLElement {
-        const servicePanel = this.createPanel('diagram-service-panel', {
-            ...this.panelStyles,
-            right: '10px',
-            top: '10px',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-        });
-        servicePanel.addClass('hide-when-parent-folded');
+        const servicePanel = this.createPanel(
+            ['mermaid-zoom-drag-panel', 'diagram-service-panel'],
+            {
+                right: '10px',
+                top: '10px',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+            }
+        );
+        // servicePanel.addClass('hide-when-parent-folded');
 
         const serviceButtons = this.getServiceButtons(container, otherPanels);
         serviceButtons.forEach((btn) =>
@@ -172,19 +189,15 @@ export default class ControlPanelController {
      * applies the given styles to it. It is used to create the move, zoom,
      * and service panels.
      *
-     * @param className - The class name for the created panel.
+     * @param classes - The class names for the created panel.
      * @param styles - The styles for the created panel.
      * @returns The created panel element.
      */
-    private createPanel(className: string, styles: object): HTMLElement {
+    private createPanel(classes: string[], styles: object): HTMLElement {
         const panel = this.plugin.activeContainer.doc.createElement('div');
-        panel.className = className;
+        panel.addClasses(classes);
+        panel.addClass('mermaid-zoom-drag-panel');
         panel.setCssStyles(styles);
-        panel.setCssStyles({
-            opacity: (
-                this.plugin.settings.panelsOpacityOnHide * 0.1
-            ).toString(),
-        });
         return panel;
     }
 
@@ -226,7 +239,6 @@ export default class ControlPanelController {
                 justifyContent: 'center',
                 alignItems: 'center',
                 transition: 'background-color 0.2s ease',
-                pointerEvents: 'auto',
             });
             setIcon(button, icon);
 
@@ -251,23 +263,6 @@ export default class ControlPanelController {
 
         button.setAttribute('aria-label', title);
         return button;
-    }
-
-    /**
-     * The default styles for a control panel.
-     *
-     * @returns An object containing the CSS styles for a control panel.
-     */
-    private get panelStyles(): object {
-        return {
-            position: 'absolute',
-            display: 'grid',
-            gap: '5px',
-            background: 'rgba(var(--background-primary-rgb), 0.7)',
-            padding: '5px',
-            borderRadius: '5px',
-            boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
-        };
     }
 
     /**
@@ -525,10 +520,13 @@ export default class ControlPanelController {
     private hideShowAction(panelsToHide: HTMLElement[]): void {
         this.hiding = !this.hiding;
         panelsToHide.forEach((panel) => {
-            panel.setCssStyles({
-                visibility: this.hiding ? 'hidden' : 'visible',
-                pointerEvents: this.hiding ? 'none' : 'auto',
-            });
+            if (this.hiding) {
+                panel.addClass('hidden');
+                panel.removeClass('visible');
+            } else {
+                panel.removeClass('hidden');
+                panel.addClass('visible');
+            }
         });
         const button = this.plugin.activeContainer.doc.getElementById(
             'hide-show-button-diagram'
