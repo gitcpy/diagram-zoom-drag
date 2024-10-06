@@ -25,9 +25,13 @@ export default class EventController {
         let startX: number, startY: number, initialX: number, initialY: number;
         let isDragging = false;
 
-        const diagramElement = container.querySelector(
+        const diagramElement: HTMLElement | null = container.querySelector(
             this.plugin.compoundSelector
-        ) as HTMLElement;
+        );
+
+        if (!diagramElement) {
+            return;
+        }
 
         if (diagramElement.classList.contains('events-bound')) {
             return;
@@ -36,7 +40,7 @@ export default class EventController {
         diagramElement.classList.add('events-bound');
 
         this.plugin.view.registerDomEvent(
-            container as HTMLElement,
+            container,
             'wheel',
             (event: WheelEvent) => {
                 if (!event.ctrlKey) {
@@ -64,15 +68,14 @@ export default class EventController {
             }
         );
         this.plugin.view.registerDomEvent(
-            container as HTMLElement,
+            container,
             'mousedown',
             (event: MouseEvent) => {
                 if (event.button !== 0) {
                     return;
                 }
                 this.plugin.activeContainer = container;
-                const c_html = container as HTMLElement;
-                c_html.focus({ preventScroll: true });
+                container.focus({ preventScroll: true });
                 isDragging = true;
                 startX = event.clientX;
                 startY = event.clientY;
@@ -86,7 +89,7 @@ export default class EventController {
             }
         );
         this.plugin.view.registerDomEvent(
-            container as HTMLElement,
+            container,
             'mousemove',
             (event: MouseEvent) => {
                 if (!isDragging) {
@@ -103,28 +106,20 @@ export default class EventController {
                 });
             }
         );
-        this.plugin.view.registerDomEvent(
-            container as HTMLElement,
-            'mouseup',
-            () => {
-                this.plugin.activeContainer = container;
-                if (isDragging) {
-                    isDragging = false;
-                    diagramElement.setCssStyles({ cursor: 'grab' });
-                }
+        this.plugin.view.registerDomEvent(container, 'mouseup', () => {
+            this.plugin.activeContainer = container;
+            if (isDragging) {
+                isDragging = false;
+                diagramElement.setCssStyles({ cursor: 'grab' });
             }
-        );
-        this.plugin.view.registerDomEvent(
-            container as HTMLElement,
-            'mouseleave',
-            () => {
-                this.plugin.activeContainer = container;
-                if (isDragging) {
-                    isDragging = false;
-                    diagramElement.setCssStyles({ cursor: 'grab' });
-                }
+        });
+        this.plugin.view.registerDomEvent(container, 'mouseleave', () => {
+            this.plugin.activeContainer = container;
+            if (isDragging) {
+                isDragging = false;
+                diagramElement.setCssStyles({ cursor: 'grab' });
             }
-        );
+        });
     }
 
     /**
@@ -205,9 +200,9 @@ export default class EventController {
                 e.preventDefault();
                 e.stopPropagation();
 
-                const element = container.querySelector(
+                const element: HTMLElement | null = container.querySelector(
                     plugin.compoundSelector
-                ) as HTMLElement | null;
+                );
                 if (!element) {
                     return;
                 }
@@ -325,18 +320,18 @@ export default class EventController {
      * @param {HTMLElement} container - The container element to which keyboard events will be bound.
      * @returns {(e: KeyboardEvent) => void} A function to handle keyboard events.
      */
-    addKeyboardEvents(container: HTMLElement) {
+    addKeyboardEvents(container: HTMLElement): (e: KeyboardEvent) => void {
         return (e: KeyboardEvent): void => {
-            const key = e.key;
+            const key = e.code;
             const KEYS = [
                 'ArrowUp',
                 'ArrowDown',
                 'ArrowLeft',
                 'ArrowRight',
-                '=',
-                '+',
-                '-',
-                '0',
+                'Equal',
+                'Minus',
+                'Digit0',
+                'KeyM',
             ];
             if (!KEYS.includes(key)) {
                 return;
@@ -382,27 +377,46 @@ export default class EventController {
 
             if (e.ctrlKey) {
                 switch (key) {
-                    case '=':
-                    case '+':
+                    case 'Equal':
                         this.plugin.diagramController.zoomElement(
                             container,
                             1.1,
                             true
                         );
                         break;
-                    case '-':
+                    case 'Minus':
                         this.plugin.diagramController.zoomElement(
                             container,
                             0.9,
                             true
                         );
                         break;
-                    case '0':
+                    case 'Digit0':
                         this.plugin.diagramController.resetZoomAndMove(
                             container,
                             true
                         );
                         break;
+                    case 'KeyM': {
+                        debugger;
+                        if (!this.plugin.settings.hideByCtrlPlusM) {
+                            return;
+                        }
+                        const panels: NodeListOf<HTMLElement> =
+                            container.querySelectorAll(
+                                '.diagram-container:not(.folded) .mermaid-zoom-drag-panel:not(.diagram-fold-panel)'
+                            );
+                        panels.forEach((panel) => {
+                            if (!panel.hasClass('hidden')) {
+                                panel.removeClass('visible');
+                                panel.addClass('hidden');
+                            } else {
+                                panel.removeClass('hidden');
+                                panel.addClass('visible');
+                            }
+                        });
+                        break;
+                    }
                 }
             }
         };
@@ -422,46 +436,61 @@ export default class EventController {
         });
     }
 
-    addPanelHoverReact(panel: HTMLElement): void {
-        this.plugin.view?.registerDomEvent(
-            panel,
-            'mouseenter',
-            (e: MouseEvent) => {
-                const target = e.target as HTMLElement | null;
-                if (
-                    target?.matches(
-                        '.hide-when-parent-folded, .diagram-fold-panel'
-                    )
-                ) {
-                    target.setCssStyles({
-                        opacity: '1',
-                    });
-                }
+    togglePanelVisibilityOnHover(panel: HTMLElement): void {
+        this.plugin.view?.registerDomEvent(panel, 'mouseover', () => {
+            if (!this.plugin.settings.hideOnMouseOutPanels) {
+                return;
             }
+            panel.removeClass('hidden');
+            panel.addClass('visible');
+        });
+
+        this.plugin.view.registerDomEvent(panel, 'mouseout', () => {
+            if (!this.plugin.settings.hideOnMouseOutPanels) {
+                return;
+            }
+
+            panel.removeClass('visible');
+            panel.addClass('hidden');
+        });
+    }
+
+    togglePanelVisibilityOnDiagramHover(container: HTMLElement): void {
+        const panels: NodeListOf<HTMLElement> = container.querySelectorAll(
+            '.mermaid-zoom-drag-panel:not(.diagram-fold-panel)'
         );
 
-        this.plugin.view.registerDomEvent(
-            panel,
-            'mouseleave',
-            (e: MouseEvent) => {
-                const target = e.target as HTMLElement | null;
-
-                if (!target) {
-                    return;
-                }
-
-                const wasIsPanel = target.matches(
-                    '.hide-when-parent-folded, .diagram-fold-panel'
-                );
-
-                if (wasIsPanel) {
-                    target.setCssStyles({
-                        opacity: (
-                            this.plugin.settings.panelsOpacityOnHide * 0.1
-                        ).toString(),
-                    });
-                }
+        this.plugin.view.registerDomEvent(container, 'mouseenter', () => {
+            if (!this.plugin.settings.hideOnMouseOutDiagram) {
+                return;
             }
+            panels.forEach((panel) => {
+                panel.addClass('visible');
+                panel.removeClass('hidden');
+            });
+        });
+        this.plugin.view.registerDomEvent(container, 'mouseleave', () => {
+            if (!this.plugin.settings.hideOnMouseOutDiagram) {
+                return;
+            }
+
+            panels.forEach((panel) => {
+                panel.removeClass('visible');
+                panel.addClass('hidden');
+            });
+        });
+    }
+
+    preventClickOnHiddenPanels(panel: HTMLElement): void {
+        panel.addEventListener(
+            'click',
+            (e) => {
+                if (panel.hasClass('hidden')) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                }
+            },
+            true
         );
     }
 }
