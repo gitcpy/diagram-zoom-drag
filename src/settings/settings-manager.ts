@@ -12,7 +12,9 @@ export interface DEFAULT_SETTINGS_Interface {
     supported_diagrams: DiagramData[];
     foldByDefault: boolean;
     automaticFolding: boolean;
-    panelsOpacityOnHide: number;
+    hideOnMouseOutDiagram: boolean;
+    hideOnMouseOutPanels: boolean;
+    hideByCtrlPlusM: boolean;
 }
 
 export default class SettingsManager {
@@ -36,7 +38,9 @@ export default class SettingsManager {
             ),
             foldByDefault: false,
             automaticFolding: false,
-            panelsOpacityOnHide: 10,
+            hideOnMouseOutDiagram: false,
+            hideOnMouseOutPanels: false,
+            hideByCtrlPlusM: false,
         };
     }
 
