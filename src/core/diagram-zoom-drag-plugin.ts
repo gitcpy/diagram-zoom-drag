@@ -229,7 +229,7 @@ export default class DiagramZoomDragPlugin extends Plugin {
                 this.mutationObserverController.addFoldingObserver(container);
                 this.eventController.addFocusEvents(container);
 
-                this.eventController.toggleVisibilityOnMouseHoverDiagram(
+                this.eventController.togglePanelVisibilityOnDiagramHover(
                     container
                 );
 
@@ -284,7 +284,7 @@ export default class DiagramZoomDragPlugin extends Plugin {
         if (this.leafID) {
             const isLeaf = this.app.workspace.getLeafById(this.leafID);
             if (isLeaf === null) {
-                this.viewData.removeData(this.leafID!);
+                this.viewData.removeData(this.leafID);
                 this.leafID = undefined;
             }
         }
