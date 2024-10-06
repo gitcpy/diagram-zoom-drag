@@ -207,7 +207,7 @@ export default class DiagramZoomDragPlugin extends Plugin {
 
             if (!el.parentElement?.classList.contains('diagram-container')) {
                 const container = ele.doc.createElement('div');
-                container.className = 'diagram-container';
+                container.addClass('diagram-container');
 
                 el.parentNode?.insertBefore(container, el);
                 container.appendChild(el);
@@ -228,6 +228,10 @@ export default class DiagramZoomDragPlugin extends Plugin {
                 this.eventController.addMouseEvents(container);
                 this.mutationObserverController.addFoldingObserver(container);
                 this.eventController.addFocusEvents(container);
+
+                this.eventController.togglePanelVisibilityOnDiagramHover(
+                    container
+                );
 
                 if (this.settings.foldByDefault) {
                     container.addClass('folded');
@@ -280,7 +284,7 @@ export default class DiagramZoomDragPlugin extends Plugin {
         if (this.leafID) {
             const isLeaf = this.app.workspace.getLeafById(this.leafID);
             if (isLeaf === null) {
-                this.viewData.removeData(this.leafID!);
+                this.viewData.removeData(this.leafID);
                 this.leafID = undefined;
             }
         }

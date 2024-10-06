@@ -37,7 +37,7 @@ export class SettingsTab extends PluginSettingTab {
             });
 
         new Setting(containerEl)
-            .setName('Automatically fold diagrams when focus changes?')
+            .setName('Automatically fold diagrams on focus change?')
             .addToggle((toggle) => {
                 toggle
                     .setValue(this.plugin.settings.automaticFolding)
@@ -48,17 +48,35 @@ export class SettingsTab extends PluginSettingTab {
             });
 
         new Setting(containerEl)
-            .setName('Diagram opacity on hide')
-            .addSlider((slider) => {
-                slider
-                    .setValue(this.plugin.settings.panelsOpacityOnHide)
+            .setName('Hide panels when mouse leaves diagram?')
+            .addToggle((toggle) => {
+                toggle.setValue(this.plugin.settings.hideOnMouseOutDiagram);
+                toggle.onChange(async (value) => {
+                    this.plugin.settings.hideOnMouseOutDiagram = value;
+                    await this.plugin.settingsManager.saveSettings();
+                });
+            });
+
+        new Setting(containerEl)
+            .setName('Hide panels when mouse leaves them?')
+            .addToggle((toggle) => {
+                toggle
+                    .setValue(this.plugin.settings.hideOnMouseOutPanels)
                     .onChange(async (value) => {
-                        slider.setValue(value);
-                        this.plugin.settings.panelsOpacityOnHide = value;
+                        this.plugin.settings.hideOnMouseOutPanels = value;
                         await this.plugin.settingsManager.saveSettings();
-                    })
-                    .setLimits(0, 10, 1)
-                    .setDynamicTooltip();
+                    });
+            });
+
+        new Setting(containerEl)
+            .setName('Hide by pressing Ctrl + M?')
+            .addToggle((toggle) => {
+                toggle
+                    .setValue(this.plugin.settings.hideByCtrlPlusM)
+                    .onChange(async (value) => {
+                        this.plugin.settings.hideByCtrlPlusM = value;
+                        await this.plugin.settingsManager.saveSettings();
+                    });
             });
 
         new Setting(containerEl).setHeading().setName('Diagram management');
@@ -80,12 +98,11 @@ export class SettingsTab extends PluginSettingTab {
                         name.inputEl.ariaLabel = '';
                     } else {
                         !dTest
-                            ? name.inputEl.classList.add('invalid')
+                            ? name.inputEl.addClass('invalid')
                             : name.inputEl.removeClass('invalid');
-                        !dTest
-                            ? (name.inputEl.ariaLabel =
-                                  'Incorrect input. Should be only `A-Za-z0-9`')
-                            : (name.inputEl.ariaLabel = '');
+                        name.inputEl.ariaLabel = !dTest
+                            ? 'Incorrect input. Should be only `A-Za-z0-9`'
+                            : '';
                     }
                 });
             })
@@ -102,22 +119,19 @@ export class SettingsTab extends PluginSettingTab {
                         !sTest
                             ? input.inputEl.classList.add('invalid')
                             : input.inputEl.removeClass('invalid');
-                        !sTest
-                            ? (input.inputEl.ariaLabel =
-                                  'Input incorrect. Should be a dot in the beginning and only `A-Za-z0-9-` after it')
-                            : (input.inputEl.ariaLabel = '');
+                        input.inputEl.ariaLabel = !sTest
+                            ? 'Input incorrect. Should be a dot in the beginning and only `A-Za-z0-9-` after it'
+                            : '';
                     }
                 });
             })
             .addButton((button) => {
                 button.setIcon('save');
                 button.onClick(async (cb) => {
-                    const nameInput = addDiagram.settingEl.querySelector(
-                        '#diagram-name'
-                    ) as HTMLInputElement | null;
-                    const selectorInput = addDiagram.settingEl.querySelector(
-                        '#diagram-selector'
-                    ) as HTMLInputElement | null;
+                    const nameInput: HTMLInputElement | null =
+                        addDiagram.settingEl.querySelector('#diagram-name');
+                    const selectorInput: HTMLInputElement | null =
+                        addDiagram.settingEl.querySelector('#diagram-selector');
                     if (!nameInput || !selectorInput) {
                         return;
                     }

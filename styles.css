@@ -175,8 +175,25 @@
     height: 20vh;
 }
 
-.hide-when-parent-folded {
-    transition: opacity 0.3s ease;
+
+
+.mermaid-zoom-drag-panel {
+    position: absolute;
+    display: grid;
+    gap: 5px;
+    background: rgba(var(--background-primary-rgb), 0.7);
+    padding: 5px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
+.mermaid-zoom-drag-panel.visible {
+    opacity: 1;
+    transition: opacity 0.5s ease;
+}
 
+.mermaid-zoom-drag-panel.hidden {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    cursor: grab;
+}

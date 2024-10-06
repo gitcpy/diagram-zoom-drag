@@ -1,6 +1,5 @@
 import DiagramZoomDragPlugin from '../core/diagram-zoom-drag-plugin';
 import { setIcon } from 'obsidian';
-import { ContainerID } from '../typing/typing';
 
 export default class MutationObserverController {
     constructor(public plugin: DiagramZoomDragPlugin) {}
@@ -13,24 +12,28 @@ export default class MutationObserverController {
                     mutation.attributeName === 'class'
                 ) {
                     const target = mutation.target as HTMLElement;
-                    const wasFolded = (mutation.oldValue || '').includes(
+                    const wasFolded = (mutation.oldValue ?? '').includes(
                         'folded'
                     );
                     const isFolded = target.classList.contains('folded');
 
                     if (wasFolded !== isFolded) {
-                        const panels = container.querySelectorAll(
-                            '.hide-when-parent-folded'
-                        );
+                        const panels: NodeListOf<HTMLElement> =
+                            container.querySelectorAll(
+                                '.mermaid-zoom-drag-panel:not(.diagram-fold-panel)'
+                            );
                         panels.forEach((panel) => {
-                            const html = panel as HTMLElement;
-                            html.style.visibility = isFolded
-                                ? 'hidden'
-                                : 'visible';
+                            if (isFolded) {
+                                panel.addClass('hidden');
+                                panel.removeClass('visible');
+                            } else {
+                                panel.addClass('visible');
+                                panel.removeClass('hidden');
+                            }
                         });
-                        const button = container.querySelector(
-                            '#diagram-fold-button'
-                        ) as HTMLElement | null;
+
+                        const button: HTMLElement | null =
+                            container.querySelector('#diagram-fold-button');
                         if (button) {
                             setIcon(
                                 button,
