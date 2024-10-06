@@ -23,7 +23,7 @@ export class SettingsTab extends PluginSettingTab {
             });
         });
 
-        new Setting(containerEl).setHeading().setName('Diagram Settings');
+        new Setting(containerEl).setHeading().setName('Diagram settings');
 
         new Setting(containerEl)
             .setName('Fold diagrams by default?')
