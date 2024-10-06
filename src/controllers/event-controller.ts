@@ -441,12 +441,20 @@ export default class EventController {
             if (!this.plugin.settings.hideOnMouseOutPanels) {
                 return;
             }
+
+            if (panel.parentElement?.hasClass('folded')) {
+                return;
+            }
+
             panel.removeClass('hidden');
             panel.addClass('visible');
         });
 
         this.plugin.view.registerDomEvent(panel, 'mouseout', () => {
             if (!this.plugin.settings.hideOnMouseOutPanels) {
+                return;
+            }
+            if (panel.parentElement?.hasClass('folded')) {
                 return;
             }
 
@@ -464,6 +472,9 @@ export default class EventController {
             if (!this.plugin.settings.hideOnMouseOutDiagram) {
                 return;
             }
+            if (container.hasClass('folded')) {
+                return;
+            }
             panels.forEach((panel) => {
                 panel.addClass('visible');
                 panel.removeClass('hidden');
@@ -471,6 +482,9 @@ export default class EventController {
         });
         this.plugin.view.registerDomEvent(container, 'mouseleave', () => {
             if (!this.plugin.settings.hideOnMouseOutDiagram) {
+                return;
+            }
+            if (container.hasClass('folded')) {
                 return;
             }
 
