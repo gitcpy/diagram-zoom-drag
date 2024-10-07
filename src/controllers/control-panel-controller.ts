@@ -1,5 +1,7 @@
 import DiagramZoomDragPlugin from '../core/diagram-zoom-drag-plugin';
 import { Notice, Platform, setIcon } from 'obsidian';
+import { EventID } from '../events-management/typing/constants';
+import { PanelsChangedVisibility } from '../events-management/typing/interface';
 
 export default class ControlPanelController {
     private hiding: boolean = false;
@@ -25,7 +27,6 @@ export default class ControlPanelController {
         const servicePanel = this.createServicePanel(container, [
             movePanel,
             zoomPanel,
-            foldPanel,
         ]);
 
         container.appendChild(movePanel);
@@ -44,10 +45,30 @@ export default class ControlPanelController {
 
         [movePanel, zoomPanel, servicePanel].forEach((panel) => {
             this.plugin.eventController.togglePanelVisibilityOnHover(panel);
-            this.plugin.eventController.preventClickOnHiddenPanels(panel);
         });
 
         this.setupFullscreenHandler(container);
+
+        const hidingB = servicePanel.doc.getElementById(
+            'hide-show-button-diagram'
+        );
+
+        this.plugin.observer.subscribe(
+            this.plugin.app.workspace,
+            EventID.PanelsChangedVisibility,
+            async (e: PanelsChangedVisibility) => {
+                const visible = e.data.visible;
+                if (!hidingB) {
+                    return;
+                }
+                this.hiding = !visible;
+                setIcon(hidingB, this.hiding ? 'eye-off' : 'eye');
+                hidingB.setAttribute(
+                    'aria-label',
+                    `${this.hiding ? 'Show' : 'Hide'} move and zoom panels`
+                );
+            }
+        );
     }
 
     /**
