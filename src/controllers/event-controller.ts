@@ -332,7 +332,6 @@ export default class EventController {
                 'Equal',
                 'Minus',
                 'Digit0',
-                'KeyM',
             ];
             if (!KEYS.includes(key)) {
                 return;
@@ -398,30 +397,6 @@ export default class EventController {
                             true
                         );
                         break;
-                    case 'KeyM': {
-                        if (!this.plugin.settings.hideByCtrlPlusM) {
-                            return;
-                        }
-                        const panels: NodeListOf<HTMLElement> =
-                            container.querySelectorAll(
-                                '.diagram-container:not(.folded) .mermaid-zoom-drag-panel:not(.diagram-fold-panel)'
-                            );
-
-                        const state = panels[0].hasClass('hidden');
-
-                        panels.forEach((panel) => {
-                            if (state) {
-                                panel.removeClass('hidden');
-                                panel.addClass('visible');
-                                publishPanelsStateEvent(this.plugin, true);
-                            } else {
-                                panel.removeClass('visible');
-                                panel.addClass('hidden');
-                                publishPanelsStateEvent(this.plugin, false);
-                            }
-                        });
-                        break;
-                    }
                 }
             }
         };
