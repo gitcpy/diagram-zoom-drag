@@ -1,5 +1,6 @@
 [
-  "mehrmaid",
   "mermaid-zoom-drag",
-  "example"
+  "example",
+  "mehrmaid",
+  "diagram-zoom-drag"
 ]

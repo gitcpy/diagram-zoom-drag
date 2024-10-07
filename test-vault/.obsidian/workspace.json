@@ -4,16 +4,16 @@
     "type": "split",
     "children": [
       {
-        "id": "70a014e197503100",
+        "id": "baf3ae41d4a4f707",
         "type": "tabs",
         "children": [
           {
-            "id": "da0f4d943328eb97",
+            "id": "3a3e63f2bde6160d",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Untitled.md",
+                "file": "ww.md",
                 "mode": "preview",
                 "source": true
               }
@@ -69,7 +69,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 293.5
   },
   "right": {
     "id": "dfece06dc10863e1",
@@ -85,7 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Untitled.md",
+                "file": "ww.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +102,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Untitled.md",
+                "file": "ww.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -125,7 +125,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Untitled.md"
+                "file": "ww.md"
               }
             }
           }
@@ -147,10 +147,14 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "da0f4d943328eb97",
+  "active": "3a3e63f2bde6160d",
   "lastOpenFiles": [
-    "Test.md",
+    "ww.md",
+    "Untitled 5.md",
+    "Untitled 4.md",
+    "Untitled 3.md",
     "Untitled.md",
+    "Test.md",
     "Test-2024-09-14_01-47-35.svg",
     "Untitled-2024-09-14_01-49-41.svg",
     "Untitled-2024-09-14_01-48-09.svg",
