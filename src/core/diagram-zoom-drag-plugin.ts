@@ -15,6 +15,7 @@ import {
     EventObserver,
     EventPublisher,
 } from '../events-management/events-management';
+import { publishPanelsStateEvent } from '../helpers/helpers';
 
 export default class DiagramZoomDragPlugin extends Plugin {
     dx!: number;
@@ -61,6 +62,34 @@ export default class DiagramZoomDragPlugin extends Plugin {
         this.settingsManager = new SettingsManager(this);
         await this.settingsManager.loadSettings();
         this.addSettingTab(new SettingsTab(this.app, this));
+        this.addCommand({
+            id: 'mermaid-zoom-drag-toggle-panels-state',
+            name: 'Toggle panel visibility',
+            checkCallback: (checking) => {
+                if (checking) {
+                    return !!this.activeContainer;
+                }
+
+                const panels: NodeListOf<HTMLElement> =
+                    this.activeContainer.querySelectorAll(
+                        '.diagram-container:not(.folded) .mermaid-zoom-drag-panel:not(.diagram-fold-panel)'
+                    );
+
+                const state = panels[0].hasClass('hidden');
+
+                panels.forEach((panel) => {
+                    if (state) {
+                        panel.removeClass('hidden');
+                        panel.addClass('visible');
+                        publishPanelsStateEvent(this, true);
+                    } else {
+                        panel.removeClass('visible');
+                        panel.addClass('hidden');
+                        publishPanelsStateEvent(this, false);
+                    }
+                });
+            },
+        });
     }
 
     /**
