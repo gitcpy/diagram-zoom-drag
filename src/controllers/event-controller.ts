@@ -483,7 +483,6 @@ export default class EventController {
             panels.forEach((panel) => {
                 panel.addClass('visible');
                 panel.removeClass('hidden');
-                publishPanelsStateEvent(this.plugin, true);
             });
         });
         this.plugin.view.registerDomEvent(container, 'mouseleave', () => {
@@ -497,7 +496,6 @@ export default class EventController {
             panels.forEach((panel) => {
                 panel.removeClass('visible');
                 panel.addClass('hidden');
-                publishPanelsStateEvent(this.plugin, false);
             });
         });
     }
