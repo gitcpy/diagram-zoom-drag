@@ -11,6 +11,10 @@ import { DiagramController } from '../controllers/diagram-controller';
 import EventController from '../controllers/event-controller';
 import ControlPanelController from '../controllers/control-panel-controller';
 import MutationObserverController from '../controllers/mutation-observer-controller';
+import {
+    EventObserver,
+    EventPublisher,
+} from '../events-management/events-management';
 
 export default class DiagramZoomDragPlugin extends Plugin {
     dx!: number;
@@ -28,6 +32,8 @@ export default class DiagramZoomDragPlugin extends Plugin {
     eventController!: EventController;
     controlPanelController!: ControlPanelController;
     mutationObserverController!: MutationObserverController;
+    publisher!: EventPublisher;
+    observer!: EventObserver;
 
     /**
      * Initializes the plugin.
@@ -95,6 +101,8 @@ export default class DiagramZoomDragPlugin extends Plugin {
      * @returns {Promise<void>} A promise that resolves once all events and post-processors are registered.
      */
     async initializeEventSystem() {
+        this.publisher = new EventPublisher(this);
+        this.observer = new EventObserver(this);
         this.registerMarkdownPostProcessor(
             (element: HTMLElement, context: MarkdownPostProcessorContext) => {
                 this.cleanupView();
