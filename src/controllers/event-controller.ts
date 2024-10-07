@@ -1,4 +1,5 @@
 import DiagramZoomDragPlugin from '../core/diagram-zoom-drag-plugin';
+import { publishPanelsStateEvent } from '../helpers/helpers';
 
 export default class EventController {
     constructor(public plugin: DiagramZoomDragPlugin) {}
@@ -398,7 +399,6 @@ export default class EventController {
                         );
                         break;
                     case 'KeyM': {
-                        debugger;
                         if (!this.plugin.settings.hideByCtrlPlusM) {
                             return;
                         }
@@ -406,13 +406,18 @@ export default class EventController {
                             container.querySelectorAll(
                                 '.diagram-container:not(.folded) .mermaid-zoom-drag-panel:not(.diagram-fold-panel)'
                             );
+
+                        const state = panels[0].hasClass('hidden');
+
                         panels.forEach((panel) => {
-                            if (!panel.hasClass('hidden')) {
-                                panel.removeClass('visible');
-                                panel.addClass('hidden');
-                            } else {
+                            if (state) {
                                 panel.removeClass('hidden');
                                 panel.addClass('visible');
+                                publishPanelsStateEvent(this.plugin, true);
+                            } else {
+                                panel.removeClass('visible');
+                                panel.addClass('hidden');
+                                publishPanelsStateEvent(this.plugin, false);
                             }
                         });
                         break;
@@ -478,6 +483,7 @@ export default class EventController {
             panels.forEach((panel) => {
                 panel.addClass('visible');
                 panel.removeClass('hidden');
+                publishPanelsStateEvent(this.plugin, true);
             });
         });
         this.plugin.view.registerDomEvent(container, 'mouseleave', () => {
@@ -491,20 +497,8 @@ export default class EventController {
             panels.forEach((panel) => {
                 panel.removeClass('visible');
                 panel.addClass('hidden');
+                publishPanelsStateEvent(this.plugin, false);
             });
         });
-    }
-
-    preventClickOnHiddenPanels(panel: HTMLElement): void {
-        panel.addEventListener(
-            'click',
-            (e) => {
-                if (panel.hasClass('hidden')) {
-                    e.stopPropagation();
-                    e.preventDefault();
-                }
-            },
-            true
-        );
     }
 }
