@@ -25,7 +25,6 @@ export default class ControlPanelController {
         const servicePanel = this.createServicePanel(container, [
             movePanel,
             zoomPanel,
-            foldPanel,
         ]);
 
         container.appendChild(movePanel);
