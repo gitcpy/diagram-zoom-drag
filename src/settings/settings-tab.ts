@@ -68,17 +68,6 @@ export class SettingsTab extends PluginSettingTab {
                     });
             });
 
-        new Setting(containerEl)
-            .setName('Hide by pressing Ctrl + M?')
-            .addToggle((toggle) => {
-                toggle
-                    .setValue(this.plugin.settings.hideByCtrlPlusM)
-                    .onChange(async (value) => {
-                        this.plugin.settings.hideByCtrlPlusM = value;
-                        await this.plugin.settingsManager.saveSettings();
-                    });
-            });
-
         new Setting(containerEl).setHeading().setName('Diagram management');
 
         const addDiagram = new Setting(containerEl);

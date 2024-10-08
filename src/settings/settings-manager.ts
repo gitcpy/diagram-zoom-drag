@@ -14,7 +14,6 @@ export interface DEFAULT_SETTINGS_Interface {
     automaticFolding: boolean;
     hideOnMouseOutDiagram: boolean;
     hideOnMouseOutPanels: boolean;
-    hideByCtrlPlusM: boolean;
 }
 
 export default class SettingsManager {
@@ -40,7 +39,6 @@ export default class SettingsManager {
             automaticFolding: false,
             hideOnMouseOutDiagram: false,
             hideOnMouseOutPanels: false,
-            hideByCtrlPlusM: false,
         };
     }
 
