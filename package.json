@@ -2,7 +2,7 @@
   "name": "Diagram Zoom Drag",
   "author": "ChenPengyuan",
   "license": "MIT",
-  "version": "4.2.6",
+  "version": "4.2.7",
   "type": "module",
   "description": "Add zoom and drag functionality to diagrams from Mermaid, Plantuml, Graphviz, Gravizo and so on",
   "main": "src/main.ts",
