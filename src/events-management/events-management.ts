@@ -11,9 +11,9 @@ abstract class Publisher {
     constructor(public plugin: DiagramZoomDragPlugin) {}
 
     /**
-     * Abstract method to publish an OpenAPI event.
-     * @param event - The OpenAPIRendererEvent object to publish.
-     * @typeparam T - The specific type of OpenAPIRendererEvent being published.
+     * Abstract method to publish an MermaidZoomDrag event.
+     * @param event - The MermaidZoomDragEvent object to publish.
+     * @typeparam T - The specific type of MermaidZoomDragEvent being published.
      */
     abstract publish<T extends MermaidZoomDragEvent>(
         event: MermaidZoomDragEvent
@@ -21,7 +21,7 @@ abstract class Publisher {
 }
 
 /**
- * Publisher for OpenAPI Renderer events.
+ * Publisher for MermaidZoomDrag events.
  */
 export class EventPublisher extends Publisher {
     constructor(plugin: DiagramZoomDragPlugin) {
@@ -29,8 +29,8 @@ export class EventPublisher extends Publisher {
     }
 
     /**
-     * Publishes an OpenAPI Renderer event.
-     * @param event - The OpenAPIRendererEvent object.
+     * Publishes an MermaidZoomDrag event.
+     * @param event - the MermaidZoomDragEvent object.
      */
     public publish(event: MermaidZoomDragEvent): void {
         event.emitter.trigger(event.eventID, event);
@@ -44,11 +44,11 @@ abstract class Observer {
     protected constructor(public plugin: DiagramZoomDragPlugin) {}
 
     /**
-     * Abstract method to subscribe to an OpenAPI event.
+     * Abstract method to subscribe to an MermaidZoomDrag event.
      * @param emitter - The event emitter object.
      * @param eventID - The ID of the event to subscribe to.
      * @param handler - The asynchronous callback function to handle the event.
-     * @typeparam T - The type of OpenAPIRendererEvent being subscribed to.
+     * @typeparam T - The type of MermaidZoomDragEvent being subscribed to.
      */
     abstract subscribe<T extends MermaidZoomDragEvent>(
         emitter: Events,
@@ -58,7 +58,7 @@ abstract class Observer {
 }
 
 /**
- * Observer for handling OpenAPI Renderer events.
+ * Observer for handling MermaidZoomDrag events.
  */
 export class EventObserver extends Observer {
     constructor(plugin: DiagramZoomDragPlugin) {
@@ -66,11 +66,11 @@ export class EventObserver extends Observer {
     }
 
     /**
-     * Subscribes to an OpenAPI event.
+     * Subscribes to an MermaidZoomDrag event.
      * @param emitter - The event emitter object.
      * @param eventID - The ID of the event to subscribe to.
      * @param handler - The asynchronous callback function to handle the event.
-     * @typeparam T - The specific type of OpenAPIRendererEvent being subscribed to.
+     * @typeparam T - The specific type of MermaidZoomDragEvent being subscribed to.
      */
     subscribe<T extends MermaidZoomDragEvent>(
         emitter: Events,
