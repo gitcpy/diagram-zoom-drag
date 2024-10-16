@@ -77,9 +77,9 @@ export class EventObserver extends Observer {
         eventID: EventID,
         handler: (event: T) => Promise<void>
     ): void {
-        const eventRef = emitter.on(
-            eventID,
-            async (event: MermaidZoomDragEvent) => await handler(event as T)
-        );
+        const eventRef = emitter.on(eventID, async (...data: unknown[]) => {
+            const event = data[0] as MermaidZoomDragEvent;
+            await handler(event as T);
+        });
     }
 }
