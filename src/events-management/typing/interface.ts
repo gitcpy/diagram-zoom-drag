@@ -12,3 +12,5 @@ export interface PanelsChangedVisibility extends DiagramZoomDragEvent {
         visible: boolean;
     };
 }
+
+export interface ItemsPerPageChanged extends DiagramZoomDragEvent {}
