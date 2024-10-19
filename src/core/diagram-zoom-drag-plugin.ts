@@ -1,12 +1,5 @@
-import {
-    MarkdownPostProcessorContext,
-    MarkdownView,
-    Plugin,
-    WorkspaceLeaf,
-} from 'obsidian';
-import SettingsManager, {
-    DEFAULT_SETTINGS_Interface,
-} from '../settings/settings-manager';
+import { MarkdownPostProcessorContext, MarkdownView, Plugin } from 'obsidian';
+import SettingsManager from '../settings/settings-manager';
 import { SettingsTab } from '../settings/settings-tab';
 import PluginStateChecker from './plugin-state-checker';
 
@@ -17,12 +10,13 @@ import {
 import { publishPanelsStateEvent } from '../helpers/helpers';
 import { Diagram } from '../diagram/diagram';
 import { LeafID } from '../diagram/diagram-state/typing/types';
+import { DEFAULT_SETTINGS } from '../settings/typing/interfaces';
 
 export default class DiagramZoomDragPlugin extends Plugin {
     view: MarkdownView | null = null;
     leafID!: LeafID | undefined;
     settingsManager!: SettingsManager;
-    settings!: DEFAULT_SETTINGS_Interface;
+    settings!: DEFAULT_SETTINGS;
     pluginStateChecker!: PluginStateChecker;
     publisher!: EventPublisher;
     observer!: EventObserver;
