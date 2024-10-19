@@ -1,8 +1,5 @@
-import { App, Modal } from 'obsidian';
+import { App, Modal, normalizePath } from 'obsidian';
 import DiagramZoomDragPlugin from '../../core/diagram-zoom-drag-plugin';
-import path from 'path';
-import https from 'https';
-import { URL } from 'url';
 
 export class UserGuideModal extends Modal {
     constructor(
@@ -55,10 +52,9 @@ export class UserGuideModal extends Modal {
         if (!pluginPath) {
             return;
         }
-        const videoPath = path.join(
-            pluginPath,
-            'assets',
-            'user-guide-video.mp4'
+
+        const videoPath = normalizePath(
+            `${pluginPath}/assets/user-guide-video.mp4`
         );
 
         try {
@@ -96,8 +92,8 @@ export class UserGuideModal extends Modal {
         if (!pluginDir) {
             return null;
         }
-        const assetsPath = path.join(pluginDir, 'assets');
-        const videoPath = path.join(assetsPath, 'user-guide-video.mp4');
+        const assetsPath = normalizePath(`${pluginDir}/assets`);
+        const videoPath = normalizePath(`${assetsPath}/user-guide-video.mp4`);
         const existsAssetsPath =
             await this.app.vault.adapter.exists(assetsPath);
         if (!existsAssetsPath) {
@@ -121,7 +117,27 @@ export class UserGuideModal extends Modal {
             const url =
                 'https://raw.githubusercontent.com/gitcpy/mermaid-zoom-drag/main/assets/videos/find-class.mp4';
 
-            const blob = await this.downloadFile(url);
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.responseType = 'blob';
+
+            const promise = new Promise<Blob | null>((resolve, reject) => {
+                xhr.onload = () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        resolve(xhr.response);
+                    } else {
+                        reject(new Error(`Error: ${xhr.statusText}`));
+                    }
+                };
+
+                xhr.onerror = (): void => {
+                    reject(new Error('Network Error'));
+                };
+
+                xhr.send();
+            });
+
+            const blob = await promise;
             if (blob) {
                 await this.app.vault.adapter.writeBinary(
                     videoPath,
@@ -131,32 +147,8 @@ export class UserGuideModal extends Modal {
             }
             return null;
         } catch (err: any) {
+            console.error('Error downloading video:', err);
             return null;
         }
-    }
-
-    private async downloadFile(url: string): Promise<Blob | null> {
-        return new Promise((resolve, reject) => {
-            https
-                .get(new URL(url), (response) => {
-                    if (response.statusCode !== 200) {
-                        reject(
-                            new Error(
-                                `Failed to get '${url}' (${response.statusCode})`
-                            )
-                        );
-                        return;
-                    }
-
-                    const chunks: Buffer[] = [];
-                    response.on('data', (chunk) => chunks.push(chunk));
-                    response.on('end', () => {
-                        const buffer = Buffer.concat(chunks);
-                        resolve(new Blob([buffer]));
-                    });
-                    response.on('error', reject);
-                })
-                .on('error', reject);
-        });
     }
 }
