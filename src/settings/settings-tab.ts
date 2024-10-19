@@ -1,4 +1,4 @@
-import { App, Notice, PluginSettingTab, Setting } from 'obsidian';
+import { App, Notice, Platform, PluginSettingTab, Setting } from 'obsidian';
 import DiagramZoomDragPlugin from '../core/diagram-zoom-drag-plugin';
 import { UserGuideModal } from './modals/user-guide-modal';
 
@@ -10,8 +10,6 @@ export class SettingsTab extends PluginSettingTab {
         super(app, plugin);
     }
 
-    // TODO часть настроек на мобильных устройствах скрывать
-
     display(): any {
         const { containerEl } = this;
         containerEl.addClass('mermaid-zoom-drag-settings');
@@ -22,6 +20,7 @@ export class SettingsTab extends PluginSettingTab {
                 await this.plugin.settingsManager.resetSettings();
                 this.containerEl.empty();
                 this.display();
+                new Notice('Settings have been reset to default.');
             });
         });
 
@@ -49,32 +48,36 @@ export class SettingsTab extends PluginSettingTab {
                     });
             });
 
-        new Setting(containerEl)
-            .setName('Hide panels when mouse leaves diagram?')
-            .addToggle((toggle) => {
-                toggle.setValue(this.plugin.settings.hideOnMouseOutDiagram);
-                toggle.onChange(async (value) => {
-                    this.plugin.settings.hideOnMouseOutDiagram = value;
-                    await this.plugin.settingsManager.saveSettings();
-                });
-            });
-
-        new Setting(containerEl)
-            .setName('Hide panels when mouse leaves them?')
-            .addToggle((toggle) => {
-                toggle
-                    .setValue(this.plugin.settings.hideOnMouseOutPanels)
-                    .onChange(async (value) => {
-                        this.plugin.settings.hideOnMouseOutPanels = value;
+        if (Platform.isDesktop) {
+            new Setting(containerEl)
+                .setName('Hide panels when mouse leaves diagram?')
+                .addToggle((toggle) => {
+                    toggle.setValue(this.plugin.settings.hideOnMouseOutDiagram);
+                    toggle.onChange(async (value) => {
+                        this.plugin.settings.hideOnMouseOutDiagram = value;
                         await this.plugin.settingsManager.saveSettings();
                     });
-            });
+                });
+
+            new Setting(containerEl)
+                .setName('Hide panels when mouse leaves them?')
+                .addToggle((toggle) => {
+                    toggle
+                        .setValue(this.plugin.settings.hideOnMouseOutPanels)
+                        .onChange(async (value) => {
+                            this.plugin.settings.hideOnMouseOutPanels = value;
+                            await this.plugin.settingsManager.saveSettings();
+                        });
+                });
+        }
 
         new Setting(containerEl).setHeading().setName('Diagram management');
 
         const addDiagram = new Setting(containerEl);
         const diagramR = new RegExp(/^[A-Za-z0-9]+$/);
         const selectorR = new RegExp(/^\.[\w-]+$/);
+
+        // TODO улучшить способ вывода диаграмм: сплошняком - не вариант
 
         addDiagram
             .setName('Add new diagram')
@@ -169,8 +172,9 @@ export class SettingsTab extends PluginSettingTab {
                     this.containerEl.scrollTop = scrollTop;
                     new Notice('New diagram added!');
                 });
-            })
-            .addExtraButton((extra) => {
+            });
+        if (Platform.isDesktop) {
+            addDiagram.addExtraButton((extra) => {
                 extra.setIcon('info');
                 extra.setTooltip(
                     'Click for tips on finding diagram selectors.'
@@ -179,6 +183,7 @@ export class SettingsTab extends PluginSettingTab {
                     new UserGuideModal(this.app, this.plugin).open();
                 });
             });
+        }
 
         new Setting(containerEl).setName('Supported diagrams').setHeading();
 
