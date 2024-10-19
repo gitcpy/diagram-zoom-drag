@@ -1,9 +1,4 @@
 import DiagramEvents from '../diagram-events';
-import {
-    hidePanels,
-    panelsMap,
-    showPanels,
-} from '../../../helpers/panelsVisibility';
 
 export class MouseHandler {
     private startX!: number;
@@ -84,13 +79,17 @@ export class MouseHandler {
             'mouseleave',
             this.mouseLeaveOutDiagram.bind(this, container)
         );
-        const panels = panelsMap.get(container);
+        const panels = this.diagramEvents.diagram.diagramState.containersPanels;
 
         if (!panels) {
             return;
         }
 
-        panels.forEach((panel) => {
+        [
+            panels.panels.move.panel,
+            panels.panels.zoom.panel,
+            panels.panels.service.panel,
+        ].forEach((panel) => {
             this.diagramEvents.diagram.plugin.view!.registerDomEvent(
                 panel,
                 'mouseenter',
@@ -274,7 +273,6 @@ export class MouseHandler {
                 panel.addClass('visible');
             });
         }
-        showPanels(container);
     }
 
     /**
@@ -292,8 +290,18 @@ export class MouseHandler {
         if (container.hasClass('folded')) {
             return;
         }
+        const panels = this.diagramEvents.diagram.diagramState.containersPanels;
 
-        hidePanels(container);
+        if (panels) {
+            [
+                panels.panels.move.panel,
+                panels.panels.zoom.panel,
+                panels.panels.service.panel,
+            ].forEach((panel) => {
+                panel.removeClass('visible');
+                panel.addClass('hidden');
+            });
+        }
     }
 
     /**

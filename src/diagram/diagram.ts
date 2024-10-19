@@ -4,7 +4,6 @@ import { DiagramState } from './diagram-state/diagram-state';
 import { DiagramControlPanel } from './diagram-control-panel/diagram-control-panel';
 import DiagramEvents from './diagram-events/diagram-events';
 import { DiagramActions } from './diagram-actions/diagram-actions';
-import { initializePanelsStorage } from '../helpers/panelsVisibility';
 
 export class Diagram {
     readonly diagramState: DiagramState;
@@ -76,7 +75,6 @@ export class Diagram {
                 );
             }
             this.diagramControlPanel.initialize(container);
-            initializePanelsStorage(container);
             this.diagramEvents.initializeContainer(container);
 
             setTimeout(() => {
