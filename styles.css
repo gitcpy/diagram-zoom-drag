@@ -176,6 +176,16 @@
     height: 20vh;
 }
 
+.diagram-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: top left;
+    cursor: grab;
+    width: 100%;
+    height: 100%;
+}
+
 
 
 .mermaid-zoom-drag-panel {

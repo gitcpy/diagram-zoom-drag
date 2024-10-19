@@ -1,7 +1,7 @@
-import DiagramZoomDragPlugin from '../core/diagram-zoom-drag-plugin';
+import { Diagram } from '../diagram';
 
-export class DiagramController {
-    constructor(public plugin: DiagramZoomDragPlugin) {}
+export class DiagramActions {
+    constructor(public diagram: Diagram) {}
 
     /**
      * Moves the diagram element in the given container by the given dx and dy
@@ -19,30 +19,33 @@ export class DiagramController {
         dy: number,
         setAnimation?: boolean
     ): void {
-        this.plugin.activeContainer = container;
+        this.diagram.activeContainer = container;
 
-        const element = container.querySelector(
-            this.plugin.compoundSelector
-        ) as HTMLElement | null;
-        if (element) {
-            this.plugin.dx += dx;
-            this.plugin.dy += dy;
-            element.setCssStyles({
-                transition: setAnimation ? 'transform 0.3s ease-out' : 'none',
-                transform: `translate(${this.plugin.dx}px, ${this.plugin.dy}px) scale(${this.plugin.scale})`,
-            });
-            if (setAnimation) {
-                this.plugin.view.registerDomEvent(
-                    element,
-                    'transitionend',
-                    () => {
-                        element.setCssStyles({
-                            transition: 'none',
-                        });
-                    },
-                    { once: true }
-                );
-            }
+        const element: HTMLElement | null = container.querySelector(
+            this.diagram.compoundSelector
+        );
+        if (!element) {
+            return;
+        }
+
+        this.diagram.dx += dx;
+        this.diagram.dy += dy;
+        element.setCssStyles({
+            transition: setAnimation ? 'transform 0.3s ease-out' : 'none',
+            transform: `translate(${this.diagram.dx}px, ${this.diagram.dy}px) scale(${this.diagram.scale})`,
+        });
+
+        if (setAnimation) {
+            this.diagram.plugin.view!.registerDomEvent(
+                element,
+                'transitionend',
+                () => {
+                    element.setCssStyles({
+                        transition: 'none',
+                    });
+                },
+                { once: true }
+            );
         }
     }
 
@@ -60,43 +63,46 @@ export class DiagramController {
         factor: number,
         setAnimation?: boolean
     ): void {
-        this.plugin.activeContainer = container;
-        const element = container.querySelector(
-            this.plugin.compoundSelector
-        ) as HTMLElement | null;
-        if (element) {
-            const containerRect = container.getBoundingClientRect();
+        this.diagram.activeContainer = container;
+        const element: HTMLElement | null = container.querySelector(
+            this.diagram.compoundSelector
+        );
 
-            const centerX = containerRect.width / 2;
-            const centerY = containerRect.height / 2;
+        if (!element) {
+            return;
+        }
 
-            const offsetX = (centerX - this.plugin.dx) / this.plugin.scale;
-            const offsetY = (centerY - this.plugin.dy) / this.plugin.scale;
+        const containerRect = container.getBoundingClientRect();
 
-            this.plugin.scale *= factor;
-            this.plugin.scale = Math.max(0.125, this.plugin.scale);
+        const centerX = containerRect.width / 2;
+        const centerY = containerRect.height / 2;
 
-            this.plugin.dx = centerX - offsetX * this.plugin.scale;
-            this.plugin.dy = centerY - offsetY * this.plugin.scale;
+        const offsetX = (centerX - this.diagram.dx) / this.diagram.scale;
+        const offsetY = (centerY - this.diagram.dy) / this.diagram.scale;
 
-            element.setCssStyles({
-                transition: setAnimation
-                    ? 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)'
-                    : 'none',
-                transform: `translate(${this.plugin.dx}px, ${this.plugin.dy}px) scale(${this.plugin.scale})`,
-            });
-            if (setAnimation) {
-                this.plugin.view.registerDomEvent(
-                    element,
-                    'transitionend',
-                    () => {
-                        element.setCssStyles({
-                            transition: 'none',
-                        });
-                    },
-                    { once: true }
-                );
-            }
+        this.diagram.scale *= factor;
+        this.diagram.scale = Math.max(0.125, this.diagram.scale);
+
+        this.diagram.dx = centerX - offsetX * this.diagram.scale;
+        this.diagram.dy = centerY - offsetY * this.diagram.scale;
+
+        element.setCssStyles({
+            transition: setAnimation
+                ? 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)'
+                : 'none',
+            transform: `translate(${this.diagram.dx}px, ${this.diagram.dy}px) scale(${this.diagram.scale})`,
+        });
+        if (setAnimation) {
+            this.diagram.plugin.view!.registerDomEvent(
+                element,
+                'transitionend',
+                () => {
+                    element.setCssStyles({
+                        transition: 'none',
+                    });
+                },
+                { once: true }
+            );
         }
     }
 
@@ -108,9 +114,9 @@ export class DiagramController {
      * @param setAnimation - Whether to animate the reset of the element. Defaults to undefined.
      */
     resetZoomAndMove(container: HTMLElement, setAnimation?: boolean): void {
-        const element = container.querySelector(
-            this.plugin.compoundSelector
-        ) as HTMLElement | null;
+        const element: HTMLElement | null = container.querySelector(
+            this.diagram.compoundSelector
+        );
         if (element) {
             this.fitToContainer(element, container, setAnimation);
         }
@@ -128,31 +134,31 @@ export class DiagramController {
         container: HTMLElement,
         setAnimation?: boolean
     ): void {
-        this.plugin.activeContainer = container;
+        this.diagram.activeContainer = container;
         const containerWidth = container.clientWidth;
         const containerHeight = container.clientHeight;
         const diagramWidth = element.clientWidth;
         const diagramHeight = element.clientHeight;
 
-        this.plugin.scale = Math.min(
+        this.diagram.scale = Math.min(
             containerWidth / diagramWidth,
             containerHeight / diagramHeight,
             1
         );
-        this.plugin.dx =
-            (containerWidth - diagramWidth * this.plugin.scale) / 2;
-        this.plugin.dy =
-            (containerHeight - diagramHeight * this.plugin.scale) / 2;
+        this.diagram.dx =
+            (containerWidth - diagramWidth * this.diagram.scale) / 2;
+        this.diagram.dy =
+            (containerHeight - diagramHeight * this.diagram.scale) / 2;
 
         element.setCssStyles({
             transition: setAnimation
                 ? 'transform 0.3s cubic-bezier(0.42, 0, 0.58, 1)'
                 : 'none',
-            transform: `translate(${this.plugin.dx}px, ${this.plugin.dy}px) scale(${this.plugin.scale})`,
+            transform: `translate(${this.diagram.dx}px, ${this.diagram.dy}px) scale(${this.diagram.scale})`,
             transformOrigin: 'top left',
         });
         if (setAnimation) {
-            this.plugin.view.registerDomEvent(
+            this.diagram.plugin.view!.registerDomEvent(
                 element,
                 'transitionend',
                 () => {

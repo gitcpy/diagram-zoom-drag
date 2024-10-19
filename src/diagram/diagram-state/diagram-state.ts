@@ -1,25 +1,27 @@
-import DiagramZoomDragPlugin from '../core/diagram-zoom-drag-plugin';
-import { ContainerID, Data, LeafID } from '../typing/typing';
+import { Diagram } from '../diagram';
+import { MovePanel } from '../diagram-control-panel/panelType/move';
+import { FoldPanel } from '../diagram-control-panel/panelType/fold';
+import { ZoomPanel } from '../diagram-control-panel/panelType/zoom';
+import { ServicePanel } from '../diagram-control-panel/panelType/service';
+import { ContainerID, LeafID } from './typing/types';
+import { Data } from './typing/interfaces';
 
-export class ViewDataController {
+// TODO улучшить общий интерфейс Data
+export interface PanelsData {
+    panels: {
+        move: MovePanel;
+        fold: FoldPanel;
+        zoom: ZoomPanel;
+        service: ServicePanel;
+    };
+    controlPanel: HTMLElement;
+}
+
+export class DiagramState {
     data: Map<LeafID, Data> = new Map();
 
-    /**
-     * Initializes the view data controller.
-     *
-     * @param plugin - The plugin that this view data controller is associated with.
-     *
-     * @remarks
-     * The constructor also defines the following properties on the plugin:
-     * - `dx`: The horizontal distance from the top-left corner of the view to move the diagram by.
-     * - `dy`: The vertical distance from the top-left corner of the view to move the diagram by.
-     * - `scale`: The zoom factor of the diagram.
-     * - `nativeTouchEventsEnabled`: Whether native touch events are enabled for the diagram.
-     *
-     * These properties are implemented as getters and setters that access the corresponding properties on the `data` map.
-     */
-    constructor(public plugin: DiagramZoomDragPlugin) {
-        Object.defineProperties(this.plugin, {
+    constructor(public diagram: Diagram) {
+        Object.defineProperties(this.diagram, {
             dx: {
                 get: () => this.dx,
                 set: (value) => {
@@ -57,7 +59,7 @@ export class ViewDataController {
      * @param leafID - The ID of the leaf to initialize the view data for.
      * @param containerID - The ID of the container to initialize the view data for.
      */
-    initializeView(leafID: LeafID, containerID: ContainerID): void {
+    initializeContainer(leafID: LeafID, containerID: ContainerID): void {
         if (!this.data.get(leafID)) {
             this.data.set(leafID, {});
         }
@@ -72,6 +74,48 @@ export class ViewDataController {
         }
     }
 
+    initializeContainerPanels(
+        leafID: LeafID,
+        containerID: ContainerID,
+        controlPanel: HTMLElement,
+        movePanel: MovePanel,
+        foldPanel: FoldPanel,
+        zoomPanel: ZoomPanel,
+        servicePanel: ServicePanel
+    ): void {
+        if (!this.data.get(leafID)) {
+            return;
+        }
+        const data = this.data.get(leafID);
+        if (!data) {
+            return;
+        }
+        data[containerID].controlPanel = controlPanel;
+        data[containerID].panels = {
+            move: movePanel,
+            fold: foldPanel,
+            zoom: zoomPanel,
+            service: servicePanel,
+        };
+    }
+
+    get containersPanels(): PanelsData | undefined {
+        const data = this.data.get(this.diagram.plugin.leafID!);
+        if (!data) {
+            return;
+        }
+        const containerData = data[this.diagram.activeContainer?.id!];
+
+        if (!containerData) {
+            return;
+        }
+
+        return {
+            panels: containerData.panels!,
+            controlPanel: containerData.controlPanel!,
+        };
+    }
+
     /**
      * Gets the value of the given field from the view data for the active
      * container and leaf.
@@ -83,8 +127,16 @@ export class ViewDataController {
     getData<K extends keyof Data[ContainerID]>(
         field: K
     ): Data[ContainerID][K] | undefined {
-        const activeContainer = this.plugin.activeContainer;
-        const data = this.data.get(this.plugin.leafID!);
+        const activeContainer = this.diagram.activeContainer;
+        if (!activeContainer) {
+            return;
+        }
+        const leafID = this.diagram.plugin.leafID;
+        if (!leafID) {
+            return;
+        }
+
+        const data = this.data.get(leafID);
         if (data?.[activeContainer.id]) {
             return data[activeContainer.id][field];
         }
@@ -101,8 +153,15 @@ export class ViewDataController {
         field: K,
         value: Data[ContainerID][K]
     ): void {
-        const activeContainer = this.plugin.activeContainer;
-        const viewData = this.data.get(this.plugin.leafID!);
+        const activeContainer = this.diagram.activeContainer;
+        if (!activeContainer) {
+            return;
+        }
+        const leafID = this.diagram.plugin.leafID;
+        if (!leafID) {
+            return;
+        }
+        const viewData = this.data.get(leafID);
         if (viewData?.[activeContainer.id]) {
             viewData[activeContainer.id][field] = value;
         }
@@ -174,7 +233,7 @@ export class ViewDataController {
     }
 
     /**
-     * Whether native touch events are currently enabled for the diagram in the
+     * Whether native touch eventHandlers are currently enabled for the diagram in the
      * active container.
      *
      * If the view data is not available, this property returns `true`.
@@ -184,10 +243,10 @@ export class ViewDataController {
     }
 
     /**
-     * Sets whether native touch events are currently enabled for the diagram in the
+     * Sets whether native touch eventHandlers are currently enabled for the diagram in the
      * active container.
      *
-     * @param value - The new value for whether native touch events are enabled.
+     * @param value - The new value for whether native touch eventHandlers are enabled.
      */
     set nativeTouchEventsEnabled(value: boolean) {
         this.setData('nativeTouchEventsEnabled', value);
