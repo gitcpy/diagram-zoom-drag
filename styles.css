@@ -139,6 +139,16 @@
     color: var(--text-normal);
 }
 
+.pagination-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 20px;
+    margin: 20px 0;
+    padding: 10px;
+    background-color: var(--background-secondary);
+    border-radius: 5px;
+}
 
 
 .invalid {
@@ -214,3 +224,5 @@
     cursor: grab;
     pointer-events: none;
 }
+
+
