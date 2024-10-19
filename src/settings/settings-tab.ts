@@ -10,6 +10,8 @@ export class SettingsTab extends PluginSettingTab {
         super(app, plugin);
     }
 
+    // TODO часть настроек на мобильных устройствах скрывать
+
     display(): any {
         const { containerEl } = this;
         containerEl.addClass('mermaid-zoom-drag-settings');

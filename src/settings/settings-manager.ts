@@ -1,7 +1,7 @@
 import path from 'path';
 import DiagramZoomDragPlugin from '../core/diagram-zoom-drag-plugin';
 
-import { SupportedDiagrams } from '../typing/typing';
+import { SupportedDiagrams } from '../diagram/typing/constants';
 
 export interface DiagramData {
     name: string;
