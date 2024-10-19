@@ -5,6 +5,7 @@ export interface DiagramData {
 
 export interface DEFAULT_SETTINGS {
     supported_diagrams: DiagramData[];
+    itemsPerPage: number;
     foldByDefault: boolean;
     automaticFolding: boolean;
     hideOnMouseOutDiagram: boolean;

@@ -44,7 +44,7 @@ export class DiagramSettingsManager {
 
         const prevButton = container.createEl('button', { text: 'Previous' });
         const pageInfo = container.createSpan({
-            text: `Page ${this.currentPage} of ${this.totalPages}`,
+            text: `Page ${this.currentPage} of ${this.totalPages} (Total diagrams: ${this.plugin.settings.supported_diagrams.length})`,
         });
         const nextButton = container.createEl('button', { text: 'Next' });
 

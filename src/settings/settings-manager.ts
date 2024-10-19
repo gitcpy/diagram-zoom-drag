@@ -23,6 +23,7 @@ export default class SettingsManager {
                     };
                 }
             ),
+            itemsPerPage: 5,
             foldByDefault: false,
             automaticFolding: false,
             hideOnMouseOutDiagram: false,

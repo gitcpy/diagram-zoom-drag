@@ -1,6 +1,8 @@
 import { App, Notice, Platform, PluginSettingTab, Setting } from 'obsidian';
 import DiagramZoomDragPlugin from '../core/diagram-zoom-drag-plugin';
 import { UserGuideModal } from './modals/user-guide-modal';
+import { DiagramSettingsManager } from './utils/diagramPagination';
+import { EventID } from '../events-management/typing/constants';
 
 export class SettingsTab extends PluginSettingTab {
     constructor(
@@ -10,7 +12,7 @@ export class SettingsTab extends PluginSettingTab {
         super(app, plugin);
     }
 
-    display(): any {
+    async display(): Promise<any> {
         const { containerEl } = this;
         containerEl.addClass('mermaid-zoom-drag-settings');
 
@@ -19,7 +21,7 @@ export class SettingsTab extends PluginSettingTab {
             button.onClick(async (cb) => {
                 await this.plugin.settingsManager.resetSettings();
                 this.containerEl.empty();
-                this.display();
+                await this.display();
                 new Notice('Settings have been reset to default.');
             });
         });
@@ -76,8 +78,6 @@ export class SettingsTab extends PluginSettingTab {
         const addDiagram = new Setting(containerEl);
         const diagramR = new RegExp(/^[A-Za-z0-9]+$/);
         const selectorR = new RegExp(/^\.[\w-]+$/);
-
-        // TODO улучшить способ вывода диаграмм: сплошняком - не вариант
 
         addDiagram
             .setName('Add new diagram')
@@ -168,7 +168,7 @@ export class SettingsTab extends PluginSettingTab {
                     await this.plugin.settingsManager.saveSettings();
                     const scrollTop = containerEl.scrollTop;
                     this.containerEl.empty();
-                    this.display();
+                    await this.display();
                     this.containerEl.scrollTop = scrollTop;
                     new Notice('New diagram added!');
                 });
@@ -186,29 +186,30 @@ export class SettingsTab extends PluginSettingTab {
         }
 
         new Setting(containerEl).setName('Supported diagrams').setHeading();
-
-        this.plugin.settings.supported_diagrams.forEach((diagram) => {
-            const setting = new Setting(containerEl)
-                .setName(diagram.name)
-                .setDesc(diagram.selector)
-                .addButton((button) => {
-                    button.setIcon('trash');
-                    button.setTooltip('Delete this diagram?');
-                    button.onClick(async (cb) => {
-                        const settings = this.plugin.settings;
-                        settings.supported_diagrams =
-                            settings.supported_diagrams.filter(
-                                (diagramV) => diagramV !== diagram
-                            );
-                        await this.plugin.settingsManager.saveSettings();
-                        setting.settingEl.remove();
+        new Setting(containerEl)
+            .setName('items per page')
+            .addSlider((slider) => {
+                slider.setValue(this.plugin.settings.itemsPerPage);
+                slider.setDynamicTooltip();
+                slider.setLimits(1, 50, 1);
+                slider.onChange(async (value) => {
+                    this.plugin.settings.itemsPerPage = value;
+                    await this.plugin.settingsManager.saveSettings();
+                    this.plugin.publisher.publish({
+                        emitter: this.app.workspace,
+                        eventID: EventID.ItemsPerPageChanged,
+                        timestamp: new Date(),
                     });
                 });
-        });
+            });
+
+        await new DiagramSettingsManager(
+            this.plugin,
+            containerEl.createEl('div')
+        ).render();
     }
 
     hide(): any {
         this.containerEl.empty();
-        return super.hide();
     }
 }
