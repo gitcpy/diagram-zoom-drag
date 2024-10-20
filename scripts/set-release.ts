@@ -222,15 +222,13 @@ async function versionMenu(
  * @returns The new version of the plugin.
  */
 async function getVersion(): Promise<string> {
-    const tags = execSync('git tag', { stdio: 'pipe' })
-        .toString()
-        .trim()
-        .split('\n');
+    const tagOutput = execSync('git tag', { stdio: 'pipe' }).toString().trim();
+    const tags = tagOutput ? tagOutput.split('\n') : [];
 
     const currentVersion = tags[tags.length - 1];
 
     if (tags.length === 0) {
-        return getNewVersion(tags, currentVersion);
+        return getNewVersion(tags, '0.0.0');
     }
 
     return versionMenu(tags, currentVersion);
