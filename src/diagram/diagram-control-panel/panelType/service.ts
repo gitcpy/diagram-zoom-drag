@@ -1,21 +1,45 @@
 import { PanelType } from '../typing/interfaces';
-import { Notice, Platform, setIcon } from 'obsidian';
+import { Platform } from 'obsidian';
 import { updateButton } from '../../../helpers/helpers';
 import { Diagram } from '../../diagram';
 import { DiagramControlPanel } from '../diagram-control-panel';
 
 export class ServicePanel implements PanelType {
     panel!: HTMLElement;
-    hiding: boolean = false;
+    hiding = false;
 
     constructor(
-        public diagram: Diagram,
-        public diagramControlPanel: DiagramControlPanel
+        private readonly diagram: Diagram,
+        private readonly diagramControlPanel: DiagramControlPanel
     ) {}
 
+    /**
+     * Initializes the service panel.
+     *
+     * This method creates the HTML element of the service panel and assigns it to the `panel` property.
+     */
     initialize(): void {
         this.panel = this.createPanel();
     }
+
+    /**
+     * Returns an array of objects representing the buttons in the service panel.
+     *
+     * The buttons are objects with the following properties:
+     * - `icon`: The icon to display in the button.
+     * - `action`: The action to perform when the button is clicked.
+     * - `title`: The title of the button.
+     * - `active`: Whether the button is active or not.
+     * - `id`: The id of the button.
+     *
+     * The service panel has the following buttons:
+     * - A button to hide and show the move and zoom panels.
+     * - A button to open the diagram in fullscreen mode.
+     * - A button to enable and disable native touch events for the diagram.
+     *
+     * @param container The container to which the service panel is attached.
+     * @returns An array of objects representing the buttons in the service panel.
+     */
     getButtons(container: HTMLElement): Array<{
         icon: string;
         action: () => void;
@@ -27,22 +51,18 @@ export class ServicePanel implements PanelType {
             {
                 icon: this.hiding ? 'eye-off' : 'eye',
                 action: (): void => {
-                    this.hiding = !this.hiding;
-                    const panels = this.diagram.diagramState.containersPanels;
+                    const panelsData = this.diagram.diagramState.panelsData;
 
-                    if (!panels) {
+                    if (!panelsData?.panels) {
                         return;
                     }
 
-                    [panels.panels.move, panels.panels.zoom].forEach(
+                    this.hiding = !this.hiding;
+
+                    [panelsData.panels.move, panelsData.panels.zoom].forEach(
                         (panel) => {
-                            if (this.hiding) {
-                                panel.panel.addClass('hidden');
-                                panel.panel.removeClass('visible');
-                            } else {
-                                panel.panel.removeClass('hidden');
-                                panel.panel.addClass('visible');
-                            }
+                            panel.panel.toggleClass('hidden', this.hiding);
+                            panel.panel.toggleClass('visible', !this.hiding);
                         }
                     );
 
@@ -54,7 +74,7 @@ export class ServicePanel implements PanelType {
                     }
                     updateButton(
                         button,
-                        this.hiding ? 'eye' : 'eye-off',
+                        !this.hiding ? 'eye' : 'eye-off',
                         `${this.hiding ? 'Show' : 'Hide'} move and zoom panels`
                     );
                 },
@@ -64,20 +84,28 @@ export class ServicePanel implements PanelType {
             {
                 icon: 'maximize',
                 action: async (): Promise<void> => {
-                    const button = container.querySelector(
+                    const button: HTMLElement | null = container.querySelector(
                         '#open-fullscreen-button'
-                    ) as HTMLElement | null;
+                    );
                     if (!button) {
                         return;
                     }
-                    if (!container.doc.fullscreenElement) {
+                    if (!document.fullscreenElement) {
                         await container.requestFullscreen({
                             navigationUI: 'auto',
                         });
-                        setIcon(button, 'minimize');
+                        updateButton(
+                            button,
+                            'minimize',
+                            'Open in fullscreen mode'
+                        );
                     } else {
                         await container.doc.exitFullscreen();
-                        setIcon(button, 'maximize');
+                        updateButton(
+                            button,
+                            'maximize',
+                            'Exit fullscreen mode'
+                        );
                     }
                 },
                 title: 'Open in fullscreen mode',
@@ -85,7 +113,7 @@ export class ServicePanel implements PanelType {
             },
         ];
 
-        if (Platform.isMobile) {
+        if (Platform.isMobileApp) {
             buttons.push({
                 icon: this.diagram.nativeTouchEventsEnabled
                     ? 'circle-slash-2'
@@ -100,6 +128,7 @@ export class ServicePanel implements PanelType {
                     if (!btn) {
                         return;
                     }
+
                     const nativeEvents = this.diagram.nativeTouchEventsEnabled;
 
                     updateButton(
@@ -110,12 +139,11 @@ export class ServicePanel implements PanelType {
                         `${nativeEvents ? 'Enable' : 'Disable'} move and pinch zoom`
                     );
 
-                    new Notice(
+                    this.diagram.plugin.showNotice(
                         `Native touches are ${nativeEvents ? 'enabled' : 'disabled'} now. 
             You ${nativeEvents ? 'cannot' : 'can'} move and pinch zoom diagram diagram.`
                     );
                 },
-
                 title: `${this.diagram.nativeTouchEventsEnabled ? 'Enable' : 'Disable'} move and pinch zoom`,
                 id: 'native-touch-event',
             });
@@ -123,9 +151,18 @@ export class ServicePanel implements PanelType {
 
         return buttons;
     }
+    /**
+     * Creates the HTML element of the service panel.
+     *
+     * The service panel is a container with absolute positioning that is placed at the top right of the diagram.
+     * It contains buttons that provide additional functionality for the diagram.
+     * The buttons are created using the `getButtons` method and are then appended to the panel.
+     *
+     * @returns The HTML element of the service panel.
+     */
     createPanel(): HTMLElement {
         const servicePanel = this.diagramControlPanel.createPanel(
-            ['mermaid-zoom-drag-panel', 'diagram-service-panel'],
+            'diagram-service-panel',
             {
                 right: '10px',
                 top: '10px',
@@ -147,35 +184,5 @@ export class ServicePanel implements PanelType {
         );
 
         return servicePanel;
-    }
-
-    private setupFullscreenEventHandler() {
-        const container = this.diagram.activeContainer!;
-        const fullScreenKeyboardHandler = (event: KeyboardEvent): void => {
-            return this.diagram.diagramEvents.keyboard.keyDown(
-                container,
-                event
-            );
-        };
-        container.onfullscreenchange = (): void => {
-            const fullscreenEl = document.querySelector(
-                '.obsidian-app'
-            ) as HTMLElement;
-            if (container === document.fullscreenElement) {
-                container.addClass('is-fullscreen');
-                this.diagram.plugin.view!.registerDomEvent(
-                    fullscreenEl,
-                    'keydown',
-                    fullScreenKeyboardHandler
-                );
-            } else {
-                container.removeClass('is-fullscreen');
-                fullscreenEl.removeEventListener(
-                    'keydown',
-                    fullScreenKeyboardHandler
-                );
-                container.focus();
-            }
-        };
     }
 }

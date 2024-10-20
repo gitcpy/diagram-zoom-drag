@@ -46,37 +46,16 @@ export class DiagramControlPanel {
             });
         }
 
-        const hidingB: HTMLElement | null = service.panel.querySelector(
-            '#hide-show-button-diagram'
-        );
-
-        this.diagram.plugin.observer.subscribe(
-            this.diagram.plugin.app.workspace,
-            EventID.PanelsChangedVisibility,
-            async (e: PanelsChangedVisibility) => {
-                const visible = e.data.visible;
-                if (!hidingB) {
-                    return;
-                }
-                service.hiding = !visible;
-                updateButton(
-                    hidingB,
-                    service.hiding ? 'eye-off' : 'eye',
-                    `${service.hiding ? 'Show' : 'Hide'} move and zoom panels`
-                );
-                setIcon(hidingB, service.hiding ? 'eye-off' : 'eye');
-            }
-        );
+        this.setupEventListeners();
 
         this.diagram.activeContainer?.appendChild(controlPanel);
     }
 
-    createPanel(classes: string[], styles: object): HTMLElement {
-        const controlPanel =
-            this.diagram.diagramState.containersPanels?.controlPanel;
+    createPanel(cssClass: string, styles: object): HTMLElement {
+        const controlPanel = this.diagram.diagramState.panelsData?.controlPanel;
         const panel = controlPanel!.createEl('div');
-        panel.addClasses(classes);
-        panel.addClass('mermaid-zoom-drag-panel');
+        panel.addClass(cssClass);
+        panel.addClass('diagram-zoom-drag-panel');
         panel.setCssStyles(styles);
         return panel;
     }
@@ -105,7 +84,7 @@ export class DiagramControlPanel {
                 alignItems: 'center',
                 transition: 'background-color 0.2s ease',
             });
-            setIcon(button, icon);
+            updateButton(button, icon, title);
 
             this.diagram.plugin.view!.registerDomEvent(button, 'click', action);
 
@@ -134,7 +113,35 @@ export class DiagramControlPanel {
             });
         }
 
-        button.setAttribute('aria-label', title);
         return button;
+    }
+
+    private setupEventListeners(): void {
+        const service = this.diagram.diagramState.panelsData?.panels?.service;
+        if (!service) {
+            return;
+        }
+
+        const hidingB: HTMLElement | null = service.panel.querySelector(
+            '#hide-show-button-diagram'
+        );
+
+        this.diagram.plugin.observer.subscribe(
+            this.diagram.plugin.app.workspace,
+            EventID.PanelsChangedVisibility,
+            async (e: PanelsChangedVisibility) => {
+                const visible = e.data.visible;
+                if (!hidingB) {
+                    return;
+                }
+                service.hiding = !visible;
+                updateButton(
+                    hidingB,
+                    service.hiding ? 'eye-off' : 'eye',
+                    `${service.hiding ? 'Show' : 'Hide'} move and zoom panels`
+                );
+                setIcon(hidingB, service.hiding ? 'eye-off' : 'eye');
+            }
+        );
     }
 }

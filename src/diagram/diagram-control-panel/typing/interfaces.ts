@@ -1,4 +1,6 @@
 export interface PanelType {
+    panel: HTMLElement;
+
     initialize(): void;
     getButtons(container: HTMLElement): Array<{
         icon: string;

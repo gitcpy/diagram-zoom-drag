@@ -5,14 +5,34 @@ import { PanelType } from '../typing/interfaces';
 export class MovePanel implements PanelType {
     panel!: HTMLElement;
     constructor(
-        public diagram: Diagram,
-        public diagramControlPanel: DiagramControlPanel
+        private readonly diagram: Diagram,
+        private readonly diagramControlPanel: DiagramControlPanel
     ) {}
 
+    /**
+     * Initializes the move panel.
+     *
+     * This method creates the HTML element of the move panel and assigns it to the `panel` property.
+     */
     initialize(): void {
         this.panel = this.createPanel();
     }
 
+    /**
+     * Returns an array of objects representing the buttons in the move panel.
+     *
+     * The buttons are objects with the following properties:
+     * - `icon`: The icon to display in the button.
+     * - `action`: The action to perform when the button is clicked.
+     * - `title`: The title of the button.
+     * - `active`: Whether the button is active or not.
+     * - `id`: The id of the button.
+     *
+     * The move panel has 8 buttons, each of which moves the container in a different direction.
+     *
+     * @param container The container to which the move panel is attached.
+     * @returns An array of objects representing the buttons in the move panel.
+     */
     getButtons(container: HTMLElement): Array<{
         icon: string;
         action: () => void;
@@ -119,9 +139,18 @@ export class MovePanel implements PanelType {
         ];
     }
 
+    /**
+     * Creates the HTML element of the move panel.
+     *
+     * The move panel is a container with absolute positioning that is placed at the bottom right of the diagram.
+     * It contains 8 buttons that move the currently selected container in the diagram.
+     * The buttons are created using the `getButtons` method and are then appended to the panel.
+     *
+     * @returns The HTML element of the move panel.
+     */
     createPanel(): HTMLElement {
         const panel = this.diagramControlPanel.createPanel(
-            ['mermaid-zoom-drag-panel', 'diagram-move-panel'],
+            'diagram-move-panel',
             {
                 right: '10px',
                 bottom: '10px',

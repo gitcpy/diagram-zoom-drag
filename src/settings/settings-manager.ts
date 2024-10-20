@@ -1,20 +1,8 @@
-import path from 'path';
 import DiagramZoomDragPlugin from '../core/diagram-zoom-drag-plugin';
 
 import { SupportedDiagrams } from '../diagram/typing/constants';
-
-export interface DiagramData {
-    name: string;
-    selector: string;
-}
-
-export interface DEFAULT_SETTINGS_Interface {
-    supported_diagrams: DiagramData[];
-    foldByDefault: boolean;
-    automaticFolding: boolean;
-    hideOnMouseOutDiagram: boolean;
-    hideOnMouseOutPanels: boolean;
-}
+import { normalizePath } from 'obsidian';
+import { DefaultSettings } from './typing/interfaces';
 
 export default class SettingsManager {
     constructor(public plugin: DiagramZoomDragPlugin) {
@@ -23,20 +11,19 @@ export default class SettingsManager {
 
     /**
      * Retrieves the default settings for the plugin.
-     * @returns {DEFAULT_SETTINGS_Interface} The default settings object.
+     * @returns {DefaultSettings} The default settings object.
      */
-    get defaultSettings(): DEFAULT_SETTINGS_Interface {
+    get defaultSettings(): DefaultSettings {
         return {
             supported_diagrams: Object.entries(SupportedDiagrams).map(
-                ([key, value]) => {
-                    return {
-                        name: key,
-                        selector: value,
-                    };
-                }
+                ([key, value]) => ({
+                    name: key,
+                    selector: value,
+                })
             ),
-            foldByDefault: false,
-            automaticFolding: false,
+            diagramsPerPage: 5,
+            foldingByDefault: false,
+            automaticFoldingOnFocusChange: false,
             hideOnMouseOutDiagram: false,
             hideOnMouseOutPanels: false,
         };
@@ -76,7 +63,7 @@ export default class SettingsManager {
     async resetSettings(): Promise<void> {
         const pluginPath = this.plugin.manifest.dir;
         if (pluginPath) {
-            const configPath = path.join(pluginPath, '/data.json');
+            const configPath = normalizePath(`${pluginPath}/data.json`);
             const existsPath =
                 await this.plugin.app.vault.adapter.exists(configPath);
             if (existsPath) {

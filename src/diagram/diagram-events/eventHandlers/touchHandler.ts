@@ -8,7 +8,7 @@ export class TouchHandler {
     private isPinching = false;
     constructor(private readonly diagramEvents: DiagramEvents) {}
 
-    initializeTouch(container: HTMLElement): void {
+    initialize(container: HTMLElement): void {
         if (!this.diagramEvents.diagram.plugin.view) {
             return;
         }
@@ -16,22 +16,20 @@ export class TouchHandler {
         this.diagramEvents.diagram.plugin.view.registerDomEvent(
             container,
             'touchstart',
-            this.touchStart.bind(this, container)
+            this.touchStart.bind(this, container),
+            { passive: false }
         );
         this.diagramEvents.diagram.plugin.view.registerDomEvent(
             container,
             'touchmove',
-            this.touchMove.bind(this, container)
+            this.touchMove.bind(this, container),
+            { passive: false }
         );
         this.diagramEvents.diagram.plugin.view.registerDomEvent(
             container,
             'touchend',
-            this.touchEnd.bind(this, container)
-        );
-        this.diagramEvents.diagram.plugin.view.registerDomEvent(
-            container,
-            'scroll',
-            this.scroll.bind(this, container)
+            this.touchEnd.bind(this, container),
+            { passive: false }
         );
     }
 
@@ -56,11 +54,13 @@ export class TouchHandler {
         if (this.diagramEvents.diagram.nativeTouchEventsEnabled) {
             return;
         }
+
         this.diagramEvents.diagram.activeContainer = container;
 
         const target = e.target as HTMLElement;
+
         // we got touch to a button panel - returning
-        if (target.closest('.mermaid-zoom-drag-panel')) {
+        if (target.closest('.diagram-zoom-drag-panel')) {
             return;
         }
         e.preventDefault();
@@ -108,6 +108,7 @@ export class TouchHandler {
         const element: HTMLElement | null = container.querySelector(
             this.diagramEvents.diagram.compoundSelector
         );
+
         if (!element) {
             return;
         }
@@ -154,11 +155,13 @@ export class TouchHandler {
         if (this.diagramEvents.diagram.nativeTouchEventsEnabled) {
             return;
         }
+
         this.diagramEvents.diagram.activeContainer = container;
 
         const target = e.target as HTMLElement;
+
         // we got touch to a button panel - returning
-        if (target.closest('.mermaid-zoom-drag-panel')) {
+        if (target.closest('.diagram-zoom-drag-panel')) {
             return;
         }
 
@@ -167,28 +170,6 @@ export class TouchHandler {
 
         this.isDragging = false;
         this.isPinching = false;
-    }
-
-    /**
-     * Handles the `scroll` event on the given container element.
-     *
-     * If native touch event handling is enabled, this function does nothing.
-     *
-     * Otherwise, this function prevents the default behavior of the event
-     * and stops the event from propagating. It updates the active container
-     * to the given container.
-     *
-     * @param container - The container element that received the scroll event.
-     * @param e - The `Event` object that represents the scroll event.
-     */
-    private scroll(container: HTMLElement, e: Event): void {
-        if (this.diagramEvents.diagram.nativeTouchEventsEnabled) {
-            return;
-        }
-        this.diagramEvents.diagram.activeContainer = container;
-
-        e.preventDefault();
-        e.stopPropagation();
     }
 
     /**
