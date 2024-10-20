@@ -1,19 +1,16 @@
-.centered
-{
+.centered {
     display: flex;
     justify-content: center;
-    align-items: center; 
+    align-items: center;
 }
 
-
-
 /* General styles for the settings tab */
-.mermaid-zoom-drag-settings {
+.diagram-zoom-drag-settings {
     padding: 16px;
 }
 
 /* Section headers */
-.mermaid-zoom-drag-settings .setting-item-heading {
+.diagram-zoom-drag-settings .setting-item-heading {
     font-size: 1.4em;
     color: var(--text-normal);
     border-bottom: 2px solid var(--background-modifier-border);
@@ -22,7 +19,7 @@
 }
 
 /* Individual setting items */
-.mermaid-zoom-drag-settings .setting-item {
+.diagram-zoom-drag-settings .setting-item {
     border: 1px solid var(--background-modifier-border);
     border-radius: 8px;
     padding: 12px;
@@ -31,26 +28,26 @@
     transition: box-shadow 0.3s ease;
 }
 
-.mermaid-zoom-drag-settings .setting-item:hover {
+.diagram-zoom-drag-settings .setting-item:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Setting item name */
-.mermaid-zoom-drag-settings .setting-item-name {
+.diagram-zoom-drag-settings .setting-item-name {
     font-weight: bold;
     color: var(--text-normal);
 }
 
 /* Setting item description */
-.mermaid-zoom-drag-settings .setting-item-description {
+.diagram-zoom-drag-settings .setting-item-description {
     color: var(--text-muted);
     font-size: 0.9em;
     margin-top: 4px;
 }
 
 /* Input fields */
-.mermaid-zoom-drag-settings input[type="text"],
-.mermaid-zoom-drag-settings input[type="number"] {
+.diagram-zoom-drag-settings input[type='text'],
+.diagram-zoom-drag-settings input[type='number'] {
     background-color: var(--background-secondary);
     border: 1px solid var(--background-modifier-border);
     border-radius: 4px;
@@ -59,7 +56,7 @@
 }
 
 /* Dropdown */
-.mermaid-zoom-drag-settings select {
+.diagram-zoom-drag-settings select {
     background-color: var(--background-secondary);
     border: 1px solid var(--background-modifier-border);
     border-radius: 4px;
@@ -68,13 +65,13 @@
 }
 
 /* Toggle switch */
-.mermaid-zoom-drag-settings .checkbox-container {
+.diagram-zoom-drag-settings .checkbox-container {
     display: inline-block;
     vertical-align: middle;
 }
 
 /* Buttons */
-.mermaid-zoom-drag-settings button {
+.diagram-zoom-drag-settings button {
     background-color: var(--interactive-accent);
     color: var(--text-on-accent);
     border: none;
@@ -84,19 +81,19 @@
     transition: background-color 0.2s ease;
 }
 
-.mermaid-zoom-drag-settings button:hover {
+.diagram-zoom-drag-settings button:hover {
     background-color: var(--interactive-accent-hover);
 }
 
 /* Details-summary for grouped settings */
-.mermaid-zoom-drag-settings .mermaid-zoom-drag-details {
+.diagram-zoom-drag-settings .diagram-zoom-drag-details {
     border: 1px solid var(--background-modifier-border);
     border-radius: 8px;
     margin-top: 12px;
     overflow: hidden;
 }
 
-.mermaid-zoom-drag-settings .mermaid-zoom-drag-summary {
+.diagram-zoom-drag-settings .diagram-zoom-drag-summary {
     cursor: pointer;
     padding: 12px;
     background-color: var(--background-secondary);
@@ -106,42 +103,43 @@
     transition: background-color 0.2s ease;
 }
 
-.mermaid-zoom-drag-settings .mermaid-zoom-drag-summary:hover {
+.diagram-zoom-drag-settings .diagram-zoom-drag-summary:hover {
     background-color: var(--background-secondary-alt);
 }
 
-.mermaid-zoom-drag-settings .mermaid-zoom-drag-summary::before {
+.diagram-zoom-drag-settings .diagram-zoom-drag-summary::before {
     content: '▶';
     display: inline-block;
     margin-right: 8px;
     transition: transform 0.3s ease;
 }
 
-.mermaid-zoom-drag-settings .mermaid-zoom-drag-details[open] .mermaid-zoom-drag-summary::before {
+.diagram-zoom-drag-settings
+    .diagram-zoom-drag-details[open]
+    .diagram-zoom-drag-summary::before {
     transform: rotate(90deg);
 }
 
-.mermaid-zoom-drag-settings .mermaid-zoom-drag-details .setting-item {
+.diagram-zoom-drag-settings .diagram-zoom-drag-details .setting-item {
     border: none;
     border-top: 1px solid var(--background-modifier-border);
     border-radius: 0;
     margin: 0;
 }
 
-
 /* Info button styles */
-.mermaid-zoom-drag-settings .clickable-icon {
+.diagram-zoom-drag-settings .clickable-icon {
     color: var(--text-muted);
     transition: color 0.2s ease;
 }
 
-.mermaid-zoom-drag-settings .clickable-icon:hover {
+.diagram-zoom-drag-settings .clickable-icon:hover {
     color: var(--text-normal);
 }
 
 .pagination-container {
     display: flex;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
     gap: 20px;
     margin: 20px 0;
@@ -149,7 +147,6 @@
     background-color: var(--background-secondary);
     border-radius: 5px;
 }
-
 
 .invalid {
     border: 2px solid red !important;
@@ -160,13 +157,22 @@
 }
 
 @keyframes shake {
-    0% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    50% { transform: translateX(5px); }
-    75% { transform: translateX(-5px); }
-    100% { transform: translateX(0); }
+    0% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-5px);
+    }
+    50% {
+        transform: translateX(5px);
+    }
+    75% {
+        transform: translateX(-5px);
+    }
+    100% {
+        transform: translateX(0);
+    }
 }
-
 
 .diagram-container {
     transition: height 0.5s ease;
@@ -196,33 +202,28 @@
     height: 100%;
 }
 
-
-
-.mermaid-zoom-drag-panel {
+.diagram-zoom-drag-panel {
     position: absolute;
     display: grid;
     gap: 5px;
     background: rgba(var(--background-primary-rgb), 0.7);
     padding: 5px;
     border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-.mermaid-zoom-drag-panel.visible {
+.diagram-zoom-drag-panel.visible {
     opacity: 1;
     transition: opacity 0.5s ease;
 }
 
-.mermaid-zoom-drag-panel.hidden {
+.diagram-zoom-drag-panel.hidden {
     opacity: 0;
     transition: opacity 0.5s ease;
     cursor: grab;
 }
 
-
-.mermaid-zoom-drag-panel.hidden > button {
+.diagram-zoom-drag-panel.hidden > button {
     cursor: grab;
     pointer-events: none;
 }
-
-
