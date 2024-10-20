@@ -10,14 +10,15 @@ export class SettingsTab extends PluginSettingTab {
         public plugin: DiagramZoomDragPlugin
     ) {
         super(app, plugin);
+        this.containerEl.addClass('diagram-zoom-drag-settings');
     }
 
     async display(): Promise<any> {
         const { containerEl } = this;
-        containerEl.addClass('mermaid-zoom-drag-settings');
 
         new Setting(containerEl).addButton((button) => {
             button.setIcon('rotate-ccw');
+            button.setTooltip('Reset settings to default');
             button.onClick(async (cb) => {
                 await this.plugin.settingsManager.resetSettings();
                 this.containerEl.empty();
@@ -32,9 +33,9 @@ export class SettingsTab extends PluginSettingTab {
             .setName('Fold diagrams by default?')
             .addToggle((toggle) => {
                 toggle
-                    .setValue(this.plugin.settings.foldByDefault)
+                    .setValue(this.plugin.settings.foldingByDefault)
                     .onChange(async (value: boolean) => {
-                        this.plugin.settings.foldByDefault = value;
+                        this.plugin.settings.foldingByDefault = value;
                         await this.plugin.settingsManager.saveSettings();
                     });
             });
@@ -43,14 +44,17 @@ export class SettingsTab extends PluginSettingTab {
             .setName('Automatically fold diagrams on focus change?')
             .addToggle((toggle) => {
                 toggle
-                    .setValue(this.plugin.settings.automaticFolding)
+                    .setValue(
+                        this.plugin.settings.automaticFoldingOnFocusChange
+                    )
                     .onChange(async (value: boolean) => {
-                        this.plugin.settings.automaticFolding = value;
+                        this.plugin.settings.automaticFoldingOnFocusChange =
+                            value;
                         await this.plugin.settingsManager.saveSettings();
                     });
             });
 
-        if (Platform.isDesktop) {
+        if (Platform.isDesktopApp) {
             new Setting(containerEl)
                 .setName('Hide panels when mouse leaves diagram?')
                 .addToggle((toggle) => {
@@ -77,7 +81,7 @@ export class SettingsTab extends PluginSettingTab {
 
         const addDiagram = new Setting(containerEl);
         const diagramR = new RegExp(/^[A-Za-z0-9]+$/);
-        const selectorR = new RegExp(/^\.[\w-]+$/);
+        const selectorR = new RegExp(/^\.[A-Za-z][\w-]+$/);
 
         addDiagram
             .setName('Add new diagram')
@@ -91,9 +95,7 @@ export class SettingsTab extends PluginSettingTab {
                         name.inputEl.removeClass('invalid');
                         name.inputEl.ariaLabel = '';
                     } else {
-                        !dTest
-                            ? name.inputEl.addClass('invalid')
-                            : name.inputEl.removeClass('invalid');
+                        name.inputEl.toggleClass('invalid', !dTest);
                         name.inputEl.ariaLabel = !dTest
                             ? 'Incorrect input. Should be only `A-Za-z0-9`'
                             : '';
@@ -110,11 +112,9 @@ export class SettingsTab extends PluginSettingTab {
                         input.inputEl.removeClass('invalid');
                         input.inputEl.ariaLabel = '';
                     } else {
-                        !sTest
-                            ? input.inputEl.classList.add('invalid')
-                            : input.inputEl.removeClass('invalid');
+                        input.inputEl.toggleClass('invalid', !sTest);
                         input.inputEl.ariaLabel = !sTest
-                            ? 'Input incorrect. Should be a dot in the beginning and only `A-Za-z0-9-` after it'
+                            ? 'Input incorrect. Should be a dot in the beginning, then next character only `A-Za-z` ant then only `A-Za-z0-9-` after it'
                             : '';
                     }
                 });
@@ -133,10 +133,10 @@ export class SettingsTab extends PluginSettingTab {
                     const name = nameInput.value;
                     const selector = selectorInput.value;
                     if (!diagramR.test(name) || !selectorR.test(selector)) {
-                        new Notice('Input is not valid!');
+                        this.plugin.showNotice('Input is not valid!');
 
-                        nameInput.classList.add('shake');
-                        selectorInput.classList.add('shake');
+                        nameInput.addClass('snake');
+                        selectorInput.addClass('snake');
 
                         setTimeout(() => {
                             nameInput.removeClass('shake');
@@ -150,9 +150,9 @@ export class SettingsTab extends PluginSettingTab {
                             (d) => d.name === name || d.selector === selector
                         );
                     if (isAlreadyExist) {
-                        new Notice('Is already exists!');
-                        nameInput.classList.add('shake');
-                        selectorInput.classList.add('shake');
+                        new Notice('This diagram already exists!');
+                        nameInput.addClass('shake');
+                        selectorInput.addClass('shake');
 
                         setTimeout(() => {
                             nameInput.removeClass('shake');
@@ -166,14 +166,13 @@ export class SettingsTab extends PluginSettingTab {
                         selector: selector,
                     });
                     await this.plugin.settingsManager.saveSettings();
-                    const scrollTop = containerEl.scrollTop;
                     this.containerEl.empty();
                     await this.display();
-                    this.containerEl.scrollTop = scrollTop;
-                    new Notice('New diagram added!');
+                    this.plugin.showNotice('New diagram was added');
                 });
             });
-        if (Platform.isDesktop) {
+
+        if (Platform.isDesktopApp) {
             addDiagram.addExtraButton((extra) => {
                 extra.setIcon('info');
                 extra.setTooltip(
@@ -186,14 +185,15 @@ export class SettingsTab extends PluginSettingTab {
         }
 
         new Setting(containerEl).setName('Supported diagrams').setHeading();
+
         new Setting(containerEl)
-            .setName('items per page')
+            .setName('Diagrams per page')
             .addSlider((slider) => {
-                slider.setValue(this.plugin.settings.itemsPerPage);
+                slider.setValue(this.plugin.settings.diagramsPerPage);
                 slider.setDynamicTooltip();
                 slider.setLimits(1, 50, 1);
                 slider.onChange(async (value) => {
-                    this.plugin.settings.itemsPerPage = value;
+                    this.plugin.settings.diagramsPerPage = value;
                     await this.plugin.settingsManager.saveSettings();
                     this.plugin.publisher.publish({
                         emitter: this.app.workspace,
@@ -209,7 +209,7 @@ export class SettingsTab extends PluginSettingTab {
         ).render();
     }
 
-    hide(): any {
+    hide(): void {
         this.containerEl.empty();
     }
 }

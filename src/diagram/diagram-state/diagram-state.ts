@@ -4,18 +4,7 @@ import { FoldPanel } from '../diagram-control-panel/panelType/fold';
 import { ZoomPanel } from '../diagram-control-panel/panelType/zoom';
 import { ServicePanel } from '../diagram-control-panel/panelType/service';
 import { ContainerID, LeafID } from './typing/types';
-import { Data } from './typing/interfaces';
-
-// TODO улучшить общий интерфейс Data
-export interface PanelsData {
-    panels: {
-        move: MovePanel;
-        fold: FoldPanel;
-        zoom: ZoomPanel;
-        service: ServicePanel;
-    };
-    controlPanel: HTMLElement;
-}
+import { Data, PanelsData } from './typing/interfaces';
 
 export class DiagramState {
     data: Map<LeafID, Data> = new Map();
@@ -70,10 +59,25 @@ export class DiagramState {
                 dy: 0,
                 scale: 1,
                 nativeTouchEventsEnabled: true,
+                panelsData: {},
             };
         }
     }
 
+    /**
+     * Initializes the container panels for a specific leaf and container.
+     *
+     * If the leaf ID is not found in the data map, the function will exit early.
+     * Then, it assigns the control panel and panels data to the specified container ID.
+     *
+     * @param leafID - The ID of the leaf for which to initialize the container panels.
+     * @param containerID - The ID of the container to initialize the panels for.
+     * @param controlPanel - The HTMLElement representing the control panel.
+     * @param movePanel - The MovePanel instance for the container.
+     * @param foldPanel - The FoldPanel instance for the container.
+     * @param zoomPanel - The ZoomPanel instance for the container.
+     * @param servicePanel - The ServicePanel instance for the container.
+     */
     initializeContainerPanels(
         leafID: LeafID,
         containerID: ContainerID,
@@ -90,8 +94,8 @@ export class DiagramState {
         if (!data) {
             return;
         }
-        data[containerID].controlPanel = controlPanel;
-        data[containerID].panels = {
+        data[containerID].panelsData.controlPanel = controlPanel;
+        data[containerID].panelsData.panels = {
             move: movePanel,
             fold: foldPanel,
             zoom: zoomPanel,
@@ -99,21 +103,21 @@ export class DiagramState {
         };
     }
 
-    get containersPanels(): PanelsData | undefined {
+    /**
+     * Gets the view data for the control panel and its panels for the active
+     * container and leaf.
+     *
+     * @returns The view data for the control panel and its panels for the active
+     * container and leaf, or `undefined` if no view data is available.
+     */
+    get panelsData(): PanelsData | undefined {
         const data = this.data.get(this.diagram.plugin.leafID!);
         if (!data) {
             return;
         }
         const containerData = data[this.diagram.activeContainer?.id!];
 
-        if (!containerData) {
-            return;
-        }
-
-        return {
-            panels: containerData.panels!,
-            controlPanel: containerData.controlPanel!,
-        };
+        return containerData.panelsData;
     }
 
     /**

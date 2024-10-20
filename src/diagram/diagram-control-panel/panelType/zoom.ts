@@ -4,14 +4,39 @@ import { Diagram } from '../../diagram';
 
 export class ZoomPanel implements PanelType {
     panel!: HTMLElement;
+
     constructor(
-        public diagram: Diagram,
-        public diagramControlPanel: DiagramControlPanel
+        private readonly diagram: Diagram,
+        private readonly diagramControlPanel: DiagramControlPanel
     ) {}
 
+    /**
+     * Initializes the zoom panel.
+     *
+     * This method creates the HTML element of the zoom panel and assigns it to the `panel` property.
+     */
     initialize(): void {
         this.panel = this.createPanel();
     }
+
+    /**
+     * Returns an array of objects representing the buttons in the zoom panel.
+     *
+     * The buttons are objects with the following properties:
+     * - `icon`: The icon to display in the button.
+     * - `action`: The action to perform when the button is clicked.
+     * - `title`: The title of the button.
+     * - `active`: Whether the button is active or not.
+     * - `id`: The id of the button.
+     *
+     * The zoom panel has 3 buttons:
+     * - A button to zoom in.
+     * - A button to reset zoom and move to the default state.
+     * - A button to zoom out.
+     *
+     * @param container The container to which the zoom panel is attached.
+     * @returns An array of objects representing the buttons in the zoom panel.
+     */
     getButtons(container: HTMLElement): Array<{
         icon: string;
         action: () => void;
@@ -51,9 +76,18 @@ export class ZoomPanel implements PanelType {
             },
         ];
     }
-    createPanel() {
+    /**
+     * Creates the HTML element of the zoom panel.
+     *
+     * The zoom panel is a container with absolute positioning that is placed at the right middle of the diagram.
+     * It contains 3 buttons that zoom in, reset zoom and position, and zoom out the diagram.
+     * The buttons are created using the `getButtons` method and are then appended to the panel.
+     *
+     * @returns The HTML element of the zoom panel.
+     */
+    createPanel(): HTMLElement {
         const zoomPanel = this.diagramControlPanel.createPanel(
-            ['mermaid-zoom-drag-panel', 'diagram-zoom-panel'],
+            'diagram-zoom-panel',
             {
                 right: '10px',
                 top: '50%',

@@ -3,11 +3,11 @@ export interface DiagramData {
     selector: string;
 }
 
-export interface DEFAULT_SETTINGS {
+export interface DefaultSettings {
     supported_diagrams: DiagramData[];
-    itemsPerPage: number;
-    foldByDefault: boolean;
-    automaticFolding: boolean;
+    diagramsPerPage: number;
+    foldingByDefault: boolean;
+    automaticFoldingOnFocusChange: boolean;
     hideOnMouseOutDiagram: boolean;
     hideOnMouseOutPanels: boolean;
 }

@@ -2,7 +2,7 @@ import DiagramZoomDragPlugin from '../core/diagram-zoom-drag-plugin';
 
 import { SupportedDiagrams } from '../diagram/typing/constants';
 import { normalizePath } from 'obsidian';
-import { DEFAULT_SETTINGS } from './typing/interfaces';
+import { DefaultSettings } from './typing/interfaces';
 
 export default class SettingsManager {
     constructor(public plugin: DiagramZoomDragPlugin) {
@@ -11,21 +11,19 @@ export default class SettingsManager {
 
     /**
      * Retrieves the default settings for the plugin.
-     * @returns {DEFAULT_SETTINGS} The default settings object.
+     * @returns {DefaultSettings} The default settings object.
      */
-    get defaultSettings(): DEFAULT_SETTINGS {
+    get defaultSettings(): DefaultSettings {
         return {
             supported_diagrams: Object.entries(SupportedDiagrams).map(
-                ([key, value]) => {
-                    return {
-                        name: key,
-                        selector: value,
-                    };
-                }
+                ([key, value]) => ({
+                    name: key,
+                    selector: value,
+                })
             ),
-            itemsPerPage: 5,
-            foldByDefault: false,
-            automaticFolding: false,
+            diagramsPerPage: 5,
+            foldingByDefault: false,
+            automaticFoldingOnFocusChange: false,
             hideOnMouseOutDiagram: false,
             hideOnMouseOutPanels: false,
         };

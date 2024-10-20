@@ -10,6 +10,7 @@ export class Diagram {
     readonly diagramControlPanel: DiagramControlPanel;
     readonly diagramEvents: DiagramEvents;
     readonly diagramActions: DiagramActions;
+
     activeContainer: HTMLElement | undefined = undefined;
 
     dx!: number;
@@ -63,7 +64,10 @@ export class Diagram {
             el.parentNode?.insertBefore(container, el);
             container.appendChild(el);
             container.id = uuidv4();
-            container.toggleClass('folded', this.plugin.settings.foldByDefault);
+            container.toggleClass(
+                'folded',
+                this.plugin.settings.foldingByDefault
+            );
             container.setAttribute('tabindex', '0');
 
             el.addClass('diagram-content');
@@ -74,8 +78,9 @@ export class Diagram {
                     container.id
                 );
             }
+
             this.diagramControlPanel.initialize(container);
-            this.diagramEvents.initializeContainer(container);
+            this.diagramEvents.initialize(container);
 
             setTimeout(() => {
                 this.diagramActions.fitToContainer(el, container);

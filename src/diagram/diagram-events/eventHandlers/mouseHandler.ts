@@ -21,7 +21,7 @@ export class MouseHandler {
      *
      * @param container - The container element to add the mouse event listeners to.
      */
-    initializeMouseEvents(container: HTMLElement): void {
+    initialize(container: HTMLElement): void {
         const diagramElement: HTMLElement | null = container.querySelector(
             this.diagramEvents.diagram.compoundSelector
         );
@@ -43,7 +43,8 @@ export class MouseHandler {
         this.diagramEvents.diagram.plugin.view.registerDomEvent(
             container,
             'wheel',
-            this.wheel.bind(this, container, diagramElement)
+            this.wheel.bind(this, container, diagramElement),
+            { passive: true }
         );
 
         this.diagramEvents.diagram.plugin.view.registerDomEvent(
@@ -79,16 +80,16 @@ export class MouseHandler {
             'mouseleave',
             this.mouseLeaveOutDiagram.bind(this, container)
         );
-        const panels = this.diagramEvents.diagram.diagramState.containersPanels;
+        const panelsData = this.diagramEvents.diagram.diagramState.panelsData;
 
-        if (!panels) {
+        if (!panelsData?.panels) {
             return;
         }
 
         [
-            panels.panels.move.panel,
-            panels.panels.zoom.panel,
-            panels.panels.service.panel,
+            panelsData.panels.move.panel,
+            panelsData.panels.zoom.panel,
+            panelsData.panels.service.panel,
         ].forEach((panel) => {
             this.diagramEvents.diagram.plugin.view!.registerDomEvent(
                 panel,
@@ -126,7 +127,6 @@ export class MouseHandler {
         }
 
         this.diagramEvents.diagram.activeContainer = container;
-        event.preventDefault();
         const rect = diagramElement.getBoundingClientRect();
         const offsetX = event.clientX - rect.left;
         const offsetY = event.clientY - rect.top;
@@ -262,12 +262,12 @@ export class MouseHandler {
         if (container.hasClass('folded')) {
             return;
         }
-        const panels = this.diagramEvents.diagram.diagramState.containersPanels;
-        if (panels) {
+        const panelsData = this.diagramEvents.diagram.diagramState.panelsData;
+        if (panelsData?.panels) {
             [
-                panels.panels.move.panel,
-                panels.panels.zoom.panel,
-                panels.panels.service.panel,
+                panelsData.panels.move.panel,
+                panelsData.panels.zoom.panel,
+                panelsData.panels.service.panel,
             ].forEach((panel) => {
                 panel.removeClass('hidden');
                 panel.addClass('visible');
@@ -290,13 +290,13 @@ export class MouseHandler {
         if (container.hasClass('folded')) {
             return;
         }
-        const panels = this.diagramEvents.diagram.diagramState.containersPanels;
+        const panelsData = this.diagramEvents.diagram.diagramState.panelsData;
 
-        if (panels) {
+        if (panelsData?.panels) {
             [
-                panels.panels.move.panel,
-                panels.panels.zoom.panel,
-                panels.panels.service.panel,
+                panelsData.panels.move.panel,
+                panelsData.panels.zoom.panel,
+                panelsData.panels.service.panel,
             ].forEach((panel) => {
                 panel.removeClass('visible');
                 panel.addClass('hidden');

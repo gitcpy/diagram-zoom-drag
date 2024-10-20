@@ -3,7 +3,16 @@ import DiagramEvents from '../diagram-events';
 export class KeyboardHandler {
     constructor(private readonly diagramEvents: DiagramEvents) {}
 
-    initializeKeyboardEvents(container: HTMLElement): void {
+    /**
+     * Initializes the keyboard event handler for the given container element.
+     *
+     * This method adds a keydown event listener to the given container element.
+     * When a keydown event occurs, the method {@link keyDown} is called with the
+     * container and the event as arguments.
+     *
+     * @param container - The container element to add the keydown event listener to.
+     */
+    initialize(container: HTMLElement): void {
         if (!this.diagramEvents.diagram.plugin.view) {
             return;
         }
@@ -15,6 +24,13 @@ export class KeyboardHandler {
         );
     }
 
+    /**
+     * Handles key events for the diagram element.
+     * If the key pressed is within the allowed keys, it performs specific actions based on the key.
+     *
+     * @param container - The container element where the key event occurred.
+     * @param event - The keyboard event that triggered the function.
+     */
     keyDown(container: HTMLElement, event: KeyboardEvent): void {
         const key = event.code;
         const KEYS = [

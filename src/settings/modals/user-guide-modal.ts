@@ -7,16 +7,16 @@ export class UserGuideModal extends Modal {
         public plugin: DiagramZoomDragPlugin
     ) {
         super(app);
-        this.titleEl.textContent = 'Guide';
+        this.setTitle('Guide');
     }
 
-    async onOpen() {
+    async onOpen(): Promise<void> {
         const { contentEl } = this;
 
         contentEl.empty();
 
         const heading = contentEl.createEl('h2', {
-            text: 'How to Find Diagram Selectors in DevTools',
+            text: 'How to find diagram selectors in DevTools',
         });
         contentEl.appendChild(heading);
 
@@ -34,7 +34,7 @@ export class UserGuideModal extends Modal {
         const steps = [
             'Open the markdown view in Obsidian where the diagram is displayed.',
             'Open DevTools by pressing `CTRL` + `SHIFT` + `I` on the keyboard.',
-            'Click the "Select an element on this page to inspect it" button (usually a mouse icon) in the top-left corner of the DevTools window.',
+            'Click the "Select an element on this page to inspect it" button (usually a arrow icon) in the top-left corner of the DevTools window.',
             'Move your cursor over the diagram and click on it to select the element.',
             'In the Elements tab of DevTools, you will see the HTML element corresponding to the diagram highlighted.',
             'Look at the classes applied to this element in the DevTools panel to identify the CSS selectors you need.',
@@ -48,6 +48,7 @@ export class UserGuideModal extends Modal {
         contentEl.appendChild(stepsList);
 
         await this.loadVideo();
+
         const pluginPath = this.plugin.manifest.dir;
         if (!pluginPath) {
             return;
@@ -73,7 +74,12 @@ export class UserGuideModal extends Modal {
             videoEl.autoplay = false;
             videoEl.style.width = '100%';
             videoEl.style.maxHeight = '400px';
-        } catch (error) {}
+        } catch (error) {
+            console.error(error);
+            this.plugin.showNotice(
+                'Something went wrong. The video is missing.'
+            );
+        }
 
         const closeButton = contentEl.createEl('button', { text: 'Close' });
         closeButton.style.position = 'absolute';
@@ -83,14 +89,14 @@ export class UserGuideModal extends Modal {
         contentEl.appendChild(closeButton);
     }
 
-    onClose() {
+    onClose(): void {
         this.contentEl.empty();
     }
 
-    async loadVideo() {
+    private async loadVideo(): Promise<undefined> {
         const pluginDir = this.plugin.manifest.dir;
         if (!pluginDir) {
-            return null;
+            return undefined;
         }
         const assetsPath = normalizePath(`${pluginDir}/assets`);
         const videoPath = normalizePath(`${assetsPath}/user-guide-video.mp4`);
@@ -112,40 +118,23 @@ export class UserGuideModal extends Modal {
         }
     }
 
-    async downloadVideo(videoPath: string) {
+    private async downloadVideo(videoPath: string): Promise<null | boolean> {
         try {
             const url =
                 'https://raw.githubusercontent.com/gitcpy/mermaid-zoom-drag/main/assets/videos/find-class.mp4';
+            const response = await fetch(url);
 
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', url, true);
-            xhr.responseType = 'blob';
-
-            const promise = new Promise<Blob | null>((resolve, reject) => {
-                xhr.onload = () => {
-                    if (xhr.status >= 200 && xhr.status < 300) {
-                        resolve(xhr.response);
-                    } else {
-                        reject(new Error(`Error: ${xhr.statusText}`));
-                    }
-                };
-
-                xhr.onerror = (): void => {
-                    reject(new Error('Network Error'));
-                };
-
-                xhr.send();
-            });
-
-            const blob = await promise;
-            if (blob) {
-                await this.app.vault.adapter.writeBinary(
-                    videoPath,
-                    await blob.arrayBuffer()
-                );
-                return true;
+            if (!response.ok) {
+                throw new Error(`Error: ${response.statusText}`);
             }
-            return null;
+
+            const blob = await response.blob();
+            await this.app.vault.adapter.writeBinary(
+                videoPath,
+                await blob.arrayBuffer()
+            );
+
+            return true;
         } catch (err: any) {
             console.error('Error downloading video:', err);
             return null;

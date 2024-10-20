@@ -59,6 +59,6 @@ export default class PluginStateChecker {
 
         const pluginDirStat =
             await this.plugin.app.vault.adapter.stat(pluginDir);
-        return pluginDirStat?.ctime || 0;
+        return pluginDirStat?.ctime ?? 0;
     }
 }
