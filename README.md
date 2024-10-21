@@ -13,7 +13,7 @@ In Obsidian, when you have a Markdown file with large charts, diagrams, or Merma
 There are three options to install the plugin:
 
 1. **Manual Installation**:
-    - Visit the GitHub page of the [plugin](https://github.com/gitcpy/mermaid-zoom-drag) and go to the releases page.
+    - Visit the GitHub page of the [plugin](https://github.com/gitcpy/diagram-zoom-drag) and go to the releases page.
     - Download the latest release files (main.js, manifest.json, styles.css).
     - Create a `Mermaid Zoom Drag` directory in the `./obsidian/plugins/` folder.
     - Move the downloaded files into this directory.
