@@ -21,5 +21,6 @@ export interface Data {
         scale: number;
         nativeTouchEventsEnabled: boolean;
         panelsData: PanelsData;
+        source?: string;
     };
 }
