@@ -121,7 +121,7 @@ export class UserGuideModal extends Modal {
     private async downloadVideo(videoPath: string): Promise<null | boolean> {
         try {
             const url =
-                'https://raw.githubusercontent.com/gitcpy/mermaid-zoom-drag/main/assets/videos/find-class.mp4';
+                'https://raw.githubusercontent.com/gitcpy/diagram-zoom-drag/main/assets/videos/find-class.mp4';
             const response = await fetch(url);
 
             if (!response.ok) {

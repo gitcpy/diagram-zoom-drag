@@ -48,30 +48,19 @@ export class ZoomPanel implements PanelType {
             {
                 icon: 'zoom-in',
                 action: (): void =>
-                    this.diagram.diagramActions.zoomElement(
-                        container,
-                        1.1,
-                        true
-                    ),
+                    this.diagram.actions.zoomElement(container, 1.1, true),
                 title: 'Zoom In',
             },
             {
                 icon: 'refresh-cw',
                 action: (): void =>
-                    this.diagram.diagramActions.resetZoomAndMove(
-                        container,
-                        true
-                    ),
+                    this.diagram.actions.resetZoomAndMove(container, true),
                 title: 'Reset Zoom and Position',
             },
             {
                 icon: 'zoom-out',
                 action: (): void =>
-                    this.diagram.diagramActions.zoomElement(
-                        container,
-                        0.9,
-                        true
-                    ),
+                    this.diagram.actions.zoomElement(container, 0.9, true),
                 title: 'Zoom Out',
             },
         ];

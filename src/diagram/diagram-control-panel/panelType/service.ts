@@ -51,7 +51,7 @@ export class ServicePanel implements PanelType {
             {
                 icon: this.hiding ? 'eye-off' : 'eye',
                 action: (): void => {
-                    const panelsData = this.diagram.diagramState.panelsData;
+                    const panelsData = this.diagram.state.panelsData;
 
                     if (!panelsData?.panels) {
                         return;
