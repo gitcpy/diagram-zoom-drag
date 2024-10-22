@@ -37,6 +37,8 @@ export default class DiagramZoomDragPlugin extends Plugin {
      * @returns A promise that resolves when the plugin has been successfully initialized.
      */
     async initializePlugin(): Promise<void> {
+        // @ts-ignore
+        window.dzg = this;
         await this.initializeCore();
         await this.initializeUI();
         await this.initializeEventSystem();
@@ -68,8 +70,8 @@ export default class DiagramZoomDragPlugin extends Plugin {
 
         this.registerMarkdownPostProcessor(
             (element: HTMLElement, context: MarkdownPostProcessorContext) => {
-                this.cleanupView();
                 this.initializeView();
+                this.diagram.initialize(element, context);
             }
         );
         this.registerEvent(
@@ -78,8 +80,9 @@ export default class DiagramZoomDragPlugin extends Plugin {
                 this.initializeView();
             })
         );
+
         this.registerEvent(
-            this.app.workspace.on('active-leaf-change', (leaf) => {
+            this.app.workspace.on('active-leaf-change', () => {
                 this.cleanupView();
                 this.initializeView();
             })
@@ -106,7 +109,7 @@ export default class DiagramZoomDragPlugin extends Plugin {
 
                 const panels: NodeListOf<HTMLElement> | undefined =
                     this.diagram.activeContainer?.querySelectorAll(
-                        '.diagram-container:not(.folded) .mermaid-zoom-drag-panel:not(.diagram-fold-panel)'
+                        '.diagram-container:not(.folded) .diagram-zoom-drag-panel:not(.diagram-fold-panel)'
                     );
                 if (!panels) {
                     return;
@@ -171,7 +174,6 @@ export default class DiagramZoomDragPlugin extends Plugin {
 
         this.leafID = view.leaf.id;
         this.view = view;
-        this.diagram.initializeDiagramFeatures(this.view.contentEl);
     }
 
     /**
@@ -185,7 +187,7 @@ export default class DiagramZoomDragPlugin extends Plugin {
             const isLeaf = this.app.workspace.getLeafById(this.leafID);
             if (isLeaf === null) {
                 this.view = null;
-                this.diagram.diagramState.removeData(this.leafID);
+                this.diagram.state.removeData(this.leafID);
                 this.leafID = undefined;
             }
         }

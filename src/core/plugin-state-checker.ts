@@ -14,12 +14,12 @@ export default class PluginStateChecker {
         const pluginMetadata = await this.getPluginMetadata();
 
         const localStoragePluginMetadata = localStorage.getItem(
-            'mermaid-zoom-drag-metadata'
+            'diagram-zoom-drag-metadata'
         );
 
         if (!localStoragePluginMetadata) {
             localStorage.setItem(
-                'mermaid-zoom-drag-metadata',
+                'diagram-zoom-drag-metadata',
                 pluginMetadata.toString()
             );
             return true;
@@ -34,7 +34,7 @@ export default class PluginStateChecker {
             pluginMetadata !== localStoragePluginMetadataNumber
         ) {
             localStorage.setItem(
-                'mermaid-zoom-drag-metadata',
+                'diagram-zoom-drag-metadata',
                 pluginMetadata.toString()
             );
             return true;

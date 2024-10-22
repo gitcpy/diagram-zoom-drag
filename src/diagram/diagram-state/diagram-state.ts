@@ -6,6 +6,9 @@ import { ServicePanel } from '../diagram-control-panel/panelType/service';
 import { ContainerID, LeafID } from './typing/types';
 import { Data, PanelsData } from './typing/interfaces';
 
+// TODO присвоить классу новые проперти
+// TODO а также, присвоить их не этому классу, а Diagram
+
 export class DiagramState {
     data: Map<LeafID, Data> = new Map();
 
@@ -101,6 +104,40 @@ export class DiagramState {
             zoom: zoomPanel,
             service: servicePanel,
         };
+    }
+
+    initializeContainerSource(
+        leafID: LeafID,
+        containerID: ContainerID,
+        source: string
+    ): void {
+        if (!this.data.get(leafID)) {
+            return;
+        }
+        const data = this.data.get(leafID);
+        if (!data) {
+            return;
+        }
+        data[containerID].source = source;
+    }
+
+    get containerSource() {
+        const leafID = this.diagram.plugin.leafID;
+        const container = this.diagram.activeContainer;
+
+        if (!leafID || !container) {
+            return;
+        }
+
+        const data = this.data.get(leafID);
+        if (!data) {
+            return;
+        }
+        const containerData = data[container.id];
+        if (!containerData) {
+            return;
+        }
+        return containerData.source;
     }
 
     /**

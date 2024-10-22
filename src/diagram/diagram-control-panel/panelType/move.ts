@@ -44,45 +44,25 @@ export class MovePanel implements PanelType {
             {
                 icon: 'arrow-up-left',
                 action: (): void =>
-                    this.diagram.diagramActions.moveElement(
-                        container,
-                        50,
-                        50,
-                        true
-                    ),
+                    this.diagram.actions.moveElement(container, 50, 50, true),
                 title: 'Move up left',
             },
             {
                 icon: 'arrow-up',
                 action: (): void =>
-                    this.diagram.diagramActions.moveElement(
-                        container,
-                        0,
-                        50,
-                        true
-                    ),
+                    this.diagram.actions.moveElement(container, 0, 50, true),
                 title: 'Move up',
             },
             {
                 icon: 'arrow-up-right',
                 action: (): void =>
-                    this.diagram.diagramActions.moveElement(
-                        container,
-                        -50,
-                        50,
-                        true
-                    ),
+                    this.diagram.actions.moveElement(container, -50, 50, true),
                 title: 'Move up right',
             },
             {
                 icon: 'arrow-left',
                 action: (): void =>
-                    this.diagram.diagramActions.moveElement(
-                        container,
-                        50,
-                        0,
-                        true
-                    ),
+                    this.diagram.actions.moveElement(container, 50, 0, true),
                 title: 'Move left',
             },
             {
@@ -95,45 +75,25 @@ export class MovePanel implements PanelType {
             {
                 icon: 'arrow-right',
                 action: (): void =>
-                    this.diagram.diagramActions.moveElement(
-                        container,
-                        -50,
-                        0,
-                        true
-                    ),
+                    this.diagram.actions.moveElement(container, -50, 0, true),
                 title: 'Move right',
             },
             {
                 icon: 'arrow-down-left',
                 action: (): void =>
-                    this.diagram.diagramActions.moveElement(
-                        container,
-                        50,
-                        -50,
-                        true
-                    ),
+                    this.diagram.actions.moveElement(container, 50, -50, true),
                 title: 'Move down left',
             },
             {
                 icon: 'arrow-down',
                 action: (): void =>
-                    this.diagram.diagramActions.moveElement(
-                        container,
-                        0,
-                        -50,
-                        true
-                    ),
+                    this.diagram.actions.moveElement(container, 0, -50, true),
                 title: 'Move down',
             },
             {
                 icon: 'arrow-down-right',
                 action: (): void =>
-                    this.diagram.diagramActions.moveElement(
-                        container,
-                        -50,
-                        -50,
-                        true
-                    ),
+                    this.diagram.actions.moveElement(container, -50, -50, true),
                 title: 'Move down right',
             },
         ];

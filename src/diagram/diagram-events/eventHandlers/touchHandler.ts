@@ -117,11 +117,7 @@ export class TouchHandler {
             const dx = e.touches[0].clientX - this.startX;
             const dy = e.touches[0].clientY - this.startY;
 
-            this.diagramEvents.diagram.diagramActions.moveElement(
-                container,
-                dx,
-                dy
-            );
+            this.diagramEvents.diagram.actions.moveElement(container, dx, dy);
 
             this.startX = e.touches[0].clientX;
             this.startY = e.touches[0].clientY;
@@ -129,10 +125,7 @@ export class TouchHandler {
             const currentDistance = this.calculateDistance(e.touches);
             const factor = currentDistance / this.initialDistance;
 
-            this.diagramEvents.diagram.diagramActions.zoomElement(
-                container,
-                factor
-            );
+            this.diagramEvents.diagram.actions.zoomElement(container, factor);
 
             this.initialDistance = currentDistance;
         }

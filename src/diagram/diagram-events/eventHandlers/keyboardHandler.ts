@@ -51,7 +51,7 @@ export class KeyboardHandler {
 
         switch (key) {
             case 'ArrowUp':
-                this.diagramEvents.diagram.diagramActions.moveElement(
+                this.diagramEvents.diagram.actions.moveElement(
                     container,
                     0,
                     50,
@@ -59,7 +59,7 @@ export class KeyboardHandler {
                 );
                 break;
             case 'ArrowDown':
-                this.diagramEvents.diagram.diagramActions.moveElement(
+                this.diagramEvents.diagram.actions.moveElement(
                     container,
                     0,
                     -50,
@@ -67,7 +67,7 @@ export class KeyboardHandler {
                 );
                 break;
             case 'ArrowLeft':
-                this.diagramEvents.diagram.diagramActions.moveElement(
+                this.diagramEvents.diagram.actions.moveElement(
                     container,
                     50,
                     0,
@@ -75,7 +75,7 @@ export class KeyboardHandler {
                 );
                 break;
             case 'ArrowRight':
-                this.diagramEvents.diagram.diagramActions.moveElement(
+                this.diagramEvents.diagram.actions.moveElement(
                     container,
                     -50,
                     0,
@@ -87,21 +87,21 @@ export class KeyboardHandler {
         if (event.ctrlKey) {
             switch (key) {
                 case 'Equal':
-                    this.diagramEvents.diagram.diagramActions.zoomElement(
+                    this.diagramEvents.diagram.actions.zoomElement(
                         container,
                         1.1,
                         true
                     );
                     break;
                 case 'Minus':
-                    this.diagramEvents.diagram.diagramActions.zoomElement(
+                    this.diagramEvents.diagram.actions.zoomElement(
                         container,
                         0.9,
                         true
                     );
                     break;
                 case 'Digit0':
-                    this.diagramEvents.diagram.diagramActions.resetZoomAndMove(
+                    this.diagramEvents.diagram.actions.resetZoomAndMove(
                         container,
                         true
                     );

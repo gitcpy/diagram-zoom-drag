@@ -21,7 +21,7 @@ export class DiagramControlPanel {
         const fold = new FoldPanel(this.diagram, this);
         const service = new ServicePanel(this.diagram, this);
 
-        this.diagram.diagramState.initializeContainerPanels(
+        this.diagram.state.initializeContainerPanels(
             this.diagram.plugin.leafID!,
             this.diagram.activeContainer.id,
             controlPanel,
@@ -52,7 +52,7 @@ export class DiagramControlPanel {
     }
 
     createPanel(cssClass: string, styles: object): HTMLElement {
-        const controlPanel = this.diagram.diagramState.panelsData?.controlPanel;
+        const controlPanel = this.diagram.state.panelsData?.controlPanel;
         const panel = controlPanel!.createEl('div');
         panel.addClass(cssClass);
         panel.addClass('diagram-zoom-drag-panel');
@@ -117,7 +117,7 @@ export class DiagramControlPanel {
     }
 
     private setupEventListeners(): void {
-        const service = this.diagram.diagramState.panelsData?.panels?.service;
+        const service = this.diagram.state.panelsData?.panels?.service;
         if (!service) {
             return;
         }

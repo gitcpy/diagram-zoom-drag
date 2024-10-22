@@ -80,7 +80,7 @@ export class MouseHandler {
             'mouseleave',
             this.mouseLeaveOutDiagram.bind(this, container)
         );
-        const panelsData = this.diagramEvents.diagram.diagramState.panelsData;
+        const panelsData = this.diagramEvents.diagram.state.panelsData;
 
         if (!panelsData?.panels) {
             return;
@@ -262,7 +262,7 @@ export class MouseHandler {
         if (container.hasClass('folded')) {
             return;
         }
-        const panelsData = this.diagramEvents.diagram.diagramState.panelsData;
+        const panelsData = this.diagramEvents.diagram.state.panelsData;
         if (panelsData?.panels) {
             [
                 panelsData.panels.move.panel,
@@ -290,7 +290,7 @@ export class MouseHandler {
         if (container.hasClass('folded')) {
             return;
         }
-        const panelsData = this.diagramEvents.diagram.diagramState.panelsData;
+        const panelsData = this.diagramEvents.diagram.state.panelsData;
 
         if (panelsData?.panels) {
             [

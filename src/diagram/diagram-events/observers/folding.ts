@@ -32,7 +32,7 @@ export class Folding {
      *
      * If the container element's 'class' attribute changes to include or remove
      * the 'folded' class, the following actions are taken:
-     * - All child elements of the container with class 'mermaid-zoom-drag-panel'
+     * - All child elements of the container with class 'diagram-zoom-drag-panel'
      *   and without class 'diagram-fold-panel' will have their 'hidden' and
      *   'visible' classes toggled.
      * - The element with id 'diagram-fold-button' inside the container element
@@ -52,7 +52,7 @@ export class Folding {
 
         if (wasFolded !== isFolded) {
             const panels: NodeListOf<HTMLElement> = container.querySelectorAll(
-                '.mermaid-zoom-drag-panel:not(.diagram-fold-panel)'
+                '.diagram-zoom-drag-panel:not(.diagram-fold-panel)'
             );
             panels.forEach((panel) => {
                 panel.toggleClass('hidden', isFolded);
