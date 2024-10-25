@@ -1,6 +1,7 @@
 export interface DiagramData {
     name: string;
     selector: string;
+    on: boolean;
 }
 
 export interface DefaultSettings {

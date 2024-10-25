@@ -19,6 +19,7 @@ export default class SettingsManager {
                 ([key, value]) => ({
                     name: key,
                     selector: value,
+                    on: true,
                 })
             ),
             diagramsPerPage: 5,
