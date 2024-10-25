@@ -33,7 +33,7 @@ export class Diagram {
 
     get compoundSelector(): string {
         const diagrams = this.plugin.settings.supported_diagrams;
-        return `.${diagrams.reduce<string>(
+        return `${diagrams.reduce<string>(
             (acc, diagram) =>
                 acc ? `${acc}, ${diagram.selector}` : diagram.selector,
             ''

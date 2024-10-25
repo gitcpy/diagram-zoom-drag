@@ -80,6 +80,11 @@ export class EventObserver extends Observer {
         const eventRef = emitter.on(eventID, async (...data: unknown[]) => {
             const event = data[0] as DiagramZoomDragEvent;
             await handler(event as T);
+            return eventRef;
         });
+    }
+
+    unsubscribe(emitter: Events, eventID: EventID, handler: () => void): void {
+        emitter.off(eventID, handler);
     }
 }

@@ -23,6 +23,8 @@
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.6",
     "@types/blessed": "^0.1.25",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
     "@types/semver": "^7.5.8",
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
@@ -46,6 +48,12 @@
     "typescript": "5.5.4"
   },
   "dependencies": {
+    "@preact/compat": "^18.3.1",
+    "preact": "^10.24.3",
+    "preact-compat": "^3.19.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "styled-components": "^6.1.13",
     "uuid": "^10.0.0"
   },
   "repository": "https://github.com/gitcpy/diagram-zoom-drag.git",

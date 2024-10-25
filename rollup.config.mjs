@@ -6,12 +6,33 @@ import terser from '@rollup/plugin-terser';
 import typescript from '@rollup/plugin-typescript';
 import copy from 'rollup-plugin-copy';
 import { visualizer } from 'rollup-plugin-visualizer';
+import alias from '@rollup/plugin-alias';
 
 const baseConfig = {
     input: 'src/main.ts',
     external: ['obsidian', 'electron'],
     plugins: [
         json(),
+        alias({
+            entries: [
+                {
+                    find: 'react',
+                    replacement: 'preact/compat',
+                },
+                {
+                    find: 'react-dom/test-utils',
+                    replacement: 'preact/test-utils',
+                },
+                {
+                    find: 'react-dom',
+                    replacement: 'preact/compat',
+                },
+                {
+                    find: 'react/jsx-runtime',
+                    replacement: 'preact/jsx-runtime',
+                },
+            ],
+        }),
         nodeResolve({
             preferBuiltins: true,
             extensions: ['.js', '.ts'],
