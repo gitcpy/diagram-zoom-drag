@@ -1,8 +1,8 @@
-import DiagramZoomDragPlugin from '../../../core/diagram-zoom-drag-plugin';
-import { DiagramData } from '../../typing/interfaces';
+import DiagramZoomDragPlugin from '../../../../../../../core/diagram-zoom-drag-plugin';
+import { DiagramData } from '../../../../../../typing/interfaces';
 
-const diagramR = new RegExp(/^[A-Za-z0-9]+$/);
-const selectorR = new RegExp(/^\.[A-Za-z][\w-]*$/);
+const diagramR = /^[\w-]+$/;
+const selectorR = /^[.#][\w\s._>+~-]+$/;
 
 function preEndCheckExistingDiagram(
     plugin: DiagramZoomDragPlugin,
@@ -81,7 +81,7 @@ export function validateName(
     } else {
         nameInput.toggleClass('invalid', !dTest);
         nameInput.ariaLabel = !dTest
-            ? 'Incorrect input. Should be only `A-Za-z0-9`'
+            ? 'Incorrect input. Should be only `A-Za-z0-9-`'
             : '';
     }
 }
@@ -98,7 +98,7 @@ export function validateSelector(
     } else {
         selectorInput.toggleClass('invalid', !sTest);
         selectorInput.ariaLabel = !sTest
-            ? 'Input incorrect. Should be a dot in the beginning, then next character only `A-Za-z` ant then only `A-Za-z0-9-` after it'
+            ? 'Input incorrect. It seems to be not a valid CSS selector?'
             : '';
     }
 }
