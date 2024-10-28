@@ -1,11 +1,15 @@
 import { App, Modal, Setting } from 'obsidian';
-import { Root } from 'react-dom/client';
 
-export class SwitchConfirmModal extends Modal {
+export class SwitchConfirm extends Modal {
     private onSubmit: (result: string) => void;
-    constructor(app: App, onSubmit: (result: string) => void) {
+    constructor(
+        app: App,
+        diagramName: string,
+        onSubmit: (result: string) => void
+    ) {
         super(app);
         this.onSubmit = onSubmit;
+        this.setTitle(`Editing ${diagramName}...`);
     }
 
     onOpen() {
