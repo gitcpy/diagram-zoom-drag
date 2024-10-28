@@ -1,18 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { useSettingsContext } from '../../../core/context';
+import { useSettingsContext } from '../../../../../../core/context';
 import { ButtonContainer, PaginationButton } from './styled/styled';
-import { h } from 'preact';
-import { ButtonComponent, ToggleComponent } from 'obsidian';
-import { ReactObsidianSetting } from '../../../react-obsidian-setting/ObsidianSettingReact';
-import { EventID } from '../../../../../events-management/typing/constants';
+import {
+    ButtonComponent,
+    ExtraButtonComponent,
+    TextComponent,
+    ToggleComponent,
+} from 'obsidian';
+import { EventID } from '../../../../../../../../events-management/typing/constants';
 import {
     preEndValidateDiagram,
     validateName,
     validateSelector,
-} from '../../../helpers/helpers';
-import { SwitchConfirmModal } from '../modals/switch-confirm-modal';
-
-// TODO вынести вещи в отдельные хуки. например - сохранение настроек
+} from '../../helpers/helpers';
+import { SwitchConfirm } from '../../modals/switch-confirm/switch-confirm';
+import { DiagramSetConfrols } from '../../modals/diagram-set-controls/diagram-set-confrols';
+import { ReactObsidianSetting } from 'react-obsidian-setting';
 
 const DiagramPagination: React.FC = () => {
     const { app, plugin } = useSettingsContext();
@@ -39,10 +42,9 @@ const DiagramPagination: React.FC = () => {
             handler
         );
         return (): void => {
-            plugin.observer.unsubscribe(
+            plugin.observer.unsubscribeFromEvent(
                 app.workspace,
-                EventID.ItemsPerPageChanged,
-                handler
+                EventID.ItemsPerPageChanged
             );
         };
     }, [app.workspace, plugin.settings]);
@@ -55,8 +57,9 @@ const DiagramPagination: React.FC = () => {
     const endIndex = startIndex + diagramsPerPage;
 
     const handleDelete = async (index: number) => {
+        debugger;
         const newDiagrams = [...diagrams];
-        newDiagrams.splice(startIndex + index, 1);
+        newDiagrams.splice(index, 1);
 
         setDiagrams(newDiagrams);
         plugin.settings.supported_diagrams = newDiagrams;
@@ -95,7 +98,7 @@ const DiagramPagination: React.FC = () => {
         return validated;
     };
 
-    const actualIndex = (index: number) => startIndex + index;
+    const actualIndex = (index: number): number => startIndex + index;
 
     const navigateToPage = (delta: number) => {
         setCurrentPage((prev) =>
@@ -105,20 +108,24 @@ const DiagramPagination: React.FC = () => {
 
     const changePage = (delta: number): void => {
         if (editingIndex !== undefined) {
-            new SwitchConfirmModal(app, async (result) => {
-                if (result === 'Yes') {
-                    setEditingIndex(undefined);
-                    navigateToPage(delta);
-                } else if (result === 'Save') {
-                    const validated = await handleSaveEditing(
-                        actualIndex(editingIndex)
-                    );
-                    if (!validated) {
-                        plugin.showNotice('Could not save diagram');
+            new SwitchConfirm(
+                app,
+                diagrams[actualIndex(editingIndex)].name,
+                async (result) => {
+                    if (result === 'Yes') {
+                        setEditingIndex(undefined);
+                        navigateToPage(delta);
+                    } else if (result === 'Save') {
+                        const validated = await handleSaveEditing(
+                            actualIndex(editingIndex)
+                        );
+                        if (!validated) {
+                            plugin.showNotice('Could not save diagram');
+                        }
+                        navigateToPage(delta);
                     }
-                    navigateToPage(delta);
                 }
-            }).open();
+            ).open();
         } else {
             navigateToPage(delta);
         }
@@ -148,7 +155,7 @@ const DiagramPagination: React.FC = () => {
                     return editingIndex === index ? (
                         <ReactObsidianSetting
                             addTexts={[
-                                (nameInput) => {
+                                (nameInput): TextComponent => {
                                     nameInput.setValue(
                                         diagrams[actualIndex(index)].name
                                     );
@@ -174,15 +181,21 @@ const DiagramPagination: React.FC = () => {
                                 },
                             ]}
                             addButtons={[
-                                (button) => {
+                                (button): ButtonComponent => {
                                     button.setIcon('circle-x');
+                                    button.setTooltip(
+                                        'Cancel operation? All changes will be lost.'
+                                    );
                                     button.onClick((cb) => {
                                         setEditingIndex(undefined);
                                     });
                                     return button;
                                 },
-                                (button) => {
+                                (button): ButtonComponent => {
                                     button.setIcon('save');
+                                    button.setTooltip(
+                                        `Save changes for ${diagrams[actualIndex(index)].name}?`
+                                    );
                                     button.onClick(async (cb) => {
                                         await handleSaveEditing(
                                             actualIndex(index)
@@ -202,7 +215,7 @@ const DiagramPagination: React.FC = () => {
                                         diagrams[actualIndex(index)].on
                                     );
                                     toggle.setTooltip(
-                                        `${diagrams[actualIndex(index)].on ? 'Disable' : 'Enable'} this diagram`
+                                        `${diagrams[actualIndex(index)].on ? 'Disable' : 'Enable'} ${diagrams[actualIndex(index)].name} diagram`
                                     );
                                     toggle.onChange(async (value) => {
                                         diagrams[actualIndex(index)].on = value;
@@ -217,9 +230,13 @@ const DiagramPagination: React.FC = () => {
                             addButtons={[
                                 diagrams[actualIndex(index)].name !==
                                     'Default' &&
-                                    ((button: ButtonComponent) => {
+                                    ((
+                                        button: ButtonComponent
+                                    ): ButtonComponent => {
                                         button.setIcon('edit');
-                                        button.setTooltip('Edit this diagram');
+                                        button.setTooltip(
+                                            `Edit ${diagrams[actualIndex(index)].name} diagram`
+                                        );
                                         button.onClick(async () => {
                                             setEditingIndex(index);
                                         });
@@ -227,10 +244,12 @@ const DiagramPagination: React.FC = () => {
                                     }),
                                 diagrams[actualIndex(index)].name !==
                                     'Default' &&
-                                    ((button: ButtonComponent) => {
+                                    ((
+                                        button: ButtonComponent
+                                    ): ButtonComponent => {
                                         button.setIcon('trash');
                                         button.setTooltip(
-                                            'Delete this diagram'
+                                            `Delete ${diagrams[actualIndex(index)].name} diagram`
                                         );
                                         button.onClick(async () => {
                                             await handleDelete(
@@ -239,6 +258,33 @@ const DiagramPagination: React.FC = () => {
                                         });
                                         return button;
                                     }),
+                            ]}
+                            addExtraButtons={[
+                                (
+                                    button: ExtraButtonComponent
+                                ): ExtraButtonComponent => {
+                                    button.setTooltip(
+                                        `Set what controls will be active for ${diagrams[actualIndex(index)].name} diagram`
+                                    );
+                                    button.onClick(() => {
+                                        const initial =
+                                            diagrams[actualIndex(index)].panels;
+                                        new DiagramSetConfrols(
+                                            app,
+                                            diagrams[actualIndex(index)].name,
+                                            initial,
+                                            async (result) => {
+                                                const dPanels =
+                                                    diagrams[actualIndex(index)]
+                                                        .panels;
+                                                dPanels[result.panel].on =
+                                                    result.on;
+                                                await plugin.settingsManager.saveSettings();
+                                            }
+                                        ).open();
+                                    });
+                                    return button;
+                                },
                             ]}
                         />
                     );
