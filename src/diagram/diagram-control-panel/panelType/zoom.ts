@@ -78,8 +78,7 @@ export class ZoomPanel implements PanelType {
         const zoomPanel = this.diagramControlPanel.createPanel(
             'diagram-zoom-panel',
             {
-                right: '10px',
-                top: '50%',
+                ...this.diagram.plugin.settings.panelsConfig.zoom.position,
                 transform: 'translateY(-50%)',
                 gridTemplateColumns: '1fr',
             }

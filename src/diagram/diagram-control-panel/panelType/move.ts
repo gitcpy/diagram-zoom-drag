@@ -112,8 +112,7 @@ export class MovePanel implements PanelType {
         const panel = this.diagramControlPanel.createPanel(
             'diagram-move-panel',
             {
-                right: '10px',
-                bottom: '10px',
+                ...this.diagram.plugin.settings.panelsConfig.move.position,
                 gridTemplateColumns: 'repeat(3, 1fr)',
                 gridTemplateRows: 'repeat(3, 1fr)',
             }
