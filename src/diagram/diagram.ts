@@ -33,11 +33,12 @@ export class Diagram {
 
     get compoundSelector(): string {
         const diagrams = this.plugin.settings.supported_diagrams;
-        return `${diagrams.reduce<string>(
-            (acc, diagram) =>
-                acc ? `${acc}, ${diagram.selector}` : diagram.selector,
-            ''
-        )}`;
+        return `${diagrams.reduce<string>((acc, diagram) => {
+            if (diagram.on) {
+                return acc ? `${acc}, ${diagram.selector}` : diagram.selector;
+            }
+            return acc;
+        }, '')}`;
     }
 
     initialize(
@@ -72,7 +73,6 @@ export class Diagram {
         if (!el.parentElement) {
             return;
         }
-
         if (el.parentElement.hasClass('diagram-container')) {
             return;
         }
@@ -113,11 +113,11 @@ export class Diagram {
         element: HTMLElement,
         context: MarkdownPostProcessorContext
     ): boolean {
-        const isDiagram: NodeListOf<HTMLElement> = element.querySelectorAll(
+        const diagram: HTMLElement | null = element.querySelector(
             this.compoundSelector
         );
 
-        if (isDiagram.length === 0) {
+        if (!diagram) {
             return false;
         }
 
@@ -126,11 +126,10 @@ export class Diagram {
         if (sectionsInfo) {
             const { lineStart, lineEnd, text } = sectionsInfo;
             const lines = text.split('\n');
-            const slice = lines.slice(lineStart, lineEnd + 1).join('\n');
-            this.currentSource = slice;
+            this.currentSource = lines.slice(lineStart, lineEnd + 1).join('\n');
         }
 
-        this.setDiagramContainer(isDiagram[0]);
+        this.setDiagramContainer(diagram);
 
         return true;
     }
