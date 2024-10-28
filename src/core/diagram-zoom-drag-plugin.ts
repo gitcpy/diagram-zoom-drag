@@ -100,7 +100,7 @@ export default class DiagramZoomDragPlugin extends Plugin {
         this.diagram = new Diagram(this);
 
         this.addCommand({
-            id: 'diagram-zoom-drag-toggle-panels-state',
+            id: 'diagram-zoom-drag-toggle-panels-management-state',
             name: 'Toggle control panel visibility of current active diagram',
             checkCallback: (checking) => {
                 if (checking) {
@@ -155,6 +155,20 @@ export default class DiagramZoomDragPlugin extends Plugin {
      */
     async onload(): Promise<void> {
         await this.initializePlugin();
+    }
+
+    /**
+     * Cleans up the plugin's event subscriptions when the plugin is unloaded.
+     *
+     * This function is called automatically when the plugin is unloaded by
+     * Obsidian. It unsubscribes from all events that the plugin has subscribed
+     * to during its lifetime.
+     *
+     * @returns A promise that resolves when all event subscriptions have been
+     *          successfully unsubscribed.
+     */
+    async onunload(): Promise<void> {
+        this.observer.unsubscribeAll();
     }
 
     /**
