@@ -122,7 +122,7 @@ export class MouseHandler {
         diagramElement: HTMLElement,
         event: WheelEvent
     ): void {
-        if (!event.ctrlKey) {
+        if (!event.ctrlKey && document.fullscreenElement !== container) {
             return;
         }
 
@@ -250,7 +250,7 @@ export class MouseHandler {
     /**
      * Handles the mouse enter event for the diagram element when the setting is enabled.
      * If container is in a 'folded' state, this method does nothing.
-     * This method shows all panels in the diagram when the mouse enters the diagram element.
+     * This method shows all panels-management in the diagram when the mouse enters the diagram element.
      *
      * @param container - The container element where the event occurred.
      * @param e - The mouse event that triggered the method.
@@ -278,7 +278,7 @@ export class MouseHandler {
     /**
      * Handles the mouse leave event for the diagram element when the setting is enabled.
      * If container is in a 'folded' state, this method does nothing.
-     * This method hides all panels in the diagram when the mouse leaves the diagram element.
+     * This method hides all panels-management in the diagram when the mouse leaves the diagram element.
      *
      * @param container - The container element where the event occurred.
      * @param e - The mouse event that triggered the method.
