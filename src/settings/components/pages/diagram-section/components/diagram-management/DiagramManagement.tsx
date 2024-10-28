@@ -1,30 +1,27 @@
-import { useSettingsContext } from '../../core/context';
+import { useSettingsContext } from '../../../../core/context';
 import React, { useReducer } from 'react';
-import SettingsContainer from '../../styled/container';
-import { h } from 'preact';
-import { ReactObsidianSetting } from '../../react-obsidian-setting/ObsidianSettingReact';
-import { Platform } from 'obsidian';
-import { UserGuideModal } from '../../../modals/user-guide-modal';
-import { EventID } from '../../../../events-management/typing/constants';
-import DiagramPagination from './diagram-pagination/DiagramPagination';
+import { ButtonComponent, Platform, TextComponent } from 'obsidian';
+import { UserGuide } from './modals/user-guide/user-guide';
+import { EventID } from '../../../../../../events-management/typing/constants';
+import DiagramPagination from './components/diagram-pagination/DiagramPagination';
 import {
     preEndValidateDiagram,
     validateName,
     validateSelector,
-} from '../../helpers/helpers';
-import { MultiDescComponent } from '../../react-obsidian-setting/MultiDescComponent';
+} from './helpers/helpers';
+import {
+    MultiDescComponent,
+    ReactObsidianSetting,
+} from 'react-obsidian-setting';
 
 const DiagramManagement: React.FC = () => {
-    const { app, plugin, ref } = useSettingsContext();
-    const [updated, forceUpdate] = useReducer((x) => x + 1, 0);
-    const diagramR = new RegExp(/^[A-Za-z0-9]+$/);
-    const selectorR = new RegExp(/^\.[A-Za-z][\w-]+$/);
+    const { app, plugin } = useSettingsContext();
+    const [_, forceReload] = useReducer((x) => x + 1, 0);
 
     const handleAddDiagram = async (
         nameInput: HTMLInputElement,
         selectorInput: HTMLInputElement
     ) => {
-        debugger;
         if (
             !preEndValidateDiagram(
                 plugin,
@@ -40,34 +37,48 @@ const DiagramManagement: React.FC = () => {
             name: nameInput.value,
             selector: selectorInput.value,
             on: true,
+            panels: {
+                move: {
+                    on: true,
+                },
+                zoom: {
+                    on: true,
+                },
+                service: {
+                    on: true,
+                },
+            },
         });
         await plugin.settingsManager.saveSettings();
         plugin.showNotice('New diagram was added');
-        forceUpdate();
+        forceReload();
     };
 
     return (
-        <SettingsContainer>
-            <ReactObsidianSetting name="Add new diagram" setHeading />
-
+        <>
             <ReactObsidianSetting
+                name={'Add new diagram'}
+                setHeading={true}
+                noBorder={true}
+                desc="Here you can configure which diagrams will receive enhanced controls and UI."
                 addMultiDesc={(multiDesc: MultiDescComponent) => {
                     multiDesc.addDescriptions([
-                        'Add a new diagram so the plugin can serve it.',
-                        'Rules:',
-                        '- The name must be unique and contain only letters from the Latin alphabet and digits (A-Z, a-z, 0-9).',
-                        '- You can find examples of valid diagram names and selectors in the diagrams section below.',
-                        '- The selector must be a valid CSS class selector, starting with a dot (.).',
-                        '- You can edit the name and selector, but they must remain unique and comply with the top requirements.',
-                        '- If you input an invalid value for the name or selector, the input field will display a red border and show a tooltip.' +
-                            ' You can hover over the input to see what went wrong.',
+                        'Adding a Diagram Type:',
+                        '1. Enter a unique name using only Latin letters, numbers and `-` (A-Z, a-z, 0-9, -)',
+                        '2. Specify a valid CSS selector for your diagram',
+
+                        'Once added, matching diagrams will get:',
+                        '• Mouse and keyboard navigation',
+                        '• Additional control buttons',
+
+                        'Note: Red border indicates invalid input - hover to see details',
                     ]);
                     return multiDesc;
                 }}
             />
             <ReactObsidianSetting
                 addTexts={[
-                    (name) => {
+                    (name): TextComponent => {
                         name.inputEl.id = 'diagram-name';
                         name.setPlaceholder('Example Diagram');
                         name.onChange((text) => {
@@ -87,15 +98,14 @@ const DiagramManagement: React.FC = () => {
                     },
                 ]}
                 addButtons={[
-                    (button) => {
+                    (button): ButtonComponent => {
                         button.setIcon('save');
+                        button.setTooltip('Add this diagram');
                         button.onClick(async () => {
-                            const nameInput = document.querySelector(
-                                '#diagram-name'
-                            ) as HTMLInputElement;
-                            const selectorInput = document.querySelector(
-                                '#diagram-selector'
-                            ) as HTMLInputElement;
+                            const nameInput: HTMLInputElement | null =
+                                document.querySelector('#diagram-name');
+                            const selectorInput: HTMLInputElement | null =
+                                document.querySelector('#diagram-selector');
                             if (!nameInput || !selectorInput) {
                                 return;
                             }
@@ -105,22 +115,20 @@ const DiagramManagement: React.FC = () => {
                         return button;
                     },
                 ]}
-                addExtraButtons={
-                    Platform.isDesktopApp
-                        ? [
-                              (extra) => {
-                                  extra.setIcon('info');
-                                  extra.setTooltip(
-                                      'Click for tips on finding diagram selectors.'
-                                  );
-                                  extra.onClick(() => {
-                                      new UserGuideModal(app, plugin).open();
-                                  });
-                                  return extra;
-                              },
-                          ]
-                        : undefined
-                }
+                addExtraButtons={[
+                    Platform.isDesktopApp &&
+                        ((extra) => {
+                            extra.setIcon('info');
+                            extra.setTooltip(
+                                'Click for more information on how the plugin works and' +
+                                    ' how you can find diagram selectors'
+                            );
+                            extra.onClick(() => {
+                                new UserGuide(app, plugin).open();
+                            });
+                            return extra;
+                        }),
+                ]}
             />
 
             <ReactObsidianSetting name="Available diagrams" setHeading />
@@ -146,7 +154,7 @@ const DiagramManagement: React.FC = () => {
                 ]}
             />
             <DiagramPagination />
-        </SettingsContainer>
+        </>
     );
 };
 
