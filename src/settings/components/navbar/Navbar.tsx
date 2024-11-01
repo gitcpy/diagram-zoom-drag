@@ -6,9 +6,6 @@ const Navbar: React.FC = () => {
     return (
         <NavbarContainer>
             <NavbarTabs>
-                <NavbarTab as={NavLink} to="/general">
-                    General
-                </NavbarTab>
                 <NavbarTab as={NavLink} to={'/diagram-section'}>
                     Diagram
                 </NavbarTab>
