@@ -3,7 +3,6 @@ import React, {
     useCallback,
     useContext,
     useMemo,
-    useRef,
     useState,
 } from 'react';
 import { App } from 'obsidian';
@@ -32,10 +31,9 @@ export const SettingProvider = ({
     app,
     plugin,
     children,
-}: SettingProviderProps) => {
-    const ref = useRef<HTMLDivElement>(null);
+}: SettingProviderProps): React.ReactElement => {
     const [reloadCount, setReloadCount] = useState(0);
-    const [currentPath, setCurrentPath] = useState<string>('/general');
+    const [currentPath, setCurrentPath] = useState<string>('/diagram-section');
 
     const forceReload = useCallback(() => {
         setReloadCount((prev) => prev + 1);
