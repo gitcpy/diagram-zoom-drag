@@ -41,7 +41,7 @@ export class FocusHandler {
     private focusIn(container: HTMLElement): void {
         if (
             this.diagramEvents.diagram.plugin.settings
-                .automaticFoldingOnFocusChange
+                .automaticCollapsingOnFocusChange
         ) {
             container.removeClass('folded');
         }
@@ -58,7 +58,7 @@ export class FocusHandler {
     private focusOut(container: HTMLElement): void {
         if (
             this.diagramEvents.diagram.plugin.settings
-                .automaticFoldingOnFocusChange
+                .automaticCollapsingOnFocusChange
         ) {
             container.addClass('folded');
         }
