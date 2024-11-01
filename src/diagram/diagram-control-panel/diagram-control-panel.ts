@@ -1,17 +1,15 @@
 import { Diagram } from '../diagram';
-import { setIcon } from 'obsidian';
 import { MovePanel } from './panelType/move';
 import { ZoomPanel } from './panelType/zoom';
 import { FoldPanel } from './panelType/fold';
 import { ServicePanel } from './panelType/service';
-import { EventID } from '../../events-management/typing/constants';
-import { PanelsChangedVisibility } from '../../events-management/typing/interface';
 import { updateButton } from '../../helpers/helpers';
+import { DiagramData } from '../../settings/typing/interfaces';
 
 export class DiagramControlPanel {
     constructor(public diagram: Diagram) {}
 
-    initialize(container: HTMLElement): void {
+    initialize(container: HTMLElement, diagramData: DiagramData): void {
         this.diagram.activeContainer = container;
 
         const controlPanel = container.createDiv();
@@ -23,8 +21,6 @@ export class DiagramControlPanel {
         const service = new ServicePanel(this.diagram, this);
 
         this.diagram.state.initializeContainerPanels(
-            this.diagram.plugin.leafID!,
-            this.diagram.activeContainer.id,
             controlPanel,
             move,
             fold,
@@ -32,9 +28,28 @@ export class DiagramControlPanel {
             service
         );
 
-        [move, zoom, fold, service].forEach((panel) => {
-            panel.initialize();
-        });
+        fold.initialize();
+
+        if (
+            this.diagram.plugin.settings.panelsConfig.move.enabled &&
+            diagramData.panels.move.on
+        ) {
+            move.initialize();
+        }
+
+        if (
+            this.diagram.plugin.settings.panelsConfig.zoom.enabled &&
+            diagramData.panels.zoom.on
+        ) {
+            zoom.initialize();
+        }
+
+        if (
+            this.diagram.plugin.settings.panelsConfig.service.enabled &&
+            diagramData.panels.service.on
+        ) {
+            service.initialize();
+        }
 
         if (
             this.diagram.plugin.settings.hideOnMouseOutDiagram ||
@@ -47,13 +62,11 @@ export class DiagramControlPanel {
             });
         }
 
-        this.setupEventListeners();
-
         this.diagram.activeContainer?.appendChild(controlPanel);
     }
 
     createPanel(cssClass: string, styles: object): HTMLElement {
-        const controlPanel = this.diagram.state.panelsData?.controlPanel;
+        const controlPanel = this.diagram.panelsData?.controlPanel;
         const panel = controlPanel!.createEl('div');
         panel.addClass(cssClass);
         panel.addClass('diagram-zoom-drag-panel');
@@ -116,6 +129,4 @@ export class DiagramControlPanel {
 
         return button;
     }
-
-    private setupEventListeners(): void {}
 }
