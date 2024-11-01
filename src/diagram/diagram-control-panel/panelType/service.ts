@@ -50,8 +50,9 @@ export class ServicePanel implements PanelType {
         active?: boolean;
         id?: string;
     }> {
-        const buttons = [
-            {
+        const buttons = [];
+        if (this.diagram.plugin.settings.addHidingButton) {
+            buttons.push({
                 icon: this.hiding ? 'eye-off' : 'eye',
                 action: (): void => {
                     const panelsData = this.diagram.state.panelsData;
@@ -64,6 +65,10 @@ export class ServicePanel implements PanelType {
 
                     [panelsData.panels.move, panelsData.panels.zoom].forEach(
                         (panel) => {
+                            if (!panel.panel) {
+                                return;
+                            }
+
                             panel.panel.toggleClass('hidden', this.hiding);
                             panel.panel.toggleClass('visible', !this.hiding);
                         }
@@ -83,39 +88,31 @@ export class ServicePanel implements PanelType {
                 },
                 title: `Hide move and zoom panels`,
                 id: 'hide-show-button-diagram',
+            });
+        }
+        buttons.push({
+            icon: 'maximize',
+            action: async (): Promise<void> => {
+                const button: HTMLElement | null =
+                    container.querySelector('#fullscreen-button');
+                if (!button) {
+                    return;
+                }
+                if (!document.fullscreenElement) {
+                    container.addClass('is-fullscreen');
+                    await container.requestFullscreen({
+                        navigationUI: 'auto',
+                    });
+                    updateButton(button, 'minimize', 'Open in fullscreen mode');
+                } else {
+                    container.removeClass('is-fullscreen');
+                    await document.exitFullscreen();
+                    updateButton(button, 'maximize', 'Exit fullscreen mode');
+                }
             },
-            {
-                icon: 'maximize',
-                action: async (): Promise<void> => {
-                    const button: HTMLElement | null =
-                        container.querySelector('#fullscreen-button');
-                    if (!button) {
-                        return;
-                    }
-                    if (!document.fullscreenElement) {
-                        container.addClass('is-fullscreen');
-                        await container.requestFullscreen({
-                            navigationUI: 'auto',
-                        });
-                        updateButton(
-                            button,
-                            'minimize',
-                            'Open in fullscreen mode'
-                        );
-                    } else {
-                        container.removeClass('is-fullscreen');
-                        await document.exitFullscreen();
-                        updateButton(
-                            button,
-                            'maximize',
-                            'Exit fullscreen mode'
-                        );
-                    }
-                },
-                title: 'Open in fullscreen mode',
-                id: 'fullscreen-button',
-            },
-        ];
+            title: 'Open in fullscreen mode',
+            id: 'fullscreen-button',
+        });
 
         if (Platform.isMobileApp) {
             buttons.push({
@@ -169,7 +166,7 @@ export class ServicePanel implements PanelType {
             'diagram-service-panel',
             {
                 ...this.diagram.plugin.settings.panelsConfig.service.position,
-                gridTemplateColumns: 'repeat(2, 1fr)',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(24px, 1fr))',
             }
         );
 
@@ -201,17 +198,8 @@ export class ServicePanel implements PanelType {
         this.diagram.plugin.view?.registerDomEvent(
             container,
             'fullscreenchange',
-            this.onFullScreenChange.bind(this, fullscreenButton)
+            this.onFullScreenChange.bind(this, container, fullscreenButton)
         );
-
-        const observer = new ResizeObserver(() => {
-            this.diagram.actions.resetZoomAndMove(container);
-        });
-        observer.observe(container);
-
-        this.diagram.plugin.view?.register(() => {
-            observer.disconnect();
-        });
 
         const hidingB: HTMLElement | null = this.panel.querySelector(
             '#hide-show-button-diagram'
@@ -236,10 +224,19 @@ export class ServicePanel implements PanelType {
         );
     }
 
-    private onFullScreenChange(button: HTMLElement): void {
+    private onFullScreenChange(
+        container: HTMLElement,
+        button: HTMLElement
+    ): void {
         if (document.fullscreenElement) {
+            requestAnimationFrame(() => {
+                this.diagram.actions.resetZoomAndMove(container);
+            });
             updateButton(button, 'minimize', 'Exit fullscreen mode');
         } else {
+            requestAnimationFrame(() => {
+                this.diagram.actions.resetZoomAndMove(container);
+            });
             updateButton(button, 'maximize', 'Open in fullscreen mode');
         }
     }
