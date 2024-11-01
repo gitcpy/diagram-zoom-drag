@@ -6,9 +6,6 @@ import { ServicePanel } from '../diagram-control-panel/panelType/service';
 import { ContainerID, LeafID } from './typing/types';
 import { Data, PanelsData } from './typing/interfaces';
 
-// TODO присвоить классу новые проперти
-// TODO а также, присвоить их не этому классу, а Diagram
-
 export class DiagramState {
     data: Map<LeafID, Data> = new Map();
 
@@ -38,20 +35,35 @@ export class DiagramState {
                     this.nativeTouchEventsEnabled = value;
                 },
             },
+            source: {
+                get: () => this.source,
+                set: (value: string) => {
+                    this.source = value;
+                },
+            },
+            panelsData: {
+                get: () => this.panelsData,
+                set: (value: PanelsData) => {
+                    this.panelsData = value;
+                },
+            },
         });
     }
 
     /**
-     * Initializes the view data for the given leaf ID and container ID.
+     * Initializes the container state with default values and sets the source of the diagram.
      *
-     * If the leaf ID is not already in the `data` map, it will be added with an
-     * empty object as its value. Then, the container ID will be added to the
-     * leaf's data object with the default view data values.
+     * If the leaf ID is not already in the `data` map, it will be added with an empty object as its value.
+     * Then, it initializes the dx, dy, scale, and other properties to their default values.
      *
-     * @param leafID - The ID of the leaf to initialize the view data for.
-     * @param containerID - The ID of the container to initialize the view data for.
+     * @param containerID - The ID of the container to initialize.
+     * @param source - The source of the diagram to be set.
      */
-    initializeContainer(leafID: LeafID, containerID: ContainerID): void {
+    initializeContainer(containerID: string, source: string): void {
+        const leafID = this.diagram.plugin.leafID!;
+        if (!this.data.get(leafID)) {
+            this.data.set(leafID, {});
+        }
         if (!this.data.get(leafID)) {
             this.data.set(leafID, {});
         }
@@ -63,98 +75,58 @@ export class DiagramState {
                 scale: 1,
                 nativeTouchEventsEnabled: true,
                 panelsData: {},
+                source: source,
             };
         }
     }
 
     /**
-     * Initializes the container panels for a specific leaf and container.
+     * Initializes the panels data for the control panel and its associated panels.
      *
-     * If the leaf ID is not found in the data map, the function will exit early.
-     * Then, it assigns the control panel and panels data to the specified container ID.
+     * This method assigns the control panel and its associated panels (move, fold, zoom, and service)
+     * to the panels data object, which is then stored in the state.
      *
-     * @param leafID - The ID of the leaf for which to initialize the container panels.
-     * @param containerID - The ID of the container to initialize the panels for.
-     * @param controlPanel - The HTMLElement representing the control panel.
-     * @param movePanel - The MovePanel instance for the container.
-     * @param foldPanel - The FoldPanel instance for the container.
-     * @param zoomPanel - The ZoomPanel instance for the container.
-     * @param servicePanel - The ServicePanel instance for the container.
+     * @param controlPanel - The control panel to assign to the panels data.
+     * @param movePanel - The move panel to assign to the panels data.
+     * @param foldPanel - The fold panel to assign to the panels data.
+     * @param zoomPanel - The zoom panel to assign to the panels data.
+     * @param servicePanel - The service panel to assign to the panels data.
      */
     initializeContainerPanels(
-        leafID: LeafID,
-        containerID: ContainerID,
         controlPanel: HTMLElement,
         movePanel: MovePanel,
         foldPanel: FoldPanel,
         zoomPanel: ZoomPanel,
         servicePanel: ServicePanel
     ): void {
-        if (!this.data.get(leafID)) {
-            return;
-        }
-        const data = this.data.get(leafID);
-        if (!data) {
-            return;
-        }
-        data[containerID].panelsData.controlPanel = controlPanel;
-        data[containerID].panelsData.panels = {
-            move: movePanel,
-            fold: foldPanel,
-            zoom: zoomPanel,
-            service: servicePanel,
-        };
+        this.panelsData = {
+            panels: {
+                move: movePanel,
+                fold: foldPanel,
+                zoom: zoomPanel,
+                service: servicePanel,
+            },
+            controlPanel: controlPanel,
+        } as PanelsData;
     }
 
-    initializeContainerSource(
-        leafID: LeafID,
-        containerID: ContainerID,
-        source: string
-    ): void {
-        if (!this.data.get(leafID)) {
-            return;
-        }
-        const data = this.data.get(leafID);
-        if (!data) {
-            return;
-        }
-        data[containerID].source = source;
-    }
-
-    get containerSource() {
-        const leafID = this.diagram.plugin.leafID;
-        const container = this.diagram.activeContainer;
-
-        if (!leafID || !container) {
-            return;
-        }
-
-        const data = this.data.get(leafID);
-        if (!data) {
-            return;
-        }
-        const containerData = data[container.id];
-        if (!containerData) {
-            return;
-        }
-        return containerData.source;
-    }
-
-    /**
-     * Gets the view data for the control panel and its panels for the active
-     * container and leaf.
-     *
-     * @returns The view data for the control panel and its panels for the active
-     * container and leaf, or `undefined` if no view data is available.
-     */
-    get panelsData(): PanelsData | undefined {
+    async cleanupContainers(): Promise<void> {
         const data = this.data.get(this.diagram.plugin.leafID!);
         if (!data) {
             return;
         }
-        const containerData = data[this.diagram.activeContainer?.id!];
 
-        return containerData.panelsData;
+        const currentFileCtime = this.diagram.plugin.view?.file?.stat.ctime;
+
+        const containersIds = Object.keys(data);
+
+        for (const containerId of containersIds) {
+            const containerFileCtime = parseInt(containerId.split('-')[1], 10);
+
+            if (currentFileCtime !== containerFileCtime) {
+                delete data[containerId];
+            }
+        }
     }
 
     /**
@@ -291,5 +263,48 @@ export class DiagramState {
      */
     set nativeTouchEventsEnabled(value: boolean) {
         this.setData('nativeTouchEventsEnabled', value);
+    }
+
+    /**
+     * The source string of the diagram in the active container.
+     *
+     * If source is not available, this property returns 'No source available'.
+     */
+    get source(): string {
+        return this.getData('source') ?? 'No source available';
+    }
+
+    /**
+     * Sets the source string of the diagram in the active container.
+     *
+     * @param source - The new source string for the diagram.
+     */
+    set source(source: string) {
+        this.setData('source', source);
+    }
+
+    /**
+     * Gets the panels data for the active container and leaf.
+     *
+     * This data includes information about the control panel and its associated panels,
+     * such as move, fold, zoom, and service panels.
+     *
+     * @returns The panels data for the active container and leaf, or an empty object
+     * if no panels data is available.
+     */
+    get panelsData(): PanelsData {
+        return this.getData('panelsData') ?? {};
+    }
+
+    /**
+     * Sets the panels data for the active container and leaf.
+     *
+     * This data includes information about the control panel and its associated panels,
+     * such as move, fold, zoom, and service panels.
+     *
+     * @param panelsData - The new panels data to set for the active container and leaf.
+     */
+    set panelsData(panelsData: PanelsData) {
+        this.setData('panelsData', panelsData);
     }
 }
