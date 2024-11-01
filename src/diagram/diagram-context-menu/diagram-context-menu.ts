@@ -3,6 +3,7 @@ import { Export } from './export/export';
 import { Menu } from 'obsidian';
 import { CopyDiagram } from './copy/copy-diagram';
 import { CopyDiagramSource } from './copy/copy-diagram-source';
+import { DiagramData } from '../../settings/typing/interfaces';
 
 export class DiagramContextMenu {
     private export: Export;
@@ -14,7 +15,7 @@ export class DiagramContextMenu {
         this.copySource = new CopyDiagramSource(this);
     }
 
-    initialize(container: HTMLElement): void {
+    initialize(container: HTMLElement, diagramData: DiagramData): void {
         this.diagram.plugin.view?.registerDomEvent(
             container,
             'contextmenu',
