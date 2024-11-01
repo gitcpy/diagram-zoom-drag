@@ -57,10 +57,15 @@ export default class SettingsManager {
                 },
             },
             diagramsPerPage: 5,
-            foldingByDefault: false,
-            automaticFoldingOnFocusChange: false,
+            collapseByDefault: false,
+            automaticCollapsingOnFocusChange: false,
             hideOnMouseOutDiagram: false,
             hideOnMouseOutPanels: false,
+            diagramExpandedWidth: 400,
+            diagramExpandedHeight: 400,
+            diagramCollapsedWidth: 200,
+            diagramCollapsedHeight: 200,
+            addHidingButton: true,
         };
     }
 
