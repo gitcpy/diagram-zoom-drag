@@ -18,7 +18,7 @@ const Toolbar: React.FC = (): React.ReactElement => {
                 <Navbar />
                 <div
                     style={{
-                        position: 'absolute',
+                        position: 'relative',
                         right: 0,
                         marginTop: '30px',
                     }}
