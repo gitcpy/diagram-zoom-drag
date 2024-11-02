@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import PanelManagement from './components/panels-management/PanelManagement';
 import PanelSettings from './components/panels-settings/PanelSettings';
 import { ReactObsidianSetting } from 'react-obsidian-setting';
-import { ButtonComponent } from 'obsidian';
+import { ButtonComponent, Platform } from 'obsidian';
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
 const PanelSection: React.FC = () => {
-    const [activeTab, setActiveTab] = useState<'settings' | 'management'>(
-        'settings'
-    );
+    const navigate = useNavigate();
+    const location = useLocation();
 
     return (
         <div>
@@ -20,36 +20,58 @@ const PanelSection: React.FC = () => {
                     marginTop: '20px',
                 }}
             >
-                <ReactObsidianSetting
-                    addButtons={[
-                        (button): ButtonComponent => {
-                            button.setIcon('settings');
-                            button.setTooltip('Panels Settings');
-                            button.onClick(() => {
-                                setActiveTab('settings');
-                            });
-                            if (activeTab === 'settings') {
-                                button.setClass('button-active');
-                            }
-                            return button;
-                        },
-                        (button) => {
-                            button.setIcon('folder-plus');
-                            button.setTooltip('Panels Management');
-                            button.onClick(() => {
-                                setActiveTab('management');
-                            });
-                            if (activeTab === 'management') {
-                                button.setClass('button-active');
-                            }
-                            return button;
-                        },
-                    ]}
-                />
+                {Platform.isDesktopApp && (
+                    <ReactObsidianSetting
+                        addButtons={[
+                            (button): ButtonComponent => {
+                                button.setIcon('settings');
+                                button.setTooltip('Panels Settings');
+                                button.onClick(() => {
+                                    navigate('/panel-section/settings');
+                                });
+                                if (
+                                    location.pathname ===
+                                        '/panel-section/settings' ||
+                                    location.pathname === '/panel-section'
+                                ) {
+                                    button.setClass('button-active');
+                                }
+                                return button;
+                            },
+
+                            (button): ButtonComponent => {
+                                button.setIcon('folder-plus');
+                                button.setTooltip('Panels Management');
+                                button.onClick(() => {
+                                    navigate('/panel-section/management');
+                                });
+                                if (
+                                    location.pathname ===
+                                    '/panel-section/management'
+                                ) {
+                                    button.setClass('button-active');
+                                }
+                                return button;
+                            },
+                        ]}
+                    />
+                )}
             </div>
 
-            {activeTab === 'settings' && <PanelSettings />}
-            {activeTab === 'management' && <PanelManagement />}
+            <Routes>
+                <Route
+                    index
+                    element={
+                        Platform.isDesktopApp ? (
+                            <PanelSettings />
+                        ) : (
+                            <PanelManagement />
+                        )
+                    }
+                />
+                <Route path={'settings'} element={<PanelSettings />} />
+                <Route path={'management'} element={<PanelManagement />} />
+            </Routes>
         </div>
     );
 };
