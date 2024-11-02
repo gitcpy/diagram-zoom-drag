@@ -1,22 +1,24 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { ReactObsidianSetting } from 'react-obsidian-setting';
 import { useSettingsContext } from '../../../../core/context';
+import DiagramSize from './components/diagram-size/diagram-size';
+import { ToggleComponent } from 'obsidian';
 
-const DiagramsSettings: React.FC = () => {
-    const { app, plugin, forceReload } = useSettingsContext();
+const DiagramsSettings: React.FC = (): React.ReactElement => {
+    const { plugin } = useSettingsContext();
 
     return (
         <>
-            <ReactObsidianSetting name={'Folding'} setHeading={true} />
+            <ReactObsidianSetting name={'Collapse'} setHeading={true} />
 
             <ReactObsidianSetting
-                name="Fold diagrams by default?"
+                name="Collapse diagrams by default?"
                 addToggles={[
-                    (toggle) => {
+                    (toggle): ToggleComponent => {
                         toggle
-                            .setValue(plugin.settings.foldingByDefault)
+                            .setValue(plugin.settings.collapseByDefault)
                             .onChange(async (value: boolean) => {
-                                plugin.settings.foldingByDefault = value;
+                                plugin.settings.collapseByDefault = value;
                                 await plugin.settingsManager.saveSettings();
                             });
                         return toggle;
@@ -25,15 +27,15 @@ const DiagramsSettings: React.FC = () => {
             />
 
             <ReactObsidianSetting
-                name="Automatically fold diagrams on focus change?"
+                name="Automatically collapse diagrams on focus change?"
                 addToggles={[
-                    (toggle) => {
+                    (toggle): ToggleComponent => {
                         toggle
                             .setValue(
-                                plugin.settings.automaticFoldingOnFocusChange
+                                plugin.settings.automaticCollapsingOnFocusChange
                             )
                             .onChange(async (value: boolean) => {
-                                plugin.settings.automaticFoldingOnFocusChange =
+                                plugin.settings.automaticCollapsingOnFocusChange =
                                     value;
                                 await plugin.settingsManager.saveSettings();
                             });
@@ -41,6 +43,7 @@ const DiagramsSettings: React.FC = () => {
                     },
                 ]}
             />
+            <DiagramSize />
         </>
     );
 };
