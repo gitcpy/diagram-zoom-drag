@@ -27,7 +27,7 @@ There are three options to install the plugin:
 3. **From Obsidian Community Plugin Browser**:
     - Open **Settings**, go to **Community plugins**, click **Browse** and search for `Diagram Zoom Drag`. Click **Install**
 
-### What this plugin can do
+### Features
 - The plugin recognizes all diagrams with specific class selectors and adds a control panel for each:
     - **Service panel**: Located at the top right corner.
         - **Hide/Show**: Toggle other subpanels.
