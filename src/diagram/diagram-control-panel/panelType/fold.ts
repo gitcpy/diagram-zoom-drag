@@ -39,13 +39,14 @@ export class FoldPanel implements PanelType {
         active?: boolean;
         id?: string;
     }> {
+        const isFolded = this.diagram.activeContainer!.hasClass('folded');
         return [
             {
-                icon: 'fold-vertical',
+                icon: isFolded ? 'unfold-vertical' : 'fold-vertical',
                 action: (): void => {
                     container.classList.toggle('folded');
                 },
-                title: 'Fold diagram',
+                title: isFolded ? 'Expand diagram' : 'Fold diagram',
                 id: 'diagram-fold-button',
             },
         ];
