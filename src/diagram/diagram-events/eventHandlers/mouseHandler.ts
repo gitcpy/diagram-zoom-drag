@@ -80,29 +80,6 @@ export class MouseHandler {
             'mouseleave',
             this.mouseLeaveOutDiagram.bind(this, container)
         );
-        const panelsData = this.diagramEvents.diagram.state.panelsData;
-
-        if (!panelsData?.panels) {
-            return;
-        }
-
-        [
-            panelsData.panels.move.panel,
-            panelsData.panels.zoom.panel,
-            panelsData.panels.service.panel,
-        ].forEach((panel) => {
-            this.diagramEvents.diagram.plugin.view!.registerDomEvent(
-                panel,
-                'mouseenter',
-                this.mouseEnterOnPanel.bind(this, container, panel)
-            );
-
-            this.diagramEvents.diagram.plugin.view!.registerDomEvent(
-                panel,
-                'mouseleave',
-                this.mouseLeaveOutPanel.bind(this, container, panel)
-            );
-        });
     }
 
     /**
@@ -302,60 +279,5 @@ export class MouseHandler {
                 panel.addClass('hidden');
             });
         }
-    }
-
-    /**
-     * Handles the mouse enter event for a panel element.
-     *
-     * If the `hideOnMouseOutPanels` setting is enabled, this method shows the given panel
-     * by removing the 'hidden' class and adding the 'visible' class, unless the container
-     * is in a 'folded' state.
-     *
-     * @param container - The container element where the event occurred.
-     * @param panel - The panel element that is being shown.
-     * @param e - The mouse event that triggered the method.
-     */
-    private mouseEnterOnPanel(
-        container: HTMLElement,
-        panel: HTMLElement,
-        e: MouseEvent
-    ): void {
-        if (!this.diagramEvents.diagram.plugin.settings.hideOnMouseOutPanels) {
-            return;
-        }
-
-        if (container.hasClass('folded')) {
-            return;
-        }
-
-        panel.removeClass('hidden');
-        panel.addClass('visible');
-    }
-
-    /**
-     * Handles the mouse leave event for a panel element.
-     *
-     * If the `hideOnMouseOutPanels` setting is enabled, this method hides the given panel
-     * by removing the 'visible' class and adding the 'hidden' class, unless the container
-     * is in a 'folded' state.
-     *
-     * @param container - The container element where the event occurred.
-     * @param panel - The panel element that is being hidden.
-     * @param e - The mouse event that triggered the method.
-     */
-    private mouseLeaveOutPanel(
-        container: HTMLElement,
-        panel: HTMLElement,
-        e: MouseEvent
-    ): void {
-        if (!this.diagramEvents.diagram.plugin.settings.hideOnMouseOutPanels) {
-            return;
-        }
-        if (container.hasClass('folded')) {
-            return;
-        }
-
-        panel.removeClass('visible');
-        panel.addClass('hidden');
     }
 }

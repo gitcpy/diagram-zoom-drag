@@ -34,7 +34,6 @@ export interface DefaultSettings {
     collapseByDefault: boolean;
     automaticCollapsingOnFocusChange: boolean;
     hideOnMouseOutDiagram: boolean;
-    hideOnMouseOutPanels: boolean;
     diagramExpandedHeight: number;
     diagramExpandedWidth: number;
     diagramCollapsedHeight: number;

@@ -35,24 +35,6 @@ const PanelSettings: React.FC = () => {
                     />
 
                     <ReactObsidianSetting
-                        name="Hide panels when mouse leaves them?"
-                        addToggles={[
-                            (toggle): ToggleComponent => {
-                                toggle
-                                    .setValue(
-                                        plugin.settings.hideOnMouseOutPanels
-                                    )
-                                    .onChange(async (value) => {
-                                        plugin.settings.hideOnMouseOutPanels =
-                                            value;
-                                        await plugin.settingsManager.saveSettings();
-                                    });
-                                return toggle;
-                            },
-                        ]}
-                    />
-
-                    <ReactObsidianSetting
                         name={'Serivce panel'}
                         setHeading={true}
                     />

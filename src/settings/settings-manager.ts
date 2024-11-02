@@ -60,7 +60,6 @@ export default class SettingsManager {
             collapseByDefault: false,
             automaticCollapsingOnFocusChange: false,
             hideOnMouseOutDiagram: false,
-            hideOnMouseOutPanels: false,
             diagramExpandedWidth: 400,
             diagramExpandedHeight: 400,
             diagramCollapsedWidth: 200,
