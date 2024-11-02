@@ -1,8 +1,8 @@
 import React, {
     createContext,
+    useCallback,
     useContext,
     useMemo,
-    useRef,
     useState,
 } from 'react';
 import { App } from 'obsidian';
@@ -11,9 +11,10 @@ import DiagramZoomDragPlugin from '../../../core/diagram-zoom-drag-plugin';
 interface SettingsContextProps {
     plugin: DiagramZoomDragPlugin;
     app: App;
-    ref: React.RefObject<HTMLDivElement>;
-    currentTab: string;
-    setCurrentTab: (value: string | ((prev: string) => string)) => void;
+    forceReload: () => void;
+    reloadCount: number;
+    currentPath: string;
+    setCurrentPath: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const SettingsContext = createContext<SettingsContextProps | undefined>(
@@ -30,19 +31,24 @@ export const SettingProvider = ({
     app,
     plugin,
     children,
-}: SettingProviderProps) => {
-    const ref = useRef<HTMLDivElement>(null);
-    const [currentTab, setCurrentTab] = useState<string>('general');
+}: SettingProviderProps): React.ReactElement => {
+    const [reloadCount, setReloadCount] = useState(0);
+    const [currentPath, setCurrentPath] = useState<string>('/diagram-section');
+
+    const forceReload = useCallback(() => {
+        setReloadCount((prev) => prev + 1);
+    }, []);
 
     const contextValue: SettingsContextProps = useMemo(
         () => ({
             app,
             plugin,
-            ref,
-            currentTab,
-            setCurrentTab,
+            forceReload,
+            reloadCount,
+            currentPath,
+            setCurrentPath,
         }),
-        [app, plugin, ref, currentTab]
+        [app, plugin, forceReload, reloadCount, currentPath, setCurrentPath]
     );
 
     return (

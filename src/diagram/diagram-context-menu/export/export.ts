@@ -16,14 +16,15 @@ export class Export {
         const svg = element.querySelector('svg');
         const img = element.querySelector('img');
 
-        console.log(element.querySelectorAll('svg'));
-        console.log(element.querySelectorAll('img'));
         if (svg) {
             this.exportSVG(svg);
         } else if (img) {
             this.exportIMG(img);
         } else {
-            console.error('Neither SVG nor IMG element found in the container');
+            this.diagramContextMenu.diagram.plugin.showNotice(
+                "Oops! We couldn't find any elements to export. " +
+                    'It seems something is wrong with this diagram?.'
+            );
         }
     }
 
@@ -43,7 +44,12 @@ export class Export {
 
                 this.downloadFile(blob, `png`);
             })
-            .catch((error) => console.error('Error exporting image:', error));
+            .catch((error) => {
+                this.diagramContextMenu.diagram.plugin.showNotice(
+                    'Error exporting image'
+                );
+                console.error('Error exporting image:', error);
+            });
     }
 
     private downloadFile(blob: Blob, extension: string): void {

@@ -4,6 +4,7 @@ import { TouchHandler } from './eventHandlers/touchHandler';
 import { KeyboardHandler } from './eventHandlers/keyboardHandler';
 import { Folding } from './observers/folding';
 import { FocusHandler } from './eventHandlers/focus-handler';
+import { DiagramData } from '../../settings/typing/interfaces';
 
 export default class DiagramEvents {
     private readonly mouse: MouseHandler;
@@ -29,8 +30,9 @@ export default class DiagramEvents {
      *
      * @param container - The container element to add the event handlers and
      * observers to.
+     * @param diagramData
      */
-    initialize(container: HTMLElement): void {
+    initialize(container: HTMLElement, diagramData: DiagramData): void {
         this.mouse.initialize(container);
         this.touch.initialize(container);
         this.keyboard.initialize(container);

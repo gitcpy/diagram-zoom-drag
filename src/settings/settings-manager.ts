@@ -20,13 +20,51 @@ export default class SettingsManager {
                     name: key,
                     selector: value,
                     on: true,
+                    panels: {
+                        move: {
+                            on: true,
+                        },
+                        zoom: {
+                            on: true,
+                        },
+                        service: {
+                            on: true,
+                        },
+                    },
                 })
             ),
+            panelsConfig: {
+                service: {
+                    enabled: true,
+                    position: {
+                        top: '0px',
+                        right: '0px',
+                    },
+                },
+                move: {
+                    enabled: true,
+                    position: {
+                        bottom: '0px',
+                        right: '0px',
+                    },
+                },
+                zoom: {
+                    enabled: true,
+                    position: {
+                        top: '50%',
+                        right: '0px',
+                    },
+                },
+            },
             diagramsPerPage: 5,
-            foldingByDefault: false,
-            automaticFoldingOnFocusChange: false,
+            collapseByDefault: false,
+            automaticCollapsingOnFocusChange: false,
             hideOnMouseOutDiagram: false,
-            hideOnMouseOutPanels: false,
+            diagramExpandedWidth: 400,
+            diagramExpandedHeight: 400,
+            diagramCollapsedWidth: 200,
+            diagramCollapsedHeight: 200,
+            addHidingButton: true,
         };
     }
 

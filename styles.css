@@ -1,18 +1,33 @@
+/**
+These are the styles for the plugin settings window.
+Partially replaces by Obsidian styles.
+**/
 .diagram-zoom-drag-settings {
     padding: 16px;
     overflow-y: scroll;
 }
 
-.diagram-zoom-drag-settings .setting-item {
+.diagram-zoom-drag-settings .react-obsidian-settings-item {
     padding: 12px;
     margin-bottom: 12px;
     transition: box-shadow 0.3s ease;
+    border-bottom: 1px solid var(--color-base-30);
 }
 
-.diagram-zoom-drag-settings .setting-item-description {
-    color: var(--text-muted);
-    font-size: 0.9em;
-    margin-top: 4px;
+.diagram-zoom-drag-settings
+    .react-obsidian-settings-item
+    .setting-item
+    .button-active {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
+.diagram-zoom-drag-settings .react-obsidian-settings-item:last-child {
+    border-bottom: none;
+}
+
+.diagram-zoom-drag-settings .react-obsidian-settings-item.no-border {
+    border-bottom: none !important;
 }
 
 .diagram-zoom-drag-settings input[type='text'],
@@ -33,22 +48,11 @@
     color: var(--text-normal);
 }
 
-.pagination-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    margin: 20px 0;
-    padding: 10px;
-    background-color: var(--background-secondary);
-    border-radius: 5px;
-}
-
-.invalid {
+.diagram-zoom-drag-settings .invalid {
     border: 2px solid red !important;
 }
 
-.shake {
+.diagram-zoom-drag-settings .shake {
     animation: shake 0.5s;
 }
 
@@ -70,19 +74,25 @@
     }
 }
 
+/**
+These styles apply directly to charts
+inside views when rendering
+*/
 .centered {
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 100%;
+    height: 100%;
 }
 
 .diagram-container {
-    transition: height 0.5s ease;
+    transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
-    width: 100%;
-    height: 70vh;
-    margin: 40px 0;
+    width: var(--diagram-zoom-drag-diagram-container-expanded-width);
+    height: var(--diagram-zoom-drag-diagram-container-expanded-height);
+    margin-bottom: 40px;
     cursor: grab;
 }
 
@@ -91,14 +101,13 @@
 }
 
 .diagram-container.folded {
-    height: 20vh;
+    width: var(--diagram-zoom-drag-diagram-container-collapsed-width);
+    height: var(--diagram-zoom-drag-diagram-container-collapsed-height);
 }
 
 .diagram-content {
-    position: absolute;
-    top: 0;
-    left: 0;
-    transform-origin: top left;
+    position: relative;
+    transform-origin: center;
     cursor: grab;
     width: 100%;
     height: 100%;
@@ -115,12 +124,12 @@
 }
 
 .diagram-zoom-drag-panel.visible {
-    opacity: 1;
+    visibility: visible;
     transition: opacity 0.5s ease;
 }
 
 .diagram-zoom-drag-panel.hidden {
-    opacity: 0;
+    visibility: hidden;
     transition: opacity 0.5s ease;
     cursor: grab;
 }
@@ -128,4 +137,11 @@
 .diagram-zoom-drag-panel.hidden > button {
     cursor: grab;
     pointer-events: none;
+}
+
+.diagram-container.folded
+    .diagram-service-panel.diagram-zoom-drag-panel.hidden
+    #fullscreen-button {
+    visibility: visible;
+    pointer-events: all;
 }

@@ -20,7 +20,7 @@ export interface Data {
         dy: number;
         scale: number;
         nativeTouchEventsEnabled: boolean;
-        panelsData: PanelsData;
         source?: string;
+        panelsData: PanelsData;
     };
 }

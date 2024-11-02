@@ -1,9 +1,8 @@
 import { execSync } from 'node:child_process';
 import fs from 'node:fs';
-import * as process from 'node:process';
-import readline from 'node:readline';
 import semver from 'semver';
-import blessed from 'blessed';
+import { confirm, input, select } from '@inquirer/prompts';
+import chalk from 'chalk';
 
 const MANIFEST_PATH = 'manifest.json';
 const PACKAGE_PATH = 'package.json';
@@ -36,26 +35,6 @@ function changeReleaseInJson(jsonPath: string, release: string) {
 }
 
 /**
- * Asks a question to the user and returns their answer as a Promise.
- *
- * @param question - The question to ask the user.
- *
- * @returns A Promise that resolves with the user's answer.
- */
-async function askQuestion(question: string): Promise<string> {
-    return new Promise((resolve) => {
-        const rl = readline.createInterface({
-            input: process.stdin,
-            output: process.stdout,
-        });
-        rl.question(question, (answer) => {
-            rl.close();
-            resolve(answer);
-        });
-    });
-}
-
-/**
  * Runs a sequence of Git commands to commit and tag a new plugin version.
  *
  * @param RELEASE_VERSION - New version number to be written.
@@ -66,17 +45,17 @@ async function askQuestion(question: string): Promise<string> {
  */
 async function performGitCommands(RELEASE_VERSION: string, branch: string) {
     try {
-        execSync('git reset', { stdio: 'inherit' });
+        execSync('git reset', { stdio: 'ignore' });
         execSync(`git add ${PACKAGE_PATH} ${MANIFEST_PATH}`, {
-            stdio: 'inherit',
+            stdio: 'ignore',
         });
         execSync(`git commit -m 'chore: update plugin version'`, {
-            stdio: 'inherit',
+            stdio: 'ignore',
         });
-        execSync('git push', { stdio: 'inherit' });
-        execSync(`git tag ${RELEASE_VERSION}`, { stdio: 'inherit' });
+        execSync('git push', { stdio: 'ignore' });
+        execSync(`git tag ${RELEASE_VERSION}`, { stdio: 'ignore' });
         execSync(`git push origin ${branch} ${RELEASE_VERSION}`, {
-            stdio: 'inherit',
+            stdio: 'ignore',
         });
     } catch (error) {
         console.error('An error occurred during git operations:', error);
@@ -85,60 +64,58 @@ async function performGitCommands(RELEASE_VERSION: string, branch: string) {
 }
 
 /**
- * Asks user for a new version number until a valid, non-existing and
- * greater than the current version number is entered.
+ * Asks the user to enter a new version number. It validates the input value
+ * by checking if it is a valid semantic versioning format, if it already exists
+ * in the previous versions, and if it is greater than the current version.
  *
- * @param previousVersions - An array of all previous version numbers.
- * @param currentVersion - The current version number.
- *
+ * @param previousVersions - An array of strings representing the previous version numbers.
+ * @param currentVersion - The current version number as a string.
+ * @param isFirstEnter - A boolean indicating if this is the first time the user is asked to enter a new version number.
  * @returns A Promise that resolves with the new version number as a string.
  */
 async function getNewVersion(
     previousVersions: string[],
-    currentVersion: string
+    currentVersion: string,
+    isFirstEnter: boolean
 ) {
-    while (true) {
-        const answer = await askQuestion(
-            'Enter new version number or type exit to quit: '
-        ).then((answer) => answer.toLowerCase());
+    const answer = await input({
+        message: 'Enter new version number or press Enter to exit: ',
+        required: false,
+        validate: (value) => {
+            if (value === '') {
+                return true;
+            }
+            if (!semver.valid(value)) {
+                return 'Invalid version format. Please try again. It should be semantic versioning (e.g., 1.2.3)';
+            }
+            if (previousVersions.includes(value)) {
+                return 'Version already exists. Please try again.';
+            }
+            if (!isFirstEnter && semver.lt(value, currentVersion)) {
+                return `Version must be greater than current version. Current version is: ${currentVersion}. Please try again.`;
+            }
+            return true;
+        },
+    });
 
-        if (answer === 'exit') {
-            console.log('See you later!');
-            process.exit(0);
-        }
-
-        if (!semver.valid(answer)) {
-            console.log(
-                'Invalid version format. Please try again. It should be semantic versioning (e.g., 1.2.3)\n'
-            );
-            continue;
-        }
-
-        if (previousVersions.includes(answer)) {
-            console.log('Version already exists. Please try again.\n');
-            continue;
-        }
-
-        if (semver.lt(answer, currentVersion)) {
-            console.log(
-                `Version must be greater than current version. Current version is: ${currentVersion}. Please try again.\n`
-            );
-            continue;
-        }
-        return answer;
+    if (!answer.trim()) {
+        console.log('See you later!');
+        process.exit(0);
     }
+
+    return answer;
 }
 
 /**
  * Presents a menu to the user to update the current version.
  *
  * It offers the following options:
- * 1. Patch (bug fixes)
- * 2. Minor (new functionality)
- * 3. Major (significant changes)
- * 4. Manual update (enter version)
- * 5. View previous versions
- * 6. Exit
+ * - Patch (bug fixes)
+ * - Minor (new functionality)
+ * - Major (significant changes)
+ * - Manual update (enter version)
+ * - View previous versions
+ * - Exit
  *
  * The function will return the new version number as a string.
  *
@@ -151,65 +128,54 @@ async function versionMenu(
     previousVersions: string[],
     currentVersion: string
 ): Promise<string> {
-    const [major, minor, patch] = currentVersion.split('.').map(Number);
+    process.on('SIGINT', () => {
+        console.log('\nProcess terminated. Exiting gracefully...');
+        process.exit(0);
+    });
 
     while (true) {
-        console.log(
-            `Update current version ${currentVersion} or perform other actions:`
-        );
-        console.log('1. Patch (bug fixes)');
-        console.log(
-            `   Example: ${major}.${minor}.${patch} → ${major}.${minor}.${patch + 1} (increment last number)`
-        );
-        console.log('2. Minor (new functionality)');
-        console.log(
-            `   Example: ${major}.${minor}.${patch} → ${major}.${minor + 1}.0 (increment middle number)`
-        );
-        console.log('3. Major (significant changes)');
-        console.log(
-            `   Example: ${major}.${minor}.${patch} → ${major + 1}.0.0 (increment first number)`
-        );
-        console.log('4. Manual update (enter version)');
-        console.log('5. View previous versions');
-        console.log('6. Exit');
+        const [major, minor, patch] = currentVersion.split('.').map(Number);
 
-        const choice = await askQuestion('Your choice (1-6): ');
+        const answer = await select({
+            message: `Update current version ${currentVersion} or perform other actions:`,
+            choices: [
+                {
+                    name: `Patch (bug fixes): ${major}.${minor}.${patch + 1}`,
+                    value: '1',
+                },
+                {
+                    name: `Minor (new functionality): ${major}.${minor + 1}.0`,
+                    value: '2',
+                },
+                {
+                    name: `Major (significant changes): ${major + 1}.0.0`,
+                    value: '3',
+                },
+                { name: 'Manual update (enter version)', value: '4' },
+                { name: 'View previous versions', value: '5' },
+                { name: 'Exit', value: '6' },
+            ],
+        });
 
-        if (choice === '1') {
+        if (answer === '1') {
             return `${major}.${minor}.${patch + 1}`;
-        } else if (choice === '2') {
+        } else if (answer === '2') {
             return `${major}.${minor + 1}.0`;
-        } else if (choice === '3') {
+        } else if (answer === '3') {
             return `${major + 1}.0.0`;
-        } else if (choice === '4') {
-            return getNewVersion(previousVersions, currentVersion);
-        } else if (choice === '5') {
-            console.clear();
+        } else if (answer === '4') {
+            return getNewVersion(previousVersions, currentVersion, false);
+        } else if (answer === '5') {
             console.log('Previous versions:');
-            for (const version of previousVersions) {
-                console.log(`- ${version}`);
-            }
-            const rl = readline.createInterface({
-                input: process.stdin,
-                output: process.stdout,
+            console.log(`- ${previousVersions.join('\n- ')}`);
+            await input({
+                message: 'Press Enter to go back to the menu...',
+                required: false,
+                transformer: () => '',
             });
-
-            console.log('Press Enter to go back to the menu...');
-            await new Promise<void>((resolve) => {
-                rl.on('line', () => {
-                    rl.close();
-                    resolve();
-                });
-            });
-            rl.close();
-            console.clear();
-            continue;
-        } else if (choice === '6') {
+        } else if (answer === '6') {
             console.log('See you later!');
             process.exit(0);
-        } else {
-            console.log('Invalid choice. Please try again.');
-            continue;
         }
     }
 }
@@ -228,258 +194,98 @@ async function getVersion(): Promise<string> {
     const currentVersion = tags[tags.length - 1];
 
     if (tags.length === 0) {
-        return getNewVersion(tags, '0.0.0');
+        return getNewVersion(tags, currentVersion, true);
     }
 
     return versionMenu(tags, currentVersion);
 }
 
 /**
- * Show a full-screen menu with the given content. The content is displayed in a box that spans
- * the whole screen, and the user can navigate through the content using the arrow keys or mouse wheel. If the
- * content is too long to fit in the screen, the user can scroll through it. The menu also
- * displays a footer with instructions on how to quit. When the user presses q, the menu is
- * closed.
+ * Asynchronously sets the release version by iterating through a loop to handle user input.
  *
- * @param content The content of the menu, which is displayed in a box that spans the whole
- *                screen.
+ * The function prompts the user to enter a new version number, provides options for confirmation,
+ * and executes Git commands to update the plugin version in package.json and manifest.json files.
  *
- * @returns A promise that resolves when the menu is closed.
- */
-async function showFullScreenMenu(content: string): Promise<void> {
-    const lines: string[] = content.split('\n');
-    const screen = blessed.screen({
-        smartCSR: true,
-    });
-
-    const box = blessed.box({
-        top: '0',
-        left: '0',
-        right: '0',
-        bottom: '1',
-        content: '',
-        tags: true,
-        scrollable: true,
-        alwaysScroll: true,
-        mouse: true,
-        keys: true,
-        border: {
-            type: 'line',
-        },
-        style: {
-            border: {
-                fg: 'cyan',
-            },
-            focus: {
-                border: {
-                    fg: 'yellow',
-                },
-            },
-        },
-    });
-
-    const footer = blessed.box({
-        bottom: 0,
-        left: '0',
-        right: '0',
-        height: 1,
-        content: '(Use arrow keys or mouse wheel to navigate, q to quit)',
-        style: {
-            fg: 'white',
-            bg: 'black',
-            bold: true,
-        },
-    });
-
-    screen.append(box);
-    screen.append(footer);
-
-    const contentHeight = (screen.height as number) - 3;
-    const needsScrolling = lines.length > contentHeight;
-
-    const renderContent = (): void => {
-        box.setContent(`Changes since last release:\n\n${content}`);
-        screen.render();
-    };
-
-    screen.key(['q', 'C-c'], () => process.exit(0));
-
-    if (needsScrolling) {
-        screen.key(['up', 'k'], () => {
-            box.scroll(-1);
-            screen.render();
-        });
-
-        screen.key(['down', 'j'], () => {
-            box.scroll(1);
-            screen.render();
-        });
-    } else {
-        footer.setContent('(Press q to quit)');
-    }
-
-    renderContent();
-
-    return new Promise((resolve) => {
-        screen.on('destroy', () => {
-            resolve();
-        });
-    });
-}
-
-/**
- * Get the changes since the last release in a string format.
- * If there is an error, return a string saying that.
- * @returns A string of changes.
- */
-async function getChangesSinceLastRelease() {
-    try {
-        const lastTag = execSync('git describe --tags --abbrev=0', {
-            encoding: 'utf-8',
-        }).trim();
-
-        return execSync(
-            `git log ${lastTag}..HEAD --pretty=format:"%h - %an, %ar : %s%n%n%b"`,
-            { encoding: 'utf-8' }
-        );
-    } catch (error) {
-        console.error('Error getting changes:', error);
-        return 'Unable to fetch changes.';
-    }
-}
-
-/**
- * Display a menu to the user to manually update the README.md and CHANGELOG.md files if needed.
- *
- * It offers the following options:
- * 1. Check out all changes from last release to update README.md and CHANGELOG.md manually
- * 2. Exit
- *
- * The function will call itself if the user selects invalid input.
- *
- * @returns A Promise that resolves when the user exits the menu.
- */
-async function docsMenu(): Promise<void> {
-    console.clear();
-    console.log('Updating README.md and CHANGELOG.md...');
-    console.log('Select following options:');
-    console.log(
-        '1. Check out all changes from last release to update README.md and CHANGELOG.md manually'
-    );
-    console.log('2. Exit');
-
-    const answer = (await askQuestion('Your choice (1 or 2): ')).trim();
-
-    if (answer === '1') {
-        const changes = await getChangesSinceLastRelease();
-        await showFullScreenMenu(changes);
-        await docsMenu();
-    } else if (answer === '2') {
-        console.log('Exiting...');
-    } else {
-        console.log('Invalid choice. Please select a valid option.');
-        await docsMenu();
-    }
-}
-
-/**
- * Check if README.md and CHANGELOG.md exist, if not, throw an error.
- * If they exist, call `docsMenu`.
- *
- * @returns A Promise that resolves when the user exits the menu.
- */
-async function checkDocs() {
-    try {
-        fs.accessSync(README_PATH, fs.constants.F_OK);
-        fs.accessSync(CHANGELOG_PATH, fs.constants.F_OK);
-        return docsMenu();
-    } catch (err: any) {
-        console.error('Please create README.md and CHANGELOG.md first');
-        process.exit(1);
-    }
-}
-
-/**
- * Update the version of the plugin in package.json and manifest.json.
- * It will ask the user to choose a new version number and if the user
- * wants to continue with git operations.
- *
- * If the user chooses to continue, it will commit the changes, create a
- * new tag and push it to the remote repository.
- *
- * @returns A Promise that resolves when the user exits the menu.
+ * @returns A Promise that resolves when the release process is completed.
  */
 async function setRelease() {
-    await checkDocs();
-
-    console.clear();
-
-    const RELEASE_VERSION = await getVersion();
-
-    const confirmedContinue = await askQuestion(
-        `You entered version ${RELEASE_VERSION}. Continue? Yes/No/Retry (y/n/r): `
-    ).then((answer) => answer.toLowerCase());
-
     while (true) {
-        if (confirmedContinue.match(/y(es)?/gi)) {
-            break;
-        } else if (confirmedContinue.match(/n(o)?/gi)) {
+        const RELEASE_VERSION = await getVersion();
+
+        const confirmation = await select({
+            message: `You entered version ${RELEASE_VERSION}. Continue?`,
+            choices: [
+                { name: 'Yes', value: 'y' },
+                { name: 'No', value: 'n' },
+                { name: 'Retry', value: 'r' },
+            ],
+        });
+
+        switch (confirmation) {
+            case 'y':
+                break;
+            case 'n':
+                console.log('See you later!');
+                process.exit(0);
+            case 'r':
+                continue;
+        }
+
+        changeReleaseInJson(PACKAGE_PATH, RELEASE_VERSION);
+        changeReleaseInJson(MANIFEST_PATH, RELEASE_VERSION);
+
+        console.log(
+            chalk.green(
+                `Version updated to ${RELEASE_VERSION} in package.json and manifest.json`
+            )
+        );
+
+        const confirmContinue = await confirm({
+            message: 'Continue with git operations?',
+            default: true,
+        });
+
+        if (!confirmContinue) {
             console.log('See you later!');
             process.exit(0);
-        } else if (confirmedContinue.match(/r(etry)?/gi)) {
-            return setRelease();
-        } else {
-            console.log('Invalid choice. Please try again.');
-            continue;
         }
-    }
 
-    changeReleaseInJson(PACKAGE_PATH, RELEASE_VERSION);
-    changeReleaseInJson(MANIFEST_PATH, RELEASE_VERSION);
+        console.log('Making git stuffs...');
 
-    console.log(
-        `Version updated to ${RELEASE_VERSION} in package.json and manifest.json`
-    );
+        const currentBranch = execSync('git rev-parse --abbrev-ref HEAD', {
+            stdio: 'pipe',
+        })
+            .toString()
+            .trim();
 
-    const confirmContinue = await askQuestion(
-        'Do you want to continue with git operations? Yes/No (y/n): '
-    );
+        while (true) {
+            console.log(
+                `You are currently on branch ${currentBranch}. The new tag will be created on remote ${currentBranch}.`
+            );
+            const confirmation = await confirm({
+                message: 'Do you want to continue?',
+                default: true,
+            });
 
-    if (!confirmContinue.match(/y(es)?/gi)) {
-        console.log('See you later!');
-        process.exit(1);
-    }
+            if (confirmation) {
+                break;
+            } else {
+                console.log('See you later!');
+                process.exit(0);
+            }
+        }
 
-    console.log('Committing changes...');
-    const currentBranch = execSync('git rev-parse --abbrev-ref HEAD', {
-        stdio: 'pipe',
-    })
-        .toString()
-        .trim();
+        await performGitCommands(RELEASE_VERSION, currentBranch);
 
-    while (true) {
         console.log(
-            `You are currently on branch ${currentBranch}. The new tag will be created on remote ${currentBranch}.`
+            chalk.green(
+                `Release ${RELEASE_VERSION} has been successfully created and pushed.`
+            )
         );
-        const confirmation = await askQuestion(
-            'Are you sure you want to continue? Yes/No (y/n): '
-        );
-        if (confirmation.match(/y(es)?/gi)) {
-            break;
-        } else if (confirmation.match(/n(o)?/gi)) {
-            console.log('See you later!');
-            process.exit(1);
-        }
-        console.clear();
+        process.exit(0);
     }
-    await performGitCommands(RELEASE_VERSION, currentBranch);
-
-    console.log(
-        `Release ${RELEASE_VERSION} has been successfully created and pushed.`
-    );
 }
 
 setRelease().catch((error) => {
-    console.error('An unexpected error occurred:', error);
     process.exit(1);
 });

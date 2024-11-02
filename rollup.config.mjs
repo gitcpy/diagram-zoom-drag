@@ -13,6 +13,10 @@ const baseConfig = {
     external: ['obsidian', 'electron'],
     plugins: [
         json(),
+        replace({
+            preventAssignment: true,
+            'process.env.NODE_ENV': JSON.stringify('production'),
+        }),
         alias({
             entries: [
                 {

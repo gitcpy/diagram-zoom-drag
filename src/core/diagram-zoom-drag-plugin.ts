@@ -37,8 +37,6 @@ export default class DiagramZoomDragPlugin extends Plugin {
      * @returns A promise that resolves when the plugin has been successfully initialized.
      */
     async initializePlugin(): Promise<void> {
-        // @ts-ignore
-        window.dzg = this;
         await this.initializeCore();
         await this.initializeUI();
         await this.initializeEventSystem();
@@ -56,6 +54,7 @@ export default class DiagramZoomDragPlugin extends Plugin {
         this.settingsManager = new SettingsManager(this);
         await this.settingsManager.loadSettings();
         this.addSettingTab(new SettingsTab(this.app, this));
+        this.updateCssProperties();
     }
 
     /**
@@ -69,14 +68,18 @@ export default class DiagramZoomDragPlugin extends Plugin {
         this.observer = new EventObserver(this);
 
         this.registerMarkdownPostProcessor(
-            (element: HTMLElement, context: MarkdownPostProcessorContext) => {
+            async (
+                element: HTMLElement,
+                context: MarkdownPostProcessorContext
+            ) => {
                 this.initializeView();
-                this.diagram.initialize(element, context);
+                await this.diagram.initialize(element, context);
             }
         );
         this.registerEvent(
-            this.app.workspace.on('layout-change', () => {
+            this.app.workspace.on('layout-change', async () => {
                 this.cleanupView();
+                await this.diagram.state.cleanupContainers();
                 this.initializeView();
             })
         );
@@ -100,34 +103,27 @@ export default class DiagramZoomDragPlugin extends Plugin {
         this.diagram = new Diagram(this);
 
         this.addCommand({
-            id: 'diagram-zoom-drag-toggle-panels-state',
+            id: 'diagram-zoom-drag-toggle-panels-management-state',
             name: 'Toggle control panel visibility of current active diagram',
             checkCallback: (checking) => {
                 if (checking) {
                     return !!this.diagram.activeContainer;
                 }
 
-                const panels: NodeListOf<HTMLElement> | undefined =
-                    this.diagram.activeContainer?.querySelectorAll(
-                        '.diagram-container:not(.folded) .diagram-zoom-drag-panel:not(.diagram-fold-panel)'
-                    );
+                const panels = this.diagram.panelsData.panels;
+
                 if (!panels) {
                     return;
                 }
+                const initialState = panels.zoom.panel.hasClass('hidden');
 
-                const state = panels[0].hasClass('hidden');
-
-                panels.forEach((panel) => {
-                    if (state) {
-                        panel.removeClass('hidden');
-                        panel.addClass('visible');
-                        publishPanelsStateEvent(this, true);
-                    } else {
-                        panel.removeClass('visible');
-                        panel.addClass('hidden');
-                        publishPanelsStateEvent(this, false);
-                    }
-                });
+                panels.zoom.panel.toggleClass('hidden', !initialState);
+                panels.zoom.panel.toggleClass('visible', initialState);
+                panels.move.panel.toggleClass('hidden', !initialState);
+                panels.move.panel.toggleClass('visible', initialState);
+                panels.service.panel.toggleClass('hidden', !initialState);
+                panels.service.panel.toggleClass('visible', initialState);
+                publishPanelsStateEvent(this, true);
             },
         });
     }
@@ -155,6 +151,20 @@ export default class DiagramZoomDragPlugin extends Plugin {
      */
     async onload(): Promise<void> {
         await this.initializePlugin();
+    }
+
+    /**
+     * Cleans up the plugin's event subscriptions when the plugin is unloaded.
+     *
+     * This function is called automatically when the plugin is unloaded by
+     * Obsidian. It unsubscribes from all events that the plugin has subscribed
+     * to during its lifetime.
+     *
+     * @returns A promise that resolves when all event subscriptions have been
+     *          successfully unsubscribed.
+     */
+    async onunload(): Promise<void> {
+        this.observer.unsubscribeAll();
     }
 
     /**
@@ -202,5 +212,25 @@ export default class DiagramZoomDragPlugin extends Plugin {
      */
     showNotice(message: string, duration?: number): void {
         new Notice(message, duration);
+    }
+
+    updateCssProperties(): void {
+        document.documentElement.style.setProperty(
+            '--diagram-zoom-drag-diagram-container-expanded-width',
+            `${this.settings.diagramExpandedWidth}px`
+        );
+
+        document.documentElement.style.setProperty(
+            '--diagram-zoom-drag-diagram-container-expanded-height',
+            `${this.settings.diagramExpandedHeight}px`
+        );
+        document.documentElement.style.setProperty(
+            '--diagram-zoom-drag-diagram-container-collapsed-width',
+            `${this.settings.diagramCollapsedWidth}px`
+        );
+        document.documentElement.style.setProperty(
+            '--diagram-zoom-drag-diagram-container-collapsed-height',
+            `${this.settings.diagramCollapsedHeight}px`
+        );
     }
 }
