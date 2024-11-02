@@ -1,7 +1,7 @@
 {
   "name": "diagram-zoom-drag",
   "author": "ChenPengyuan",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "version": "4.2.7",
   "type": "module",
   "description": "Add zoom and drag functionality to diagrams from Mermaid, Plantuml, Graphviz, Gravizo and so on",
