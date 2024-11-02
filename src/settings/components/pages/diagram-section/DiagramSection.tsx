@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import DiagramsSettings from './components/diagram-settings/DiagramSettings';
 import DiagramManagement from './components/diagram-management/DiagramManagement';
 import { ReactObsidianSetting } from 'react-obsidian-setting';
+import { ButtonComponent } from 'obsidian';
 
 const DiagramSection: React.FC = () => {
-    const [activeTab, setActiveTab] = useState<'settings' | 'management'>(
-        'settings'
-    );
+    const navigate = useNavigate();
+    const location = useLocation();
 
     return (
         <div>
@@ -21,24 +22,31 @@ const DiagramSection: React.FC = () => {
             >
                 <ReactObsidianSetting
                     addButtons={[
-                        (button) => {
+                        (button): ButtonComponent => {
                             button.setIcon('settings');
                             button.setTooltip('Settings');
                             button.onClick(() => {
-                                setActiveTab('settings');
+                                navigate('/diagram-section/settings');
                             });
-                            if (activeTab === 'settings') {
+                            if (
+                                location.pathname === '/diagram-section' ||
+                                location.pathname ===
+                                    '/diagram-section/settings'
+                            ) {
                                 button.setClass('button-active');
                             }
                             return button;
                         },
-                        (button) => {
+                        (button): ButtonComponent => {
                             button.setIcon('folder-plus');
                             button.setTooltip('Diagram Management');
                             button.onClick(() => {
-                                setActiveTab('management');
+                                navigate('/diagram-section/management');
                             });
-                            if (activeTab === 'management') {
+                            if (
+                                location.pathname ===
+                                '/diagram-section/management'
+                            ) {
                                 button.setClass('button-active');
                             }
                             return button;
@@ -47,8 +55,11 @@ const DiagramSection: React.FC = () => {
                 />
             </div>
 
-            {activeTab === 'settings' && <DiagramsSettings />}
-            {activeTab === 'management' && <DiagramManagement />}
+            <Routes>
+                <Route index element={<DiagramsSettings />} />
+                <Route path="settings" element={<DiagramsSettings />} />
+                <Route path="management" element={<DiagramManagement />} />
+            </Routes>
         </div>
     );
 };
