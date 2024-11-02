@@ -1,10 +1,10 @@
 import React from 'react';
 import { useSettingsContext } from '../../../../core/context';
-import { Platform } from 'obsidian';
+import { Platform, ToggleComponent } from 'obsidian';
 import { ReactObsidianSetting } from 'react-obsidian-setting';
 
 const PanelSettings: React.FC = () => {
-    const { app, plugin } = useSettingsContext();
+    const { plugin } = useSettingsContext();
 
     return (
         <>
@@ -19,7 +19,7 @@ const PanelSettings: React.FC = () => {
                     <ReactObsidianSetting
                         name="Hide panels when mouse leaves diagram?"
                         addToggles={[
-                            (toggle) => {
+                            (toggle): ToggleComponent => {
                                 toggle.setValue(
                                     plugin.settings.hideOnMouseOutDiagram
                                 );
@@ -37,7 +37,7 @@ const PanelSettings: React.FC = () => {
                     <ReactObsidianSetting
                         name="Hide panels when mouse leaves them?"
                         addToggles={[
-                            (toggle) => {
+                            (toggle): ToggleComponent => {
                                 toggle
                                     .setValue(
                                         plugin.settings.hideOnMouseOutPanels
@@ -47,6 +47,28 @@ const PanelSettings: React.FC = () => {
                                             value;
                                         await plugin.settingsManager.saveSettings();
                                     });
+                                return toggle;
+                            },
+                        ]}
+                    />
+
+                    <ReactObsidianSetting
+                        name={'Serivce panel'}
+                        setHeading={true}
+                    />
+
+                    <ReactObsidianSetting
+                        name={'Add a hiding button to service panel?'}
+                        addToggles={[
+                            (toggle): ToggleComponent => {
+                                toggle.setValue(
+                                    plugin.settings.addHidingButton
+                                );
+                                toggle.onChange(async (value) => {
+                                    plugin.settings.addHidingButton = value;
+                                    await plugin.settingsManager.saveSettings();
+                                });
+
                                 return toggle;
                             },
                         ]}
