@@ -14,13 +14,18 @@ export interface PanelsData {
     controlPanel?: HTMLElement;
 }
 
+interface ContainerData {
+    dx: number;
+    dy: number;
+    scale: number;
+    nativeTouchEventsEnabled: boolean;
+    source?: string;
+    panelsData: PanelsData;
+}
+
 export interface Data {
-    [key: ContainerID]: {
-        dx: number;
-        dy: number;
-        scale: number;
-        nativeTouchEventsEnabled: boolean;
-        source?: string;
-        panelsData: PanelsData;
+    containers: {
+        [key: ContainerID]: ContainerData;
     };
+    livePreviewObserver?: MutationObserver;
 }
