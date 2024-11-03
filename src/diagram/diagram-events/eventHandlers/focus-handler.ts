@@ -44,6 +44,9 @@ export class FocusHandler {
                 .automaticCollapsingOnFocusChange
         ) {
             container.removeClass('folded');
+            if (this.diagramEvents.diagram.plugin.livePreview) {
+                container.parentElement?.removeClass('folded');
+            }
         }
         this.diagramEvents.diagram.activeContainer = container;
     }
@@ -61,6 +64,9 @@ export class FocusHandler {
                 .automaticCollapsingOnFocusChange
         ) {
             container.addClass('folded');
+            if (this.diagramEvents.diagram.plugin.livePreview) {
+                container.parentElement?.addClass('folded');
+            }
         }
     }
 }
