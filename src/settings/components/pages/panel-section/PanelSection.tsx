@@ -40,7 +40,7 @@ const PanelSection: React.FC = () => {
                             },
 
                             (button): ButtonComponent => {
-                                button.setIcon('folder-plus');
+                                button.setIcon('layout-grid');
                                 button.setTooltip('Panels Management');
                                 button.onClick(() => {
                                     navigate('/panel-section/management');
