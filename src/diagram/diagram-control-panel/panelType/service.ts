@@ -167,6 +167,7 @@ export class ServicePanel implements PanelType {
             {
                 ...this.diagram.plugin.settings.panelsConfig.service.position,
                 gridTemplateColumns: 'repeat(auto-fit, minmax(24px, 1fr))',
+                gridAutoFlow: 'column',
             }
         );
 
