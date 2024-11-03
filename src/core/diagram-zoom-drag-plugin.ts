@@ -27,6 +27,7 @@ export default class DiagramZoomDragPlugin extends Plugin {
     publisher!: EventPublisher;
     observer!: EventObserver;
     diagram!: Diagram;
+    livePreview = false;
 
     /**
      * Initializes the plugin.
@@ -73,6 +74,9 @@ export default class DiagramZoomDragPlugin extends Plugin {
                 context: MarkdownPostProcessorContext
             ) => {
                 this.initializeView();
+                if (this.livePreview) {
+                    return;
+                }
                 await this.diagram.initialize(element, context);
             }
         );
@@ -81,6 +85,9 @@ export default class DiagramZoomDragPlugin extends Plugin {
                 this.cleanupView();
                 await this.diagram.state.cleanupContainers();
                 this.initializeView();
+                if (this.view && this.livePreview) {
+                    await this.diagram.initialize(this.view.contentEl);
+                }
             })
         );
 
@@ -183,7 +190,10 @@ export default class DiagramZoomDragPlugin extends Plugin {
         }
 
         this.leafID = view.leaf.id;
+        this.diagram.state.initializeLeafData(this.leafID);
         this.view = view;
+        const viewState = view.getState();
+        this.livePreview = !viewState.source && viewState.mode === 'source';
     }
 
     /**
@@ -197,7 +207,7 @@ export default class DiagramZoomDragPlugin extends Plugin {
             const isLeaf = this.app.workspace.getLeafById(this.leafID);
             if (isLeaf === null) {
                 this.view = null;
-                this.diagram.state.removeData(this.leafID);
+                this.diagram.state.cleanupData(this.leafID);
                 this.leafID = undefined;
             }
         }
