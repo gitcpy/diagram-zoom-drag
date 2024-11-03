@@ -23,6 +23,7 @@ export class Diagram {
     nativeTouchEventsEnabled!: boolean;
     source!: string;
     panelsData!: PanelsData;
+    livePreviewObserver!: MutationObserver | undefined;
 
     constructor(public plugin: DiagramZoomDragPlugin) {
         this.state = new DiagramState(this);
@@ -45,15 +46,32 @@ export class Diagram {
     async initialize(
         element: HTMLElement,
         context: MarkdownPostProcessorContext
+    ): Promise<void>;
+
+    async initialize(element: HTMLElement): Promise<void>;
+
+    async initialize(
+        element: HTMLElement,
+        context?: MarkdownPostProcessorContext
+    ): Promise<void> {
+        if (context) {
+            await this.initializePreview(element, context);
+        } else {
+            this.initializeLivePreview(element);
+        }
+    }
+
+    private async initializePreview(
+        element: HTMLElement,
+        context: MarkdownPostProcessorContext
     ): Promise<void> {
         const maxWaitTime = 5000;
-
-        if (await this.processDiagrams(element, context)) {
+        if (await this.processDiagramsInPreview(element, context)) {
             return;
         }
 
         const observer = new MutationObserver(async () => {
-            if (await this.processDiagrams(element, context)) {
+            if (await this.processDiagramsInPreview(element, context)) {
                 observer.disconnect();
             }
         });
@@ -61,6 +79,7 @@ export class Diagram {
         observer.observe(element, {
             childList: true,
             subtree: true,
+            attributes: false,
         });
 
         setTimeout(() => {
@@ -68,10 +87,122 @@ export class Diagram {
         }, maxWaitTime);
     }
 
+    private initializeLivePreview(contentEl: HTMLElement): void {
+        if (this.livePreviewObserver) {
+            return;
+        }
+
+        const elementObservers = new Map<HTMLElement, MutationObserver>();
+
+        const createPreviewObserver = (
+            target: HTMLElement
+        ): MutationObserver => {
+            const observer = new MutationObserver(
+                async (mutations, observer) => {
+                    for (const mutation of mutations) {
+                        const target = mutation.target as HTMLElement;
+                        if (target.tagName !== 'DIV') {
+                            continue;
+                        }
+                        const diagram = this.querySelectorWithData(target);
+                        if (diagram) {
+                            await this.setDiagramContainer(diagram);
+                            observer.disconnect();
+                            elementObservers.delete(target);
+                        }
+                    }
+                }
+            );
+
+            elementObservers.set(target, observer);
+            observer.observe(target, {
+                childList: true,
+                subtree: true,
+            });
+
+            setTimeout(() => {
+                observer.disconnect();
+                elementObservers.delete(target);
+            }, 5000);
+
+            return observer;
+        };
+
+        this.livePreviewObserver = new MutationObserver(async (mutations) => {
+            const isLivePreview = this.plugin.livePreview;
+            if (!isLivePreview) {
+                return;
+            }
+
+            for (const mutation of mutations) {
+                if (mutation.type !== 'childList') {
+                    continue;
+                }
+
+                for (const addedNode of Array.from(mutation.addedNodes)) {
+                    const target = addedNode as HTMLElement;
+
+                    if (target.tagName !== 'DIV') {
+                        continue;
+                    }
+
+                    if (
+                        target?.matches('.cm-preview-code-block.cm-embed-block')
+                    ) {
+                        const diagram = this.querySelectorWithData(target);
+                        if (diagram) {
+                            await this.setDiagramContainer(diagram);
+                            continue;
+                        }
+                        createPreviewObserver(target);
+                    }
+                }
+            }
+        });
+
+        this.livePreviewObserver.observe(contentEl, {
+            childList: true,
+            subtree: true,
+        });
+    }
+
+    private async processDiagramsInPreview(
+        element: HTMLElement,
+        context: MarkdownPostProcessorContext
+    ): Promise<boolean> {
+        const diagram = this.querySelectorWithData(element);
+
+        if (!diagram) {
+            return false;
+        }
+
+        await this.setDiagramContainer(diagram, {
+            context: context,
+            contextElement: element,
+        });
+
+        return true;
+    }
+
     private async setDiagramContainer(
-        contextElement: HTMLElement,
-        context: MarkdownPostProcessorContext,
-        diagram: { diagram: DiagramData; element: HTMLElement }
+        diagram: { diagram: DiagramData; element: HTMLElement },
+        contextData?: {
+            contextElement: HTMLElement;
+            context: MarkdownPostProcessorContext;
+        }
+    ): Promise<void>;
+
+    private async setDiagramContainer(diagram: {
+        diagram: DiagramData;
+        element: HTMLElement;
+    }): Promise<void>;
+
+    private async setDiagramContainer(
+        diagram: { diagram: DiagramData; element: HTMLElement },
+        contextData?: {
+            contextElement: HTMLElement;
+            context: MarkdownPostProcessorContext;
+        }
     ): Promise<void> {
         const el = diagram.element;
 
@@ -85,23 +216,56 @@ export class Diagram {
             return;
         }
 
+        const isLivePreview = this.plugin.livePreview;
+
         el.addClass('centered');
         el.addClass('diagram-content');
 
-        const sectionsInfo = context.getSectionInfo(contextElement);
-        if (!sectionsInfo) {
-            return;
+        let source: string, lineStart: number, lineEnd: number;
+
+        if (!isLivePreview) {
+            if (!contextData) {
+                return;
+            }
+            const sectionsInfo = contextData.context.getSectionInfo(
+                contextData.contextElement
+            );
+            if (!sectionsInfo) {
+                return;
+            }
+            const { lineStart: ls, lineEnd: le, text } = sectionsInfo;
+            lineStart = ls;
+            lineEnd = le;
+            const lines = text.split('\n');
+            source = lines.slice(lineStart, lineEnd + 1).join('\n');
+        } else {
+            const e = this.plugin.view?.editor as unknown as any;
+            const startPos = e.cm.posAtDOM(el.parentElement);
+            const data = this.plugin.view?.editor.getValue().slice(startPos);
+            source = data?.match(/^"?(```.+?```)/ms)?.[1] ?? 'No source';
+            const endPos = startPos + source.length;
+            lineStart = e.cm.state.doc.lineAt(startPos).number;
+            lineEnd = e.cm.state.doc.lineAt(endPos).number;
         }
-        const { lineStart, lineEnd, text } = sectionsInfo;
-        const lines = text.split('\n');
-        const source = lines.slice(lineStart, lineEnd + 1).join('\n');
 
         const container = document.createElement('div');
+
         container.addClass('diagram-container');
+        if (isLivePreview) {
+            container.addClass('live-preview');
+            el.parentElement.addClass('live-preview-parent');
+        }
         el.parentNode?.insertBefore(container, el);
         container.appendChild(el);
+
         container.id = await this.genID(lineStart, lineEnd, diagram.diagram);
         container.toggleClass('folded', this.plugin.settings.collapseByDefault);
+        if (isLivePreview) {
+            container.parentElement?.toggleClass(
+                'folded',
+                this.plugin.settings.collapseByDefault
+            );
+        }
         container.setAttribute('tabindex', '0');
 
         this.activeContainer = container;
@@ -142,21 +306,6 @@ export class Diagram {
                 this.actions.fitToContainer(el, container);
             }
         }, 5000);
-    }
-
-    private async processDiagrams(
-        element: HTMLElement,
-        context: MarkdownPostProcessorContext
-    ): Promise<boolean> {
-        const diagram = this.querySelectorWithData(element);
-
-        if (!diagram) {
-            return false;
-        }
-
-        await this.setDiagramContainer(element, context, diagram);
-
-        return true;
     }
 
     private querySelectorWithData(
