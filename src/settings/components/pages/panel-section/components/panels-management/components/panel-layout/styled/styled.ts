@@ -17,8 +17,8 @@ export const DiagramPreview = styled.div`
 
 export const PanelPreview = styled.div<{ dragging?: boolean }>`
     position: absolute;
-    width: 60px; /* PANEL_WIDTH */
-    height: 40px; /* PANEL_HEIGHT */
+    width: 60px;
+    height: 40px; 
     padding: 8px;
     background: var(--color-base-20);
     border-radius: 4px;

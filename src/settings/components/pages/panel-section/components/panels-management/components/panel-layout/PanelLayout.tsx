@@ -13,6 +13,7 @@ import {
     PanelPosition,
     PanelsConfig,
 } from '../../../../../../../typing/interfaces';
+import { Platform } from 'obsidian';
 
 const PanelLayout: React.FC = () => {
     const { plugin } = useSettingsContext();
@@ -26,13 +27,15 @@ const PanelLayout: React.FC = () => {
         setPositions(plugin.settings.panelsConfig);
     }, [plugin.settings]);
 
-    const saveSettings = async (newPositions: PanelsConfig) => {
+    const saveSettings = async (newPositions: PanelsConfig): Promise<void> => {
         setPositions(newPositions);
         plugin.settings.panelsConfig = newPositions;
         await plugin.settingsManager.saveSettings();
     };
 
-    const togglePanelState = async (panelName: keyof PanelsConfig) => {
+    const togglePanelState = async (
+        panelName: keyof PanelsConfig
+    ): Promise<void> => {
         const newPositions = {
             ...positions,
             [panelName]: {
@@ -164,7 +167,7 @@ const PanelLayout: React.FC = () => {
         return position;
     };
 
-    const handleDrop = async (e: React.DragEvent) => {
+    const handleDrop = async (e: React.DragEvent): Promise<void> => {
         e.preventDefault();
         const container = containerRef.current;
         if (!container) {
@@ -191,6 +194,87 @@ const PanelLayout: React.FC = () => {
         setDraggedPanel(null);
     };
 
+    const handleTouchStart = (e: React.TouchEvent, panelName: string): void => {
+        const touch = e.touches[0];
+        const panel = e.target as HTMLElement;
+        const rect = panel.getBoundingClientRect();
+        const offsetX = touch.clientX - rect.left;
+        const offsetY = touch.clientY - rect.top;
+        setDraggedPanel(panelName);
+        panel.dataset.dragData = JSON.stringify({
+            panelName,
+            offsetX,
+            offsetY,
+        });
+    };
+
+    const handleTouchMove = (e: React.TouchEvent): void => {
+        const container = containerRef.current;
+        if (!container || !draggedPanel) {
+            return;
+        }
+        e.preventDefault();
+
+        const touch = e.touches[0];
+        const panel = e.currentTarget as HTMLElement;
+        const dragData = JSON.parse(panel.dataset.dragData ?? '{}');
+        const containerRect = container.getBoundingClientRect();
+        const x = touch.clientX - containerRect.left - dragData.offsetX;
+        const y = touch.clientY - containerRect.top - dragData.offsetY;
+        const position = calculatePosition(x, y, containerRect);
+
+        panel.style.left = position.left!;
+        panel.style.top = position.top!;
+    };
+
+    const handleTouchEnd = async (e: React.TouchEvent): Promise<void> => {
+        const container = containerRef.current;
+        if (!container || !draggedPanel) {
+            return;
+        }
+
+        const panel = e.currentTarget as HTMLElement;
+        const dragData = JSON.parse(panel.dataset.dragData ?? '{}');
+        const touch = e.changedTouches[0];
+
+        const containerRect = container.getBoundingClientRect();
+        const x = touch.clientX - containerRect.left - dragData.offsetX;
+        const y = touch.clientY - containerRect.top - dragData.offsetY;
+
+        const position = calculatePosition(x, y, containerRect);
+
+        const newPositions = { ...positions };
+        newPositions[dragData.panelName as keyof PanelsConfig] = {
+            ...positions[dragData.panelName as keyof PanelsConfig],
+            position,
+        };
+
+        await saveSettings(newPositions);
+        setDraggedPanel(null);
+    };
+
+    const panelProps = (
+        name: string
+    ):
+        | { draggable: true; onDragStart: (e: React.DragEvent) => void }
+        | {
+              onTouchStart: (e: React.TouchEvent) => void;
+              onTouchMove: (e: React.TouchEvent) => void;
+              onTouchEnd: (e: React.TouchEvent) => Promise<void>;
+          } =>
+        Platform.isDesktop
+            ? {
+                  draggable: true,
+                  onDragStart: (e: React.DragEvent): void =>
+                      handleDragStart(e, name),
+              }
+            : {
+                  onTouchStart: (e: React.TouchEvent) =>
+                      handleTouchStart(e, name),
+                  onTouchMove: handleTouchMove,
+                  onTouchEnd: handleTouchEnd,
+              };
+
     return (
         <DiagramSetup>
             <DiagramPreview
@@ -207,8 +291,7 @@ const PanelLayout: React.FC = () => {
                                 style={{
                                     ...config.position,
                                 }}
-                                draggable={true}
-                                onDragStart={(e) => handleDragStart(e, name)}
+                                {...panelProps(name)}
                             >
                                 {name}
                             </PanelPreview>
