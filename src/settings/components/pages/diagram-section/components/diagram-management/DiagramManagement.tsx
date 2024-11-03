@@ -14,6 +14,24 @@ import {
     ReactObsidianSetting,
 } from 'react-obsidian-setting';
 
+/**
+ * DiagramManagement component is responsible for managing the configuration of diagrams
+ * with enhanced controls and UI in the application.
+ *
+ * It provides functionalities for:
+ * - Adding new diagram types through a form with input fields for name and CSS selector.
+ * - Validating inputs and ensuring the diagram does not already exist.
+ * - Displaying notifications when a new diagram is successfully added.
+ * - Managing the list of available diagrams and the number of diagrams displayed per page.
+ *
+ * The component uses the `useSettingsContext` hook to access application and plugin settings,
+ * allowing dynamic updates and persistent storage of configuration changes.
+ *
+ * It utilizes `ReactObsidianSetting` for rendering settings sections and `DiagramPagination`
+ * for handling pagination of the diagrams list.
+ *
+ * @returns {JSX.Element} The management panel for configuring diagram settings.
+ */
 const DiagramManagement: React.FC = () => {
     const { app, plugin } = useSettingsContext();
     const [_, forceReload] = useReducer((x) => x + 1, 0);

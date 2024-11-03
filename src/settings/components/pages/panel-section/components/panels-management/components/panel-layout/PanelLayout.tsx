@@ -15,6 +15,13 @@ import {
 } from '../../../../../../../typing/interfaces';
 import { Platform } from 'obsidian';
 
+/**
+ * A component that renders a diagram of the panel layout and allows the user
+ * to drag and drop panels to change their positions and enable or disable them
+ *
+ * @returns A `DiagramSetup` component that contains a `DiagramPreview` and a
+ * `PanelControl`.
+ */
 const PanelLayout: React.FC = () => {
     const { plugin } = useSettingsContext();
     const [positions, setPositions] = useState<PanelsConfig>(

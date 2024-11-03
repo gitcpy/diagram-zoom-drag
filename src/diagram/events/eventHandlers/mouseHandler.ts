@@ -1,4 +1,4 @@
-import DiagramEvents from '../diagram-events';
+import Events from '../events';
 
 export class MouseHandler {
     private startX!: number;
@@ -7,7 +7,7 @@ export class MouseHandler {
     private initialY!: number;
     private isDragging = false;
 
-    constructor(private readonly diagramEvents: DiagramEvents) {}
+    constructor(private readonly diagramEvents: Events) {}
 
     /**
      * Adds mouse event listeners to the given container element.

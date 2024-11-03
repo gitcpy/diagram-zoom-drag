@@ -1,8 +1,8 @@
 import { moment } from 'obsidian';
-import { DiagramContextMenu } from '../diagram-context-menu';
+import { ContextMenu } from '../context-menu';
 
 export class Export {
-    constructor(private diagramContextMenu: DiagramContextMenu) {}
+    constructor(private diagramContextMenu: ContextMenu) {}
 
     export(container: HTMLElement): void {
         const element: HTMLElement | null = container.querySelector(

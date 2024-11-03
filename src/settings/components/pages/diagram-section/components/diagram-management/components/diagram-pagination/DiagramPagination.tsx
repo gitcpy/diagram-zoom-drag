@@ -17,6 +17,13 @@ import { SwitchConfirm } from '../../modals/switch-confirm/switch-confirm';
 import { DiagramSetConfrols } from '../../modals/diagram-set-controls/diagram-set-confrols';
 import { ReactObsidianSetting } from 'react-obsidian-setting';
 
+/**
+ * The `DiagramPagination` component is used to show a paginated list of diagrams to the user.
+ * It allows the user to navigate through the list of diagrams, and to edit or delete the diagrams.
+ *
+ * @param props - The props passed to the component.
+ * @returns The JSX element representing the component.
+ */
 const DiagramPagination: React.FC = () => {
     const { app, plugin } = useSettingsContext();
 

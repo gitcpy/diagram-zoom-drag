@@ -5,6 +5,16 @@ import DiagramManagement from './components/diagram-management/DiagramManagement
 import { ReactObsidianSetting } from 'react-obsidian-setting';
 import { ButtonComponent } from 'obsidian';
 
+/**
+ * DiagramSection component renders a section with navigation and routing for diagram settings and management.
+ *
+ * It includes two navigation buttons, "Settings" and "Diagram Management", which navigate to their respective routes.
+ * The active button is visually distinguished based on the current route.
+ * This component uses React Router's `Route` and `Routes` to render the `DiagramsSettings` and `DiagramManagement` components
+ * based on the selected route.
+ *
+ * @returns A React element containing the navigation and routed content for diagram settings and management.
+ */
 const DiagramSection: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();

@@ -5,7 +5,7 @@ import { CopyDiagram } from './copy/copy-diagram';
 import { CopyDiagramSource } from './copy/copy-diagram-source';
 import { DiagramData } from '../../settings/typing/interfaces';
 
-export class DiagramContextMenu {
+export class ContextMenu {
     private export: Export;
     private copy: CopyDiagram;
     private copySource: CopyDiagramSource;

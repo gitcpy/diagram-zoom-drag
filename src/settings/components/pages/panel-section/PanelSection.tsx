@@ -5,6 +5,16 @@ import { ReactObsidianSetting } from 'react-obsidian-setting';
 import { ButtonComponent, Platform } from 'obsidian';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
+/**
+ * `PanelSection` component renders a section with navigation and routing for panel settings and management.
+ *
+ * It includes two navigation buttons, "Panels Settings" and "Panels Management", which navigate to their respective routes.
+ * The active button is visually distinguished based on the current route.
+ * This component uses React Router's `Route` and `Routes` to render the `PanelSettings` and `PanelManagement` components
+ * based on the selected route.
+ *
+ * @returns A React element containing the navigation and routed content for panel settings and management.
+ */
 const PanelSection: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();

@@ -1,4 +1,4 @@
-import DiagramEvents from '../diagram-events';
+import Events from '../events';
 
 export class TouchHandler {
     private startX!: number;
@@ -6,8 +6,18 @@ export class TouchHandler {
     private initialDistance!: number;
     private isDragging = false;
     private isPinching = false;
-    constructor(private readonly diagramEvents: DiagramEvents) {}
+    constructor(private readonly diagramEvents: Events) {}
 
+    /**
+     * Adds touch event listeners to the given container element.
+     *
+     * This function registers the following touch event listeners to the given container element:
+     * - `touchstart`: Handles the start of a touch event for the container element.
+     * - `touchmove`: Handles the movement during a touch event for the container element.
+     * - `touchend`: Handles the end of a touch event for the container element.
+     *
+     * @param container - The container element to add the touch event listeners to.
+     */
     initialize(container: HTMLElement): void {
         if (!this.diagramEvents.diagram.plugin.view) {
             return;

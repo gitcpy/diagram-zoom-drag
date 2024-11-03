@@ -1,12 +1,12 @@
 import { Diagram } from '../diagram';
-import { MovePanel } from '../diagram-control-panel/panelType/move';
-import { FoldPanel } from '../diagram-control-panel/panelType/fold';
-import { ZoomPanel } from '../diagram-control-panel/panelType/zoom';
-import { ServicePanel } from '../diagram-control-panel/panelType/service';
+import { MovePanel } from '../control-panel/panelType/move';
+import { FoldPanel } from '../control-panel/panelType/fold';
+import { ZoomPanel } from '../control-panel/panelType/zoom';
+import { ServicePanel } from '../control-panel/panelType/service';
 import { ContainerID, LeafID } from './typing/types';
 import { Data, PanelsData } from './typing/interfaces';
 
-export class DiagramState {
+export class State {
     data: Map<LeafID, Data> = new Map();
 
     constructor(public diagram: Diagram) {
@@ -56,6 +56,15 @@ export class DiagramState {
         });
     }
 
+    /**
+     * Initializes the leaf data for the specified leaf ID.
+     *
+     * This method checks if the given leaf ID already exists in the data map.
+     * If it does not exist, it adds the leaf ID with an empty containers
+     * object as its value, initializing the data structure for future use.
+     *
+     * @param leafID - The ID of the leaf to initialize.
+     */
     initializeLeafData(leafID: LeafID): void {
         if (!this.data.get(leafID)) {
             this.data.set(leafID, {
@@ -322,11 +331,28 @@ export class DiagramState {
         this.setData('panelsData', panelsData);
     }
 
+    /**
+     * Gets the MutationObserver instance for the active leaf if it exists.
+     *
+     * This observer is used to detect changes to the diagram container in the active
+     * leaf, and is only available if the leaf is in live preview mode.
+     *
+     * @returns The MutationObserver instance for the active leaf, or `undefined`
+     * if no observer is available.
+     */
     get livePreviewObserver(): MutationObserver | undefined {
         const data = this.data.get(this.diagram.plugin.leafID!);
         return data?.livePreviewObserver;
     }
 
+    /**
+     * Sets the MutationObserver instance for the active leaf.
+     *
+     * This observer is used to detect changes to the diagram container in the active
+     * leaf, and is only available if the leaf is in live preview mode.
+     *
+     * @param observer - The MutationObserver instance to set for the active leaf.
+     */
     set livePreviewObserver(observer: MutationObserver) {
         const data = this.data.get(this.diagram.plugin.leafID!);
         if (data) {

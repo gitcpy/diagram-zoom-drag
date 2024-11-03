@@ -6,7 +6,7 @@ import { Folding } from './observers/folding';
 import { FocusHandler } from './eventHandlers/focus-handler';
 import { DiagramData } from '../../settings/typing/interfaces';
 
-export default class DiagramEvents {
+export default class Events {
     private readonly mouse: MouseHandler;
     private readonly touch: TouchHandler;
     private readonly keyboard: KeyboardHandler;

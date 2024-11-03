@@ -2,6 +2,19 @@ import { ReactObsidianSetting } from 'react-obsidian-setting';
 import React from 'react';
 import PanelLayout from './components/panel-layout/PanelLayout';
 
+/**
+ * A React component that renders the Panel Management page in the settings
+ * dialog of the Diagram Zoom Drag plugin for Obsidian.
+ *
+ * This component is responsible for displaying the settings for customizing
+ * the control panels on diagrams. It displays a heading, a description, and
+ * two `ReactObsidianSetting` components for presenting the available panels
+ * and instructions on how to customize them.
+ *
+ * The component also includes a `PanelLayout` component, which is responsible
+ * for rendering the actual control panels and their associated settings.
+ *
+ */
 const PanelManagement: React.FC = () => (
     <>
         <ReactObsidianSetting

@@ -5,6 +5,15 @@ import { SettingProvider } from './core/context';
 import DiagramZoomDragPlugin from '../../core/diagram-zoom-drag-plugin';
 import SettingsPage from './settings-page/SettingsPage';
 
+/**
+ * The root component of the settings UI.
+ *
+ * This component is responsible for rendering the settings page. It also provides
+ * a context for the settings page to access the app and the plugin.
+ *
+ * @param app The Obsidian app instance.
+ * @param plugin The instance of the DiagramZoomDragPlugin.
+ */
 const Application: React.FC<{
     app: App;
     plugin: DiagramZoomDragPlugin;

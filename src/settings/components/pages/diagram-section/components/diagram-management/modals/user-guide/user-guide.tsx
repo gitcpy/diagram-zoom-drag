@@ -15,6 +15,11 @@ export class UserGuide extends Modal {
         this.setTitle('Guide');
     }
 
+    /**
+     * This function is called when the modal is opened.
+     * It creates a React root and renders the Application component inside of it.
+     * @returns A promise that resolves when the modal has been fully opened.
+     */
     async onOpen(): Promise<void> {
         const { contentEl } = this;
 
@@ -23,11 +28,21 @@ export class UserGuide extends Modal {
         this.root.render(<Application modal={this} />);
     }
 
+    /**
+     * This function is called when the modal is closed.
+     * It unmounts the React root and empties the content element.
+     * @returns nothing
+     */
     onClose(): void {
         this.root?.unmount();
         this.contentEl.empty();
     }
 
+    /**
+     * This function is called when the user guide modal is opened.
+     * It downloads the user guide video to the plugin's assets directory if it is not already there.
+     * @returns A promise that resolves with true if the video is successfully downloaded, and false otherwise.
+     */
     async loadVideo(): Promise<boolean> {
         const isFirstPluginStart =
             await this.plugin.pluginStateChecker.isFirstPluginStart();
@@ -57,6 +72,12 @@ export class UserGuide extends Modal {
         return this.app.vault.adapter.exists(videoPath);
     }
 
+    /**
+     * Downloads the user guide video from GitHub to the plugin's assets directory.
+     * @param videoPath The path to the video file.
+     * @returns A promise that resolves with true if the video is successfully downloaded, and false otherwise.
+     * @private
+     */
     private async downloadVideo(videoPath: string): Promise<boolean> {
         try {
             const url =
@@ -77,10 +98,5 @@ export class UserGuide extends Modal {
             console.error('Error downloading video:', err);
             return false;
         }
-    }
-
-    onclose(): void {
-        this.root?.unmount();
-        this.contentEl.empty();
     }
 }

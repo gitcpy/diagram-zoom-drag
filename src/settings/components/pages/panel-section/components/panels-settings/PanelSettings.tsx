@@ -3,6 +3,21 @@ import { useSettingsContext } from '../../../../core/context';
 import { Platform, ToggleComponent } from 'obsidian';
 import { ReactObsidianSetting } from 'react-obsidian-setting';
 
+/**
+ * PanelSettings component provides a user interface for configuring panel-related settings
+ * in the application. It allows users to customize panel behavior, specifically in relation
+ * to mouse interactions and visibility options.
+ *
+ * This component is applicable only for the desktop platform and offers the following settings:
+ * - Toggle to hide panels when the mouse exits the diagram area.
+ * - Option to add a hiding button to the service panel.
+ *
+ * The settings are managed through the `ReactObsidianSetting` component, which handles
+ * the rendering of toggle switches and updates the plugin configuration asynchronously
+ * upon user interaction.
+ *
+ * @returns A React fragment containing the settings UI components.
+ */
 const PanelSettings: React.FC = () => {
     const { plugin } = useSettingsContext();
 

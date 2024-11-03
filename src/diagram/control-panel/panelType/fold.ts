@@ -1,13 +1,13 @@
 import { PanelType } from '../typing/interfaces';
 import { Diagram } from '../../diagram';
-import { DiagramControlPanel } from '../diagram-control-panel';
+import { ControlPanel } from '../control-panel';
 
 export class FoldPanel implements PanelType {
     panel!: HTMLElement;
 
     constructor(
         private readonly diagram: Diagram,
-        private readonly diagramControlPanel: DiagramControlPanel
+        private readonly diagramControlPanel: ControlPanel
     ) {}
     /**
      * Initialize the fold panel.

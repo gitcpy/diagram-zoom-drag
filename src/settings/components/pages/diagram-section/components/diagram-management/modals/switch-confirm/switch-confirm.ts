@@ -12,7 +12,13 @@ export class SwitchConfirm extends Modal {
         this.setTitle(`Editing ${diagramName}...`);
     }
 
-    onOpen() {
+    /**
+     * This function is called when the modal is opened.
+     * It renders a confirmation dialogue that asks the user if they want to switch the page without saving any unsaved changes.
+     * It also provides a button to save the changes and continue to the next page.
+     * @returns nothing
+     */
+    onOpen(): void {
         new Setting(this.contentEl)
             .setName(
                 'Are you sure you want to switch the page? You will lose your unsaved changes.'
@@ -41,7 +47,12 @@ export class SwitchConfirm extends Modal {
             });
     }
 
-    onClose() {
+    /**
+     * This method is called when the modal is closed.
+     * It empties the content element to prevent a memory leak.
+     * @returns nothing
+     */
+    onClose(): void {
         this.contentEl.empty();
     }
 }

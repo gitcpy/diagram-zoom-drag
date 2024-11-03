@@ -1,7 +1,7 @@
-import DiagramEvents from '../diagram-events';
+import Events from '../events';
 
 export class KeyboardHandler {
-    constructor(private readonly diagramEvents: DiagramEvents) {}
+    constructor(private readonly diagramEvents: Events) {}
 
     /**
      * Initializes the keyboard event handler for the given container element.

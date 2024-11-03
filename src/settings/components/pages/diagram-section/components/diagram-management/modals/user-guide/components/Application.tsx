@@ -3,6 +3,23 @@ import { UserGuide } from '../user-guide';
 import { normalizePath } from 'obsidian';
 import { ReactObsidianSetting } from 'react-obsidian-setting';
 
+/**
+ * The Application component renders the user guide content, including a video
+ * tutorial and instructions on how to use the plugin.
+ *
+ * This component is part of the UserGuide modal and utilizes
+ * `ReactObsidianSetting` to display information and instructions about the
+ * plugin's functionality.
+ *
+ * It handles loading the user guide video from the plugin's assets directory
+ * and displays it within the component. It also provides step-by-step
+ * instructions for finding CSS selectors for diagrams using DevTools.
+ *
+ * @param {Object} props - The component props.
+ * @param {UserGuide} props.modal - The modal instance of the user guide.
+ *
+ * @returns {JSX.Element} The rendered JSX element for the user guide.
+ */
 const Application: React.FC<{
     modal: UserGuide;
 }> = ({ modal }) => {

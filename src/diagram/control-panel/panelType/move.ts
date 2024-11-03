@@ -1,4 +1,4 @@
-import { DiagramControlPanel } from '../diagram-control-panel';
+import { ControlPanel } from '../control-panel';
 import { Diagram } from '../../diagram';
 import { PanelType } from '../typing/interfaces';
 
@@ -6,7 +6,7 @@ export class MovePanel implements PanelType {
     panel!: HTMLElement;
     constructor(
         private readonly diagram: Diagram,
-        private readonly diagramControlPanel: DiagramControlPanel
+        private readonly diagramControlPanel: ControlPanel
     ) {}
 
     /**

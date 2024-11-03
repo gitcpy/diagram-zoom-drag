@@ -3,6 +3,18 @@ import React, { useState } from 'react';
 import { useSettingsContext } from '../../../../../../core/context';
 import { ComponentType } from './typing/constanst';
 
+/**
+ * A React component that renders two settings for the diagram size:
+ * one for the expanded diagram and one for the collapsed diagram.
+ *
+ * It uses the `ReactObsidianSetting` component to render a setting with a
+ * heading and two input fields for the width and height of the diagram.
+ *
+ * The component also handles the saving of the new values to the plugin
+ * settings and updates the CSS properties.
+ *
+ * @returns The React component for the diagram size settings.
+ */
 const DiagramSizes: React.FC = () => {
     const { plugin } = useSettingsContext();
     const [expandedHeight, setExpandedHeight] = useState(

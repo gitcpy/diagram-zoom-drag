@@ -1,8 +1,8 @@
 import { ContainerID } from './types';
-import { MovePanel } from '../../diagram-control-panel/panelType/move';
-import { ZoomPanel } from '../../diagram-control-panel/panelType/zoom';
-import { FoldPanel } from '../../diagram-control-panel/panelType/fold';
-import { ServicePanel } from '../../diagram-control-panel/panelType/service';
+import { MovePanel } from '../../control-panel/panelType/move';
+import { ZoomPanel } from '../../control-panel/panelType/zoom';
+import { FoldPanel } from '../../control-panel/panelType/fold';
+import { ServicePanel } from '../../control-panel/panelType/service';
 
 export interface PanelsData {
     panels?: {

@@ -27,6 +27,16 @@ interface SettingProviderProps {
     children: React.ReactNode;
 }
 
+/**
+ * Provides the Obsidian app, the plugin instance, a force reload function,
+ * the reload count, the current path, and a function to set the current path
+ * to its children.
+ *
+ * @param app The Obsidian app instance.
+ * @param plugin The plugin instance.
+ * @param children The children components of the provider.
+ * @returns The children components wrapped in the context provider.
+ */
 export const SettingProvider = ({
     app,
     plugin,
@@ -58,6 +68,14 @@ export const SettingProvider = ({
     );
 };
 
+/**
+ * A React hook that returns the `SettingsContextProps` object.
+ *
+ * This hook should be used within a `SettingProvider` component. If used
+ * outside of a `SettingProvider`, it will throw an error.
+ *
+ * @returns The `SettingsContextProps` object.
+ */
 export const useSettingsContext = (): SettingsContextProps => {
     const context = useContext(SettingsContext);
     if (context === undefined) {

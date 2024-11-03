@@ -1,7 +1,7 @@
-import { DiagramContextMenu } from '../diagram-context-menu';
+import { ContextMenu } from '../context-menu';
 
 export class CopyDiagram {
-    constructor(private readonly diagramContextMenu: DiagramContextMenu) {}
+    constructor(private readonly diagramContextMenu: ContextMenu) {}
 
     async copy(container: HTMLElement) {
         const element: HTMLElement | null = container.querySelector(

@@ -14,7 +14,7 @@ import {
 } from '../events-management/events-management';
 import { publishPanelsStateEvent } from '../helpers/helpers';
 import { Diagram } from '../diagram/diagram';
-import { LeafID } from '../diagram/diagram-state/typing/types';
+import { LeafID } from '../diagram/state/typing/types';
 import { DefaultSettings } from '../settings/typing/interfaces';
 
 export default class DiagramZoomDragPlugin extends Plugin {
@@ -224,6 +224,16 @@ export default class DiagramZoomDragPlugin extends Plugin {
         new Notice(message, duration);
     }
 
+    /**
+     * Updates the CSS properties related to the diagram container dimensions.
+     *
+     * This method sets the CSS custom properties for the expanded and collapsed
+     * widths and heights of the diagram container according to the current settings.
+     * These properties are used to adjust the layout and appearance of the diagram
+     * container dynamically based on the user's configuration.
+     *
+     * @returns {void} Void.
+     */
     updateCssProperties(): void {
         document.documentElement.style.setProperty(
             '--diagram-zoom-drag-diagram-container-expanded-width',

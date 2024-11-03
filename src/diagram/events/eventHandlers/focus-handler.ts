@@ -1,7 +1,7 @@
-import DiagramEvents from '../diagram-events';
+import Events from '../events';
 
 export class FocusHandler {
-    constructor(private readonly diagramEvents: DiagramEvents) {}
+    constructor(private readonly diagramEvents: Events) {}
 
     /**
      * Adds focus event listeners to the given container element.

@@ -2,6 +2,13 @@ import React from 'react';
 import { useSettingsContext } from '../../core/context';
 import { ReactObsidianSetting } from 'react-obsidian-setting';
 
+/**
+ * The About component renders settings options for visiting the GitHub page and
+ * providing feedback for the plugin. It also displays the current version and license
+ * information.
+ *
+ * @returns A React fragment containing settings buttons and version information.
+ */
 const About: React.FC = () => {
     const { plugin } = useSettingsContext();
 

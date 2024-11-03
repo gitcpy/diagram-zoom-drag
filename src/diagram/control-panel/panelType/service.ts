@@ -2,7 +2,7 @@ import { PanelType } from '../typing/interfaces';
 import { Platform, setIcon } from 'obsidian';
 import { updateButton } from '../../../helpers/helpers';
 import { Diagram } from '../../diagram';
-import { DiagramControlPanel } from '../diagram-control-panel';
+import { ControlPanel } from '../control-panel';
 import { EventID } from '../../../events-management/typing/constants';
 import { PanelsChangedVisibility } from '../../../events-management/typing/interface';
 
@@ -12,7 +12,7 @@ export class ServicePanel implements PanelType {
 
     constructor(
         private readonly diagram: Diagram,
-        private readonly diagramControlPanel: DiagramControlPanel
+        private readonly diagramControlPanel: ControlPanel
     ) {}
 
     /**
@@ -187,6 +187,19 @@ export class ServicePanel implements PanelType {
         return servicePanel;
     }
 
+    /**
+     * Sets up event listeners for the service panel.
+     *
+     * This method registers event listeners for the fullscreen and visibility change events.
+     * It listens for the 'fullscreenchange' event on the diagram container to handle changes
+     * in fullscreen mode. It also subscribes to the PanelsChangedVisibility event to update
+     * the visibility of move and zoom panels.
+     *
+     * - The fullscreen button is used to toggle fullscreen mode and updates its icon and tooltip
+     *   to reflect the current state.
+     * - The hide/show button updates its icon and tooltip based on the visibility of the move
+     *   and zoom panels.
+     */
     setupEventListeners(): void {
         const fullscreenButton: HTMLElement | null =
             this.panel.querySelector('#fullscreen-button');
@@ -225,6 +238,17 @@ export class ServicePanel implements PanelType {
         );
     }
 
+    /**
+     * Handles the change in fullscreen mode for the diagram container.
+     *
+     * This method is triggered when the fullscreen state of the container changes.
+     * It resets the zoom and position of the diagram and updates the fullscreen
+     * button's icon and tooltip based on the new fullscreen state.
+     *
+     * @param container - The HTML element representing the diagram container.
+     * @param button - The button element to update with the corresponding icon
+     * and tooltip for fullscreen mode.
+     */
     private onFullScreenChange(
         container: HTMLElement,
         button: HTMLElement

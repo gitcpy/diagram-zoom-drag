@@ -1,4 +1,4 @@
-import { DiagramControlPanel } from '../diagram-control-panel';
+import { ControlPanel } from '../control-panel';
 import { PanelType } from '../typing/interfaces';
 import { Diagram } from '../../diagram';
 
@@ -7,7 +7,7 @@ export class ZoomPanel implements PanelType {
 
     constructor(
         private readonly diagram: Diagram,
-        private readonly diagramControlPanel: DiagramControlPanel
+        private readonly diagramControlPanel: ControlPanel
     ) {}
 
     /**
