@@ -47,7 +47,21 @@ export class DiagramState {
                     this.panelsData = value;
                 },
             },
+            livePreviewObserver: {
+                get: () => this.livePreviewObserver,
+                set: (observer: MutationObserver) => {
+                    this.livePreviewObserver = observer;
+                },
+            },
         });
+    }
+
+    initializeLeafData(leafID: LeafID): void {
+        if (!this.data.get(leafID)) {
+            this.data.set(leafID, {
+                containers: {},
+            });
+        }
     }
 
     /**
@@ -61,15 +75,10 @@ export class DiagramState {
      */
     initializeContainer(containerID: string, source: string): void {
         const leafID = this.diagram.plugin.leafID!;
-        if (!this.data.get(leafID)) {
-            this.data.set(leafID, {});
-        }
-        if (!this.data.get(leafID)) {
-            this.data.set(leafID, {});
-        }
+
         const viewData = this.data.get(leafID);
         if (viewData) {
-            viewData[containerID] = {
+            viewData.containers[containerID] = {
                 dx: 0,
                 dy: 0,
                 scale: 1,
@@ -124,9 +133,20 @@ export class DiagramState {
             const containerFileCtime = parseInt(containerId.split('-')[1], 10);
 
             if (currentFileCtime !== containerFileCtime) {
-                delete data[containerId];
+                delete data.containers[containerId];
             }
         }
+    }
+
+    /**
+     * Removes the view data associated with the given leaf ID.
+     *
+     * @param field - The leaf ID of the view data to remove.
+     */
+    cleanupData(field: LeafID): void {
+        const data = this.data.get(field);
+        data?.livePreviewObserver?.disconnect();
+        this.data.delete(field);
     }
 
     /**
@@ -137,9 +157,9 @@ export class DiagramState {
      * @returns The value of the given field from the view data for the active
      * container and leaf, or `undefined` if no view data is available.
      */
-    getData<K extends keyof Data[ContainerID]>(
+    getData<K extends keyof Data['containers'][ContainerID]>(
         field: K
-    ): Data[ContainerID][K] | undefined {
+    ): Data['containers'][ContainerID][K] | undefined {
         const activeContainer = this.diagram.activeContainer;
         if (!activeContainer) {
             return;
@@ -150,8 +170,8 @@ export class DiagramState {
         }
 
         const data = this.data.get(leafID);
-        if (data?.[activeContainer.id]) {
-            return data[activeContainer.id][field];
+        if (data?.containers[activeContainer.id]) {
+            return data?.containers[activeContainer.id][field];
         }
     }
 
@@ -162,9 +182,9 @@ export class DiagramState {
      * @param field - The field to set the value for.
      * @param value - The value to set for the given field.
      */
-    setData<K extends keyof Data[ContainerID]>(
+    setData<K extends keyof Data['containers'][ContainerID]>(
         field: K,
-        value: Data[ContainerID][K]
+        value: Data['containers'][ContainerID][K]
     ): void {
         const activeContainer = this.diagram.activeContainer;
         if (!activeContainer) {
@@ -175,18 +195,12 @@ export class DiagramState {
             return;
         }
         const viewData = this.data.get(leafID);
-        if (viewData?.[activeContainer.id]) {
-            viewData[activeContainer.id][field] = value;
+        if (!viewData) {
+            return;
         }
-    }
-
-    /**
-     * Removes the view data associated with the given leaf ID.
-     *
-     * @param field - The leaf ID of the view data to remove.
-     */
-    removeData(field: LeafID): void {
-        this.data.delete(field);
+        if (viewData.containers[activeContainer.id]) {
+            viewData.containers[activeContainer.id][field] = value;
+        }
     }
 
     /**
@@ -306,5 +320,17 @@ export class DiagramState {
      */
     set panelsData(panelsData: PanelsData) {
         this.setData('panelsData', panelsData);
+    }
+
+    get livePreviewObserver(): MutationObserver | undefined {
+        const data = this.data.get(this.diagram.plugin.leafID!);
+        return data?.livePreviewObserver;
+    }
+
+    set livePreviewObserver(observer: MutationObserver) {
+        const data = this.data.get(this.diagram.plugin.leafID!);
+        if (data) {
+            data.livePreviewObserver = observer;
+        }
     }
 }
