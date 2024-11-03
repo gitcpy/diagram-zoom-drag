@@ -145,3 +145,21 @@ inside views when rendering
     visibility: visible;
     pointer-events: all;
 }
+
+.live-preview-parent {
+    transition: all 0.3s ease;
+    width: var(--diagram-zoom-drag-diagram-container-expanded-width);
+    height: var(--diagram-zoom-drag-diagram-container-expanded-height);
+}
+
+.live-preview-parent.folded {
+    transition: all 0.3s ease;
+    width: var(--diagram-zoom-drag-diagram-container-collapsed-width);
+    height: var(--diagram-zoom-drag-diagram-container-collapsed-height);
+}
+
+.live-preview {
+    width: 100% !important;
+    height: calc(100% - 24px) !important;
+    margin-top: 24px;
+}
