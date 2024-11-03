@@ -16,19 +16,20 @@ const Toolbar: React.FC = (): React.ReactElement => {
         return (
             <div
                 style={{
-                    display: 'flex',
-                    justifyContent: 'center',
+                    display: 'grid',
+                    gridTemplateColumns: '1fr auto 1fr',
                     alignItems: 'center',
-                    position: 'relative',
                     width: '100%',
                 }}
             >
+                <div />
                 <Navbar />
                 <div
                     style={{
-                        position: 'relative',
-                        right: 0,
-                        marginTop: '30px',
+                        justifySelf: 'end',
+                        display: 'flex',
+                        alignItems: 'center',
+                        marginTop: '35px',
                     }}
                 >
                     <ResetSettings />
